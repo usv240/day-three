@@ -24,3 +24,10 @@ def test_public_copy_preserves_evidence_scope_and_build_honesty():
     assert "selected 21-program evaluation" in public_copy
     assert "cumulative" in public_copy
     assert "synthetic composite" in public_copy
+    assert "186 tests" in public_copy
+    assert "15 tests in" in public_copy
+    assert "165 tests" not in public_copy
+    assert "11 tests in" not in public_copy
+    assert "bash deploy.sh spine" not in public_copy
+    assert "cd app" in public_copy
+    assert "-d '{}'" in public_copy

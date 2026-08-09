@@ -163,7 +163,7 @@
                 if it errors. <b>Measured on live calls: 4 of 4 names recalled, 0 false positives,
                 0 identifiers leaked through the gate</b>, and it correctly returned nothing for a
                 clean control rather than over-redacting organism names.</td>
-              <td><code>spine/redact.py</code>, 11 tests in <code>tests/test_redact.py</code><br>
+              <td><code>spine/redact.py</code>, 15 tests in <code>tests/test_redact.py</code><br>
                 <code>scripts/record_gemma.py</code>,
                 <code>fixtures/recordings/gemma_names.json</code></td></tr>
         </tbody>
@@ -207,11 +207,12 @@
       <table class="plain">
         <thead><tr><th>Step</th><th>Command</th></tr></thead>
         <tbody>
-          <tr><td>Install</td><td><code>python -m venv .venv &amp;&amp; .venv/bin/pip install -r requirements.txt</code></td></tr>
-          <tr><td>Run the tests</td><td><code>PYTHONPATH=. pytest tests -q</code> &mdash; 165 tests, no cloud needed</td></tr>
+          <tr><td>Enter the app</td><td><code>cd app</code></td></tr>
+          <tr><td>Install</td><td><code>python -m venv .venv &amp;&amp; .venv/bin/pip install -e ".[dev]"</code></td></tr>
+          <tr><td>Run the tests</td><td><code>python -m pytest -q</code> &mdash; 186 tests, no cloud needed</td></tr>
           <tr><td>Create the indexes</td><td><code>PROJECT_ID=... bash infra/apply_indexes.sh</code></td></tr>
-          <tr><td>Deploy</td><td><code>SIM_MODE=true bash deploy.sh spine</code></td></tr>
-          <tr><td>Prove the guarantee</td><td><code>curl -X POST $URL/exit-test</code></td></tr>
+          <tr><td>Deploy</td><td><code>SIM_MODE=true bash deploy.sh</code></td></tr>
+          <tr><td>Prove the guarantee</td><td><code>curl -X POST -H "Content-Type: application/json" -d '{}' $URL/exit-test</code></td></tr>
           <tr><td>Run the whole demo</td><td><code>python scripts/demo_flow.py --url $URL</code></td></tr>
         </tbody>
       </table>
