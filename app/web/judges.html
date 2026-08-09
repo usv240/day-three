@@ -45,7 +45,7 @@
     </div>
     <div class="judge-metrics" aria-label="Verified Day Three evidence">
       <div class="judge-metric"><b>17/17</b><span>deployed demo-flow checks</span></div>
-      <div class="judge-metric"><b>189</b><span>standalone repository tests</span></div>
+      <div class="judge-metric"><b>201</b><span>standalone repository tests</span></div>
       <div class="judge-metric"><b>29/29</b><span>recorded extraction fields</span></div>
       <div class="judge-metric"><b>10/10</b><span>shared-substrate exit-test clauses</span></div>
     </div>
@@ -232,7 +232,7 @@
         <tbody>
           <tr><td>Enter the app</td><td><code>cd app</code></td></tr>
           <tr><td>Install</td><td><code>python -m venv .venv &amp;&amp; .venv/bin/pip install -e ".[dev]"</code></td></tr>
-          <tr><td>Run the tests</td><td><code>python -m pytest -q</code> &mdash; 189 tests, no cloud needed</td></tr>
+          <tr><td>Run the tests</td><td><code>python -m pytest -q</code> &mdash; 201 tests, no cloud needed</td></tr>
           <tr><td>Create the indexes</td><td><code>PROJECT_ID=... bash infra/apply_indexes.sh</code></td></tr>
           <tr><td>Deploy</td><td><code>SIM_MODE=true bash deploy.sh</code></td></tr>
           <tr><td>Prove the guarantee</td><td><code>curl -X POST -H "Content-Type: application/json" -d '{}' $URL/exit-test</code></td></tr>

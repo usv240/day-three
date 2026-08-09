@@ -41,16 +41,16 @@ Implemented and protected by the deployed acceptance flow:
 |---|---|---|
 | 0:00 | Landing page hero | "If you're admitted with a serious infection, treatment may start before the culture result is ready. About two days later, the lab can support a narrower choice. Small and critical access hospitals often have limited stewardship time and infectious-disease support, so that review can be delayed or missed. This is Day Three, running live on Google Cloud." |
 | 0:20 | Scroll to console, click clean slate | "Everything you'll see is the real deployed system. The clock is simulated, and labelled; the same scheduler runs on wall-clock time in production." |
-| 0:30 | Click "Drop a scanned lab report" twice; hover a grid cell | "A scanned culture report. Gemini 3.5 reads the page, transcribes it, and can only keep values it can quote from its own transcription. We measured it: twenty-nine of twenty-nine correct, zero invented. Watch the antibiogram build; this hospital has never had one. Cells with too few samples show no number at all; that's the CLSI standard, and it matters in a minute." |
-| 1:05 | Click "Drop a report with hidden instructions" | "This report has an instruction hidden in it. Quarantined before any model reads it, and shown, not silently dropped. The lab data still went through." |
-| 1:20 | Click "Admit a patient" | "A patient starts broad antibiotics. One agent now owns this whole five-week course: it registers every wake it will ever need, then goes to sleep. Sleeping costs nothing." |
+| 0:30 | Click **Load report** three times; hover a grid cell | "A scanned culture report. Gemini 3.5 reads the page, transcribes it, and can only keep values it can quote from its own transcription. We measured it: twenty-nine of twenty-nine correct, zero invented. Watch the antibiogram build; this hospital has never had one. Cells with too few samples show no number at all; that's the CLSI standard, and it matters in a minute." |
+| 1:05 | Click **Test a report with hidden instructions** | "This report has an instruction hidden in it. Quarantined before any model reads it, and shown, not silently dropped. The lab data still went through." |
+| 1:20 | Click **Admit a patient on broad therapy** | "A patient starts broad antibiotics. One agent now owns this whole five-week course: it registers every wake it will ever need, then goes to sleep. Sleeping costs nothing." |
 | 1:35 | "Advance 47 hours"; then "Advance 5 more" | "Forty-seven hours pass. Nothing wakes; nothing is due. Five more, and the agent wakes itself. Nobody clicked it awake; the scheduler found it was due." |
 | 1:55 | Click "Ask the day three question" | "The question nobody was there to ask: is the drug still right? It recommends narrowing, and every sentence is pinned to a quoted line of the lab report. It prepares a pharmacist-review escalation and stops. Nothing is sent, and it cannot change an order." |
-| 2:20 | Click "Make the agent invent a number" | "Now the part I care about most. We ask an agent to state a resistance rate for a cell with too few samples. There is no such number, and it invents one, and the Verifier rejects it, with the reason. A sentence cannot reach a human here unless its evidence is real. The same mechanism blocks instructions hidden in documents." |
+| 2:20 | Click **Test an unsupported number** | "Now the part I care about most. We ask an agent to state a resistance rate for a cell with too few samples. There is no such number, and it invents one, and the Verifier rejects it, with the reason. A sentence cannot reach a human here unless its evidence is real. Empty and whitespace-only quotes are rejected too, and one valid reference cannot launder an empty one." |
 | 2:45 | `/day-three/registry?department=infection_prevention` in URL bar; then the consume denial via console | "These agents are catalogued for the whole hospital. Infection Prevention discovers the antibiogram, and when it asks without the right scopes, it's refused, and the refusal is audited." |
 | 3:05 | Cloud Run dashboard; optionally a verified fresh trace | "This is the Cloud Run service in us-central1, configured to scale to zero." If and only if the fresh trace is verified, add: "And this is the trace for the request you just watched." |
-| 3:25 | `/conformance` page | "We couldn't get a rural pharmacist in the build window, so we did something better than claiming a review: we built to the published CLSI standard, and every rule links its implementation and its passing test. You can check us." |
-| 3:40 | `/judges` page, slow scroll | "Eight implemented agent roles, one hundred and eighty-nine standalone tests, two hundred and seventy-nine across the combined integration workspace, and a ten-clause shared-substrate exit test a judge can run with one request. Day Three supports the antibiotic review that limited teams can miss." |
+| 3:25 | `/conformance` page | "We could not get a rural pharmacist in the build window, so we mapped the implemented boundaries to CLSI and made them checkable. The page also discloses one deviation: out-of-order reports keep the first ingested isolate rather than replacing it with the earliest collected. Counts remain correct, but the selected profile can differ." |
+| 3:40 | `/judges` page, slow scroll | "Eight implemented agent roles, two hundred and one standalone tests, two hundred and ninety-one across the combined integration workspace, and a ten-clause shared-substrate exit test a judge can run with one request. Day Three supports the antibiotic review that limited teams can miss." |
 
 **Upload:** YouTube, public, English captions on (auto then corrected), title
 "Day Three - All Things Agentic Hackathon".
@@ -103,7 +103,7 @@ Order fixed; each bullet is a section with listed content. Reuse `/judges` text;
 2. The problem (3 short paragraphs from the landing page) + the four cited stats
 3. What it does: the 8 implemented agent roles from the site
 4. **Run it in five minutes**: the exact command table from `/judges` (tests, indexes, deploy,
-   exit-test, demo_flow) — Rules line 425 scores this as proof of reproducibility
+   exit-test, demo_flow) because Rules line 425 scores this as proof of reproducibility
 5. Architecture: the diagram + caption + link to `spine/TECHNICAL_DESIGN.md`
 6. Measured model accuracy: the 29/29 table + how to regenerate (`record_intake.py`)
 7. What it does not do (safety box, from the site, verbatim)
@@ -136,7 +136,7 @@ Order fixed; each bullet is a section with listed content. Reuse `/judges` text;
 - [x] Public standalone repository
 - [x] Submission-ready architecture SVG plus canonical Mermaid source
 - [x] Three additional Google model integrations with public prompts and hashes
-- [x] 17/17 acceptance, 189 tests, accessibility, and 10/10 shared-substrate exit test
+- [x] 17/17 acceptance, 201 tests, accessibility, and 10/10 shared-substrate exit test
 - [ ] Publish docs/public-build-story.md and add its public URL
 - [ ] Publish docs/social-post.md with #AllThingsAgenticHackathon and add its public URL
 - [ ] Final link and citation check immediately before Devpost submission

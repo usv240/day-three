@@ -34,7 +34,7 @@ from selected critical-access hospitals is not generalized to all rural hospital
 ## Product evidence, separate from literature
 
 - Four recorded Gemini 3.5 Flash calls are graded 29/29 against adjacent synthetic truth.
-- The standalone repository passes 189 tests.
+- The standalone repository passes 201 tests.
 - The deployed public acceptance flow passes 17/17.
 - The shared resilience exit test passes 10/10.
 

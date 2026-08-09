@@ -404,6 +404,16 @@ def build_router(client, clock, scheduler, runner) -> APIRouter:
                         "An earlier draft of our design wrongly folded specimen stratification "
                         "into this rule. Corrected, tested, and recorded in the Registry changelog."
                     ),
+                    "known_deviation": (
+                        "CLSI selects the earliest isolate by collection date. We select the "
+                        "first one ingested. These agree whenever reports arrive in collection "
+                        "order, which is the normal case, but a delayed report collected earlier "
+                        "than one already counted is excluded rather than replacing it. The "
+                        "affected patient still contributes exactly one isolate, so counts stay "
+                        "correct; only which susceptibility profile is counted can differ. "
+                        "Found by boundary-probing our own implementation and disclosed rather "
+                        "than left for a reviewer to discover."
+                    ),
                 },
                 {
                     "rule": "Include only diagnostic isolates, not surveillance isolates",

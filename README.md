@@ -30,7 +30,7 @@ terminal, credentials, or prior clinical knowledge.
 | Gate | Reproducible result |
 |---|---:|
 | Deployed public acceptance flow | **17/17** |
-| Standalone automated tests | **189 passed** |
+| Standalone automated tests | **201 passed** |
 | Recorded extraction fields | **29/29** |
 | Shared-substrate exit test | **10/10** |
 | Accessibility gate | **Pass: light and dark themes** |
@@ -96,6 +96,14 @@ production worker remains unfiltered and wall-clock based.
 - [Recorded media provenance: prompts, model IDs, sizes, and SHA-256 hashes](app/web/media/bonus-media-provenance.json)
 - [Bonus evidence map](BONUS_EVIDENCE.md)
 
+### Known conformance deviation
+
+CLSI selects the earliest isolate by collection date. The current curator keeps the first isolate
+ingested. These agree when reports arrive in collection order, but a delayed earlier report will
+not replace the profile already counted. The patient still contributes exactly one isolate, so the
+count remains correct; the selected susceptibility profile can differ. The public conformance route
+discloses this limitation explicitly.
+
 ## Why each model is here
 
 | Model | Narrow job | Boundary |
@@ -114,6 +122,7 @@ the core workflow.
 - Deterministic patterns run before model-bound text; Gemma provides a second privacy review.
 - Every shipped fixture identifier has regression coverage, including names, addresses, and case references.
 - Recommendations must cite observable source fields; the verifier can abstain or reject.
+- Every source reference must contain a nonempty quote; one valid reference cannot launder an empty one.
 - Percentages are suppressed below the selected low-isolate threshold.
 - No autonomous prescribing, dosing, messaging, paging, ordering, or chart mutation.
 - The router persists a review escalation; it does not contact a clinician.
