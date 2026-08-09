@@ -45,3 +45,5 @@ def test_public_copy_preserves_evidence_scope_and_build_honesty():
     assert "national survey is not a critical-access-hospital rate" in public_copy
     assert "pmc11574594" in public_copy
     assert "reducing-carbapenem-use" in public_copy
+    assert "disabled controls enforce that order" in public_copy
+    assert "parallel rehearsal found cross-project clock interference" in public_copy

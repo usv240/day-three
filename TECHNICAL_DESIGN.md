@@ -108,6 +108,9 @@ The product does not claim formal CLSI certification or institutional validation
 - Firestore: durable state.
 - Cloud Scheduler: the existing `spine-scan-due` job invokes a shared spine worker that claims due
   wakes from the same Firestore substrate; it is not a second Day Three service.
+- Demo isolation: the service uses Firestore clock document `sim/clock-day-three`; simulated
+  advances claim only wakes whose durable run belongs to `day-three`. The production scan-due
+  worker remains shared and unfiltered on wall-clock time.
 - Cloud Trace/Logging: real configured telemetry.
 - Vertex AI global: Gemini and Gemma MaaS.
 - Artifact Registry and Cloud Build: container image build/deploy.

@@ -255,7 +255,13 @@
       <p>The rules require this section, and it is usually filled with generalities. These are the
         specific things that actually happened.</p>
 
-      <details open><summary>The hallucination defence and the prompt injection defence turned out to be the same code</summary>
+      <details open><summary>A parallel rehearsal found cross-project clock interference</summary>
+        <p>Running both public acceptance flows at once made Sixty Days move Day Three's simulation
+        clock and hide its hour-52 wake. The services now persist separate demo clocks, and simulated
+        dispatch checks the owning run before it claims a wake. The shared production scheduler
+        remains unfiltered on wall-clock time. The same parallel rehearsal is the deployment gate.</p></details>
+
+      <details><summary>The hallucination defence and the prompt injection defence turned out to be the same code</summary>
         <p>We built the Verifier to stop fabricated claims, and separately planned an injection defence.
         Then a test showed they were one mechanism: an injected instruction cannot produce an accepted
         claim, because a claim must quote source material that supports it. An agent talked into a wrong

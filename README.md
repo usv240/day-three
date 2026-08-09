@@ -64,6 +64,12 @@ service. They are not separate services, do not communicate through Pub/Sub, and
 deployed `sa-reason` identity. The existing `spine-scan-due` job invokes a shared worker that
 claims due wakes from the same Firestore substrate.
 
+The two public submissions deliberately share durable infrastructure but not demo time.
+`day-three` uses its own Firestore simulation-clock document, and `POST /sim/advance` filters
+due candidates by the owning run's project before claiming them. The production scheduler remains
+an unfiltered shared worker on wall-clock time. A Sixty Days rehearsal therefore cannot move Day
+Three's clock or consume one of its demonstration wakes.
+
 The source version of the diagram is in [`docs/architecture.mmd`](docs/architecture.mmd).
 
 ## Reproduce locally
