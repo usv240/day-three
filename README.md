@@ -1,54 +1,71 @@
-# Day Three
+# Day Three — the review that should not get lost 🛡️
 
 **An agentic antimicrobial-stewardship console for small and critical-access hospital teams.**
 
-Day Three turns synthetic microbiology reports into a privacy-protected local antibiogram,
-maintains a five-week antibiotic-course review ladder, and produces source-grounded reconciliation
-recommendations for pharmacist review. It does **not** prescribe, contact clinicians autonomously,
-or claim hospital-wide coverage from its small demonstration dataset.
+Day Three turns synthetic microbiology reports into a privacy-protected local antibiogram, keeps a
+five-week antibiotic-course review ladder alive, and prepares a source-grounded reconciliation for
+a pharmacist. The agent carries the context and the clock — the pharmacist keeps the decision.
 
-- [Live application](https://day-three-109051079423.us-central1.run.app)
-- [Judge evidence](https://day-three-109051079423.us-central1.run.app/judges)
-- [Machine-checkable conformance](https://day-three-109051079423.us-central1.run.app/conformance)
+> **New here?** Open the live app, press **Start from a clean slate**, and follow the numbered
+> controls. Nothing in the demo uses real patient data.
 
-## Verified evidence
+- 🚀 [Open the live application](https://day-three-109051079423.us-central1.run.app)
+- 🔎 [Read the judge evidence](https://day-three-109051079423.us-central1.run.app/judges)
+- ✅ [Inspect machine-checkable conformance](https://day-three-109051079423.us-central1.run.app/conformance)
 
-| Gate | Result |
+## 👀 Judge it in 90 seconds
+
+1. Press **Start from a clean slate**.
+2. Press **Load report** three times — watch a local cumulative antibiogram appear.
+3. Run **Test a report with hidden instructions** — the prompt-injection text is quarantined.
+4. Admit the synthetic course, advance **47 hours**, then **5 more hours** — the durable wake fires.
+5. Press **Ask the day three question** — inspect the cited, pharmacist-reviewable draft.
+6. Press **Test an unsupported number** — the verifier rejects the fabricated claim.
+
+The interface explains each action before and after it runs. A first-time judge never needs a
+terminal, credentials, or prior clinical knowledge.
+
+## ✅ Verified evidence
+
+| Gate | Reproducible result |
 |---|---:|
-| Public acceptance flow | **17/17** |
-| Standalone tests | **189 passed** |
+| Deployed public acceptance flow | **17/17** |
+| Standalone automated tests | **189 passed** |
 | Recorded extraction fields | **29/29** |
-| Shared substrate exit test | **10/10** |
-| Accessibility gate | **Pass, light and dark themes** |
+| Shared-substrate exit test | **10/10** |
+| Accessibility gate | **Pass — light and dark themes** |
 
-The measured recordings, adjacent truth files, test suite, and acceptance script are committed.
-These are reproducible gates, not estimates.
+The recordings, adjacent truth files, grading reports, tests, and acceptance script are committed.
+These numbers describe the shipped synthetic fixtures — they are not estimates or clinical-outcome
+claims.
 
-## The problem
+## 🎯 The problem
 
-Small hospital stewardship teams often work with limited specialist time and limited local data.
-Day Three focuses on the coordination gap between a microbiology result, a local cumulative view,
-the 48-to-72-hour review moment, and a human pharmacist decision. The product keeps the source,
-uncertainty, review status, and safety boundary visible throughout that chain.
+Small and critical-access hospitals may have less specialist time, fewer local isolates, and less
+capacity to keep every review moving. A broad antibiotic may be started before a culture is final;
+when the result arrives around the 48-to-72-hour review window, the evidence and the responsible
+human still need to meet.
 
-## What it does
+Day Three focuses on that coordination gap. It keeps the original report, uncertainty, local
+cumulative context, wake status, and human-approval boundary together from intake to review.
 
-1. **Intake:** transcribes a synthetic microbiology report and redacts direct identifiers before
-   model-bound text crosses the trust boundary.
-2. **Curate:** normalizes organism and susceptibility fields, preserves source provenance, and
-   rejects unsupported values.
-3. **Aggregate:** builds a deliberately small local antibiogram with cumulative labels and honest
-   coverage warnings.
-4. **Watch:** registers the complete antibiotic-course reminder ladder up front.
-5. **Reconcile:** prepares a cited recommendation for pharmacist review; the router only prepares
-   an escalation and never contacts a clinician.
+## 🧭 What happens end to end
 
-## Architecture
+| Stage | What the system does | What remains human-controlled |
+|---|---|---|
+| **1. Read** | Transcribes a synthetic microbiology report and removes direct identifiers before model review. | No real patient report enters this project. |
+| **2. Curate** | Normalizes organism and susceptibility fields, preserves provenance, and rejects unsupported values. | Ambiguous or unsupported facts are not silently filled in. |
+| **3. Aggregate** | Builds a deliberately small cumulative antibiogram with first-isolate handling and low-count suppression. | It is a demonstration view — not a certified laboratory report. |
+| **4. Wait** | Registers the complete five-week wake ladder in durable state, then sleeps until work is due. | The production clock remains wall-clock driven. |
+| **5. Reconcile** | Compares the final result with the synthetic course and drafts a cited review. | A pharmacist decides whether any clinical action is appropriate. |
+| **6. Verify** | Rejects fabricated percentages, missing support, and claims outside the narrow task. | The service cannot prescribe, dose, order, page, or edit a chart. |
+
+## 🏗️ Architecture
 
 ![Day Three as-built architecture](docs/architecture.svg)
 
-The submission-ready SVG distinguishes the live clinical path from recorded build-time onboarding
-media. The Mermaid source remains below for diffable architecture review.
+The solid path below is the live stewardship workflow. The dotted path is optional onboarding
+media generated at build time — it never sees reports and never participates in a clinical output.
 
 ```mermaid
 flowchart LR
@@ -67,26 +84,67 @@ flowchart LR
 ```
 
 The eight “agents” are logical Python roles and route stages inside one `day-three` Cloud Run
-service. They are not separate services, do not communicate through Pub/Sub, and run under the
-deployed `sa-reason` identity. The existing `spine-scan-due` job invokes a shared worker that
-claims due wakes from the same Firestore substrate.
+service — not eight services. There is no Pub/Sub hop. The deployed service runs as `sa-reason`,
+while the separately provisioned identities document intended privilege boundaries rather than
+pretending there is per-agent runtime isolation.
 
-The two public submissions deliberately share durable infrastructure but not demo time.
-`day-three` uses its own Firestore simulation-clock document, and `POST /sim/advance` filters
-due candidates by the owning run's project before claiming them. The production scheduler remains
-an unfiltered shared worker on wall-clock time. A Sixty Days rehearsal therefore cannot move Day
-Three's clock or consume one of its demonstration wakes.
+Day Three and Sixty Days share a durable substrate, but their public services, repositories, and
+simulation clocks are separate. Simulated wake claims are filtered by owning project; the shared
+production worker remains unfiltered and wall-clock based.
 
-The source version of the diagram is in [`docs/architecture.mmd`](docs/architecture.mmd).
+- [Diffable Mermaid source](docs/architecture.mmd)
+- [Recorded media provenance — prompts, model IDs, sizes, and SHA-256 hashes](app/web/media/bonus-media-provenance.json)
+- [Bonus evidence map](BONUS_EVIDENCE.md)
 
-The recorded media prompts, exact model IDs, byte counts, and SHA-256 hashes are in
-[the public provenance manifest](app/web/media/bonus-media-provenance.json).
-[BONUS_EVIDENCE.md](BONUS_EVIDENCE.md) maps every optional contribution to public proof.
+## 🤖 Why each model is here
 
-## Reproduce locally
+| Model | Narrow job | Boundary |
+|---|---|---|
+| **Gemini 3.5 Flash** | Structured transcription of synthetic reports. | Output is schema-validated and graded against adjacent truth. |
+| **Gemma 4 MaaS** (`gemma-4-26b-a4b-it-maas`) | Second-pass privacy review after deterministic redaction. | It does not make clinical recommendations. |
+| **Gemini 3.1 Flash Image** | Creates the optional abstract first-use briefing. | Build-time media only — no patient data or clinical values. |
+| **Veo 3.1 Fast** | Creates the optional four-second motion briefing. | Muted, user-controlled, and outside the clinical path. |
 
-Prerequisites: Python 3.12 and, for live model calls, Application Default Credentials for a Google
-Cloud project with Vertex AI enabled.
+The extra models are useful, visible, and auditable — they are not decorative claims attached to
+the core workflow.
+
+## 🔒 Safety and data boundaries
+
+- Synthetic composite reports only — no protected health information or real patient records.
+- Deterministic patterns run before model-bound text; Gemma provides a second privacy review.
+- Every shipped fixture identifier has regression coverage, including names, addresses, and case references.
+- Recommendations must cite observable source fields; the verifier can abstain or reject.
+- Percentages are suppressed below the selected low-isolate threshold.
+- No autonomous prescribing, dosing, messaging, paging, ordering, or chart mutation.
+- The router persists a review escalation — it does not contact a clinician.
+
+## 📚 Research and citations
+
+Research changed the product, not just the pitch. National adoption data changed the framing from
+“hospitals lack programs” to **teams need help executing consistently**. Critical-access studies
+motivated durable handoffs. Low-isolate evidence led to suppression rather than false precision.
+
+### Complete source list
+
+1. [CDC — Core Elements for Small and Critical Access Hospitals](https://www.cdc.gov/antibiotic-use/media/pdfs/core-elements-small-critical-508.pdf) supports adaptable local practice and pharmacist leadership; it does not validate this product.
+2. [CDC — Core Elements of Hospital Antibiotic Stewardship Programs](https://www.cdc.gov/antibiotic-use/hcp/core-elements/hospital.html) supports prospective audit, feedback, tracking, and reporting; Day Three does not perform preauthorization.
+3. [CDC — Antibiotic Use and Stewardship in the United States, 2025 Update](https://www.cdc.gov/antibiotic-use/hcp/data-research/stewardship-report.html) reports 97% adoption of all seven Core Elements and 16% adoption of all six newer priorities among acute-care hospitals reporting in 2024 — national self-reported context, not a CAH rate.
+4. [CDC NHSN — Reducing Carbapenem Use in a Critical Access Hospital](https://www.cdc.gov/nhsn/au-case-examples/reducing-carbapenem-use.html) describes one CAH pairing an antibiogram with prospective telepharmacist review — a case example, not an outcome forecast.
+5. [Ryder et al. — evaluation of 21 selected Iowa/Nebraska programs](https://pmc.ncbi.nlm.nih.gov/articles/PMC10594270/) reports bounded barriers including time/personnel, expertise, and electronic-record limitations — not national prevalence.
+6. [Kassamali-Escobar et al. — process evaluation in 19 CAHs](https://pmc.ncbi.nlm.nih.gov/articles/PMC11574594/) reports staffing, turnover, and bandwidth barriers — not proof that software removes them.
+7. [GRAM Project — global burden of bacterial antimicrobial resistance](https://pubmed.ncbi.nlm.nih.gov/39299261/) provides global problem context; Day Three never claims to prevent a quantified number of deaths.
+8. [Low-isolate reliability analysis](https://pmc.ncbi.nlm.nih.gov/articles/PMC9927543/) shows instability in small cumulative samples and motivates low-count suppression.
+9. [Review of antimicrobial de-escalation timing](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11776815/) supports review around 48 to 72 hours; the product still waits for final, supported evidence.
+10. [Systematic review of stewardship cost evidence](https://aricjournal.biomedcentral.com/articles/10.1186/s13756-019-0471-0) provides historical context from included studies — its savings are not claimed as Day Three results.
+11. [Systematic review and meta-analysis of de-escalation](https://www.mdpi.com/2813-0618/2/4/25) provides outcome context from included studies — its length-of-stay finding is not a product promise.
+
+For the source hierarchy, exact source-to-decision mapping, and rejected claims, read the
+[research traceability ledger](docs/research-traceability.md).
+
+## 🧪 Reproduce locally
+
+Prerequisites: Python 3.12 and — only for new live model calls — Application Default Credentials
+for a Google Cloud project with Vertex AI enabled.
 
 ```bash
 cd app
@@ -108,52 +166,21 @@ curl -X POST -H "Content-Type: application/json" -d '{}' http://127.0.0.1:8000/e
 ```
 
 Deploying from `app/` with `bash deploy.sh` targets the independent Cloud Run service `day-three`.
+The explicit empty JSON body in the exit-test request matters — a bodyless POST receives HTTP 411.
 
-## Safety and data boundaries
+## 🗂️ Repository map
 
-- Synthetic composite reports only; no protected health information or real patient records.
-- Redaction combines deterministic patterns with a Gemma reviewer, and tests cover all shipped
-  fixture identifiers.
-- Recommendations must cite observable source fields; the verifier can abstain.
-- The local antibiogram is labeled cumulative and limited to the demonstrated sample.
-- No autonomous prescribing, messaging, paging, ordering, or chart mutation.
+- `app/day_three/` — project domain logic
+- `app/spine/` — copied, reviewed runtime substrate required by this standalone project
+- `app/service/` — public and operational routes
+- `app/fixtures/` — synthetic inputs, adjacent truth, and recorded model outputs
+- `app/tests/` — unit, integration, claim, safety, and UI-contract tests
+- `app/scripts/` — recording, grading, accessibility, demo, and deployment verification
+- `docs/research-traceability.md` — source-to-product decisions and rejected claims
+- `SUBMISSION_KIT.md` — evidence-backed demo and Devpost copy
 
-## Research basis
-
-The problem and workflow are grounded in primary or peer-reviewed sources, including the
-[CDC Core Elements for Small and Critical Access Hospitals](https://www.cdc.gov/antibiotic-use/media/pdfs/core-elements-small-critical-508.pdf),
-the [CDC hospital stewardship core elements](https://www.cdc.gov/antibiotic-use/hcp/core-elements/hospital.html),
-the [2024 GRAM analysis](https://pubmed.ncbi.nlm.nih.gov/39299261/), and the
-[21-program Iowa/Nebraska evaluation](https://pmc.ncbi.nlm.nih.gov/articles/PMC10594270/).
-The public interface uses scoped denominators and does not generalize those study samples to all
-hospitals.
-
-Three newer sources sharpen the product position:
-
-- CDC's [2025 national update](https://www.cdc.gov/antibiotic-use/hcp/data-research/stewardship-report.html)
-  reports that 97% of acute-care hospitals reported all seven Core Elements in 2024, while 16%
-  reported all six implementation priorities. Day Three therefore supports execution depth; it
-  does not claim hospitals have no stewardship program. These national figures are not a CAH rate.
-- A [CDC critical-access-hospital case example](https://www.cdc.gov/nhsn/au-case-examples/reducing-carbapenem-use.html)
-  paired an antibiogram with prospective telepharmacist review. That directly supports the product's
-  local-evidence-to-human-review sequence, but one case is not treated as an outcome forecast.
-- A [2024 process evaluation in 19 CAHs](https://pmc.ncbi.nlm.nih.gov/articles/PMC11574594/)
-  reported staffing shortages, turnover, and lack of bandwidth. The durable wake ladder addresses
-  continuity of work; it is not presented as evidence of clinical effectiveness.
-
-## Repository map
-
-- `app/day_three/`: project domain logic
-- `app/spine/`: copied, reviewed runtime substrate required by this standalone project
-- `app/service/`: public and operational routes
-- `app/fixtures/`: synthetic inputs, adjacent truth, and recorded model outputs
-- `app/tests/`: unit, integration, claims, safety, and UI contract tests
-- `app/scripts/`: recording, grading, accessibility, demo, and deployment verification
-- `docs/research-traceability.md`: source-to-product decisions and rejected claims
-- `SUBMISSION_KIT.md`: evidence-backed demo and Devpost copy
-
-## Disclosure
+## 🧾 Disclosure
 
 Built during the contest period with AI coding assistants. All public demonstration data is
 synthetic. Model output is measured against committed truth and is never presented as clinical
-advice. No government or healthcare organization endorses this project.
+advice. No government, healthcare organization, or standards body endorses this project.
