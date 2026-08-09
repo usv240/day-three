@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Day Three: the antibiotic review limited teams can miss</title>
 <meta name="description" content="An agent fleet that builds local susceptibility evidence, then wakes on its own at hour 48 to support an antibiotic review.">
+<meta name="theme-color" content="#f7f9fc">
 <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
@@ -302,8 +303,20 @@
   <div class="wrap">
     <h2>Architecture</h2>
     <div class="narrow">
-      <p>Eight agents, each with one job, communicating only through durable events. No agent calls
-        another directly, which is what lets any of them crash and resume.</p>
+      <p>Eight logical roles, each with one job, orchestrated inside one Cloud Run service through
+        typed routes and durable Firestore state. Wakes, claims, checkpoints, and audit records are
+        persisted; the roles are modular, not falsely presented as eight isolated services.</p>
+    </div>
+    <div class="architecture-map" aria-label="Day Three system architecture">
+      <div class="arch-node"><small>Inputs</small><strong>Recorded synthetic scans</strong>
+        <span>Culture reports and a synthetic antibiotic course</span></div>
+      <div class="arch-arrow" aria-hidden="true">&rarr;</div>
+      <div class="arch-node accent"><small>Cloud Run &middot; day-three</small>
+        <strong>Eight bounded roles on the shared spine</strong>
+        <span>Redaction, intake, curation, wakes, reconciliation, verification, routing, registry</span></div>
+      <div class="arch-arrow" aria-hidden="true">&rarr;</div>
+      <div class="arch-node"><small>Durable proof</small><strong>Firestore and Cloud Trace</strong>
+        <span>Runs, wakes, claims, scopes, audit records, and trace identifiers</span></div>
     </div>
     <div class="table-scroll">
       <table class="plain">
@@ -315,7 +328,7 @@
           <tr><td>Reconciler</td><td>Compares the regimen against the identified organism, the local antibiogram, allergies and shortages.</td></tr>
           <tr><td>Drafter</td><td>Writes the recommendation. Every sentence must carry a claim.</td></tr>
           <tr><td>Verifier<button class="info" data-info="verifier" aria-label="What is the Verifier?">i</button></td><td>Adversarial. Rejects any claim it cannot trace to the source document, and circuit breaks rather than looping.</td></tr>
-          <tr><td>Router</td><td>Pages the pharmacist and waits for sign off. Never executes.</td></tr>
+          <tr><td>Router</td><td>Prepares a pharmacist-review escalation and waits for sign off. Never sends or executes.</td></tr>
           <tr><td>Registrar<button class="info" data-info="registry" aria-label="What is the Agent Registry?">i</button></td><td>Publishes agents so other departments can discover and consume them under enforced scopes.</td></tr>
         </tbody>
       </table>
@@ -362,6 +375,12 @@
 
 <footer class="site">
   <div class="wrap">
+    <nav class="footer-links" aria-label="Project links">
+      <a href="https://github.com/usv240/day-three">Source code</a>
+      <a href="/judges">Judge brief</a>
+      <a href="/conformance">Conformance report</a>
+      <a href="https://sixty-days-109051079423.us-central1.run.app">Sixty Days</a>
+    </nav>
     <p>Built for the All Things Agentic Hackathon. Synthetic data only. Not medical advice, and not a
       medical device. No hospital, agency, or professional body endorses this project. Government and
       professional sources are cited by name for reference only.</p>

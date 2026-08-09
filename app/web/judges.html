@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Day Three: for judges</title>
 <meta name="description" content="Rubric map, requirements checklist, deployment proof, reproduction steps, and findings for Day Three.">
+<meta name="theme-color" content="#f7f9fc">
 <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
@@ -36,9 +37,15 @@
       that judging may include automated analysis.</p>
     <div class="callout ok">
       <p><b>Category:</b> The Fortified Enterprise Fleet. <b>Live service:</b>
-        <code>https://spine-109051079423.us-central1.run.app</code>.
+        <code>https://day-three-109051079423.us-central1.run.app</code>.
         <b>Try the guarantee yourself:</b> <code>POST /exit-test</code> runs the whole acceptance
         suite and returns a structured pass or fail per clause.</p>
+    </div>
+    <div class="judge-metrics" aria-label="Verified Day Three evidence">
+      <div class="judge-metric"><b>17/17</b><span>deployed demo-flow checks</span></div>
+      <div class="judge-metric"><b>186</b><span>standalone repository tests</span></div>
+      <div class="judge-metric"><b>29/29</b><span>recorded extraction fields</span></div>
+      <div class="judge-metric"><b>10/10</b><span>resilience exit-test clauses</span></div>
     </div>
   </div>
 </section>
@@ -179,9 +186,12 @@
     <div class="narrow">
       <ul>
         <li><b>Project:</b> <code>agentic-fleet-2026</code>, region <code>us-central1</code>, pinned in code.</li>
-        <li><b>Cloud Run service:</b> <code>spine</code>, scale to zero, capped at three instances.</li>
-        <li><b>Cloud Scheduler:</b> <code>spine-scan-due</code> calls <code>/internal/scan-due</code> every
-          minute. That cron is the only reason a sleeping agent ever wakes.</li>
+        <li><b>Cloud Run service:</b> <code>day-three</code>, scale to zero, capped at three instances,
+          publicly reachable at the project-number URL above.</li>
+        <li><b>Cloud Scheduler:</b> the existing shared job <code>spine-scan-due</code> calls the
+          shared spine worker every minute. It transactionally claims due wakes from the same
+          Firestore substrate used by Day Three; the demo's simulated-clock route exercises the
+          identical claim-and-dispatch path without waiting days.</li>
         <li><b>Firestore:</b> native mode in <code>us-central1</code>, with three composite indexes
           created from <code>infra/firestore.indexes.json</code>.</li>
         <li><b>Cloud Trace:</b> OpenTelemetry export is wired and real trace identifiers have been
@@ -297,6 +307,11 @@
 
 <footer class="site">
   <div class="wrap">
+    <nav class="footer-links" aria-label="Project links">
+      <a href="https://github.com/usv240/day-three">Source code</a>
+      <a href="/">Live workflow</a>
+      <a href="/conformance">Conformance report</a>
+    </nav>
     <p>Built for the All Things Agentic Hackathon. Synthetic data only. Not medical advice and not a
       medical device.</p>
   </div>

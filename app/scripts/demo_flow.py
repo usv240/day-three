@@ -4,7 +4,7 @@ Runs the exact sequence the video will follow, so the flow is proven before anyt
 Works against a local TestClient by default, or a deployed URL with --url.
 
     python scripts/demo_flow.py
-    python scripts/demo_flow.py --url https://spine-109051079423.us-central1.run.app
+    python scripts/demo_flow.py --url https://day-three-109051079423.us-central1.run.app
 """
 
 from __future__ import annotations

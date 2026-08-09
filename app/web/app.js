@@ -317,8 +317,8 @@ $("#btn-reconcile").addEventListener("click", async () => {
         claim.accepted ? "accept" : "reject");
   });
 
-  log("router", "Paged the pharmacist. Waiting for sign off.",
-      "The agent stops here. It cannot change an order.");
+  log("router", "Pharmacist-review escalation prepared. Waiting for sign off.",
+      "Nothing was sent. The agent stops here and cannot change an order.");
 });
 
 $("#btn-fabricate").addEventListener("click", async () => {

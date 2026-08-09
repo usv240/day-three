@@ -7,7 +7,7 @@ def test_public_copy_preserves_evidence_scope_and_build_honesty():
     web = Path(__file__).resolve().parents[1] / "web"
     public_copy = "\n".join(
         (web / name).read_text(encoding="utf-8")
-        for name in ("index.html", "judges.html", "glossary.json")
+        for name in ("index.html", "judges.html", "glossary.json", "app.js")
     ).casefold()
 
     for unsupported in (
@@ -17,6 +17,11 @@ def test_public_copy_preserves_evidence_scope_and_build_honesty():
         "95 percent of survivors",
         "nine agents",
         "shortage-watch",
+        "communicating only through durable events",
+        "no agent calls another directly",
+        "spine-109051079423.us-central1.run.app",
+        "pages the pharmacist",
+        "paged the pharmacist",
     ):
         assert unsupported not in public_copy
 
@@ -31,3 +36,6 @@ def test_public_copy_preserves_evidence_scope_and_build_honesty():
     assert "bash deploy.sh spine" not in public_copy
     assert "cd app" in public_copy
     assert "-d '{}'" in public_copy
+    assert "day-three-109051079423.us-central1.run.app" in public_copy
+    assert "github.com/usv240/day-three" in public_copy
+    assert "architecture-map" in public_copy

@@ -1,0 +1,11 @@
+flowchart LR
+    A[Synthetic microbiology reports] --> B[Cloud Run: day-three]
+    B --> I[Intake and redaction]
+    I --> C[Curate and aggregate]
+    C --> W[Course Watch]
+    W --> R[Reconcile and verify]
+    B <--> F[(Firestore: structured runs, wakes, isolates, courses)]
+    I --> V[Vertex AI: Gemini 3.5 Flash and Gemma 4 MaaS]
+    S[Shared Cloud Scheduler worker] --> F
+    B --> T[Cloud Trace and Logging]
+    R --> H[Pharmacist-reviewed output]

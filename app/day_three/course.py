@@ -132,7 +132,7 @@ class CourseWatch:
         """Patient goes home.
 
         Two things happen. Remaining inpatient wakes are cancelled, because reviewing an
-        inpatient regimen for someone who left would page a pharmacist about nothing. And a
+        inpatient regimen for someone who left would prepare a pharmacist escalation about nothing. And a
         readmission check is armed 30 days out, which is the wake that closes the loop back into
         the antibiogram.
         """

@@ -50,7 +50,7 @@ not communicate through Pub/Sub and do not run as separate Cloud Run services.
 | Reconciler | `app/day_three/reconcile.py`: compares supplied facts; no dose or autonomous order action |
 | Drafter | route-level construction of bounded recommendation claims |
 | Verifier | `app/spine/verify.py`: source existence/support and contradiction checks |
-| Router | persists/pages a draft for pharmacist review; never executes it |
+| Router | persists a pharmacist-review escalation; never sends or executes it |
 | Registrar | `app/day_three/registry.py`: publishes scoped catalogue metadata |
 
 “Eight roles” is a logical modularity claim. The process executes as one Cloud Run service under
@@ -104,9 +104,10 @@ The product does not claim formal CLSI certification or institutional validation
 
 ## 8. Google Cloud topology
 
-- Cloud Run: one `spine` service.
+- Cloud Run: one standalone `day-three` service.
 - Firestore: durable state.
-- Cloud Scheduler: minute scan of due wakes.
+- Cloud Scheduler: the existing `spine-scan-due` job invokes a shared spine worker that claims due
+  wakes from the same Firestore substrate; it is not a second Day Three service.
 - Cloud Trace/Logging: real configured telemetry.
 - Vertex AI global: Gemini and Gemma MaaS.
 - Artifact Registry and Cloud Build: container image build/deploy.

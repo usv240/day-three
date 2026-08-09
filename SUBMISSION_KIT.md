@@ -3,8 +3,8 @@
 The execution kit for the final submission artifacts. Product statements in this file must match
 the deployed system and the current claim audit; aspirational beats are labelled conditional.
 
-Scorecard context: the 17-step deployed flow, README and diagram are complete. The final video,
-public-repository verification and Imagen asset remain. Bonus is specified in
+Scorecard context: the 17-step deployed flow, public README, repository diagram, and public
+repository are complete. The final video and any genuinely integrated Imagen asset remain. Bonus is specified in
 `shared/BONUS_PLAN.md`.
 
 ---
@@ -44,12 +44,12 @@ Implemented and protected by the deployed acceptance flow:
 | 1:05 | Click "Drop a report with hidden instructions" | "This report has an instruction hidden in it. Quarantined before any model reads it, and shown, not silently dropped. The lab data still went through." |
 | 1:20 | Click "Admit a patient" | "A patient starts broad antibiotics. One agent now owns this whole five-week course: it registers every wake it will ever need, then goes to sleep. Sleeping costs nothing." |
 | 1:35 | "Advance 47 hours"; then "Advance 5 more" | "Forty-seven hours pass. Nothing wakes; nothing is due. Five more, and the agent wakes itself. Nobody clicked it awake; the scheduler found it was due." |
-| 1:55 | Click "Ask the day three question" | "The question nobody was there to ask: is the drug still right? It recommends narrowing, and every sentence is pinned to a quoted line of the lab report. It pages the pharmacist and stops. It cannot change an order." |
+| 1:55 | Click "Ask the day three question" | "The question nobody was there to ask: is the drug still right? It recommends narrowing, and every sentence is pinned to a quoted line of the lab report. It prepares a pharmacist-review escalation and stops. Nothing is sent, and it cannot change an order." |
 | 2:20 | Click "Make the agent invent a number" | "Now the part I care about most. We ask an agent to state a resistance rate for a cell with too few samples. There is no such number, and it invents one, and the Verifier rejects it, with the reason. A sentence cannot reach a human here unless its evidence is real. The same mechanism blocks instructions hidden in documents." |
 | 2:45 | `/day-three/registry?department=infection_prevention` in URL bar; then the consume denial via console | "These agents are catalogued for the whole hospital. Infection Prevention discovers the antibiogram, and when it asks without the right scopes, it's refused, and the refusal is audited." |
 | 3:05 | Cloud Run dashboard; optionally a verified fresh trace | "This is the Cloud Run service in us-central1, configured to scale to zero." If and only if the fresh trace is verified, add: "And this is the trace for the request you just watched." |
 | 3:25 | `/conformance` page | "We couldn't get a rural pharmacist in the build window, so we did something better than claiming a review: we built to the published CLSI standard, and every rule links its implementation and its passing test. You can check us." |
-| 3:40 | `/judges` page, slow scroll | "Eight implemented agent roles, a hundred and seventy-seven Day Three tests, two hundred and fifty-one across the shared application, and an exit test a judge can run with one request. Day Three supports the antibiotic review that limited teams can miss." |
+| 3:40 | `/judges` page, slow scroll | "Eight implemented agent roles, one hundred and eighty-six standalone tests, two hundred and seventy-nine across the combined integration workspace, and an exit test a judge can run with one request. Day Three supports the antibiotic review that limited teams can miss." |
 
 **Upload:** YouTube, public, English captions on (auto then corrected), title
 "Day Three - All Things Agentic Hackathon".
@@ -73,7 +73,7 @@ flowchart LR
       FLEET[Eight roles: Intake · Curator · CourseWatch · Reconciler · Drafter · Verifier · Router · Registrar]
     end
     FS[(Firestore\nruns · wakes · claims · antibiogram · courses)]
-    SCHED[Cloud Scheduler\nevery minute -> /internal/scan-due]
+    SCHED[Shared Cloud Scheduler worker\nevery minute claims due Firestore wakes]
     TRACE[Cloud Trace\nreasoning chains]
   end
 
@@ -83,7 +83,7 @@ flowchart LR
   end
 
   UI --> API --> SPINE --> FS
-  SCHED --> API
+  SCHED --> FS
   SPINE --> TRACE
   FLEET -->|"redaction gate: identifiers stripped BEFORE this boundary"| GEM
   FLEET --> GEMMA
@@ -123,5 +123,5 @@ Order fixed; each bullet is a section with listed content. Reuse `/judges` text;
   CLSI M39 rules; public stewardship literature (cited)
 - **Findings and learnings:** the six `/judges` findings, trimmed to ~200 words
 - **Hosted URL:** `https://day-three-109051079423.us-central1.run.app`
-- **Video URL / Repo URL:** filled at submission; repo private until then, then
-  shared with testing@devpost.com and cloudhackathons@google.com if kept private
+- **Video URL:** filled after the public upload
+- **Repo URL:** `https://github.com/usv240/day-three` (public)

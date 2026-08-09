@@ -112,7 +112,7 @@ def test_the_course_horizon_is_about_five_weeks(watch, course):
 
 
 def test_discharge_cancels_remaining_inpatient_wakes(watch, scheduler, clock, course):
-    """Reviewing an inpatient regimen for someone who went home would page a pharmacist about
+    """Reviewing an inpatient regimen for someone who went home would prepare an escalation about
     nothing."""
     watch.open_course(course)
     clock.advance(timedelta(days=3))

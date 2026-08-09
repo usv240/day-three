@@ -108,7 +108,7 @@ Layer two: it sleeps, per patient, and wakes at hour 48 to ask the question nobo
 | **Shortage Watch (design only; not built or catalogued)** | Proposed monitor for FDA and ASHP shortage feeds. The implemented Reconciler can accept a supplied shortage list, but no code polls a feed. |
 | **Drafter** | Writes the recommendation, every sentence cited to a susceptibility result or a guideline section |
 | **Verifier** | Adversarial. Rejects any claim without a resolvable source reference |
-| **Router** | Pages the pharmacist, holds for sign off, never executes |
+| **Router** | Persists a pharmacist-review escalation, holds for sign off, never sends or executes |
 | **Registrar** | Publishes, versions and scopes every agent in the Agent Registry so other departments can discover and consume them. See section 6b |
 
 ### 6a. Why the horizon is weeks, not 48 hours
