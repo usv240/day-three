@@ -21,6 +21,7 @@
       <a href="#requirements">Requirements</a>
       <a href="#proof">Deployment proof</a>
       <a href="#reproduce">Reproduce</a>
+      <a href="#research">Research</a>
       <a href="#findings">Findings</a>
     </nav>
     <button class="theme-toggle" id="theme-toggle" aria-pressed="false">Use dark mode</button>
@@ -224,6 +225,22 @@
           <tr><td>Deploy</td><td><code>SIM_MODE=true bash deploy.sh</code></td></tr>
           <tr><td>Prove the guarantee</td><td><code>curl -X POST -H "Content-Type: application/json" -d '{}' $URL/exit-test</code></td></tr>
           <tr><td>Run the whole demo</td><td><code>python scripts/demo_flow.py --url $URL</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="research">
+  <div class="wrap">
+    <h2>Research-to-design traceability</h2>
+    <div class="table-scroll" tabindex="0" aria-label="Research finding to implementation table">
+      <table>
+        <thead><tr><th>Primary or official evidence</th><th>What it changed</th><th>What we refuse to infer</th></tr></thead>
+        <tbody>
+          <tr><td><a href="https://www.cdc.gov/antibiotic-use/hcp/data-research/stewardship-report.html">CDC 2025 national update</a>: 97% reported all seven Core Elements in 2024; 16% reported all six priorities.</td><td>The problem is framed as execution depth and constrained follow-through, not absence of a stewardship program.</td><td>The national survey is not a critical-access-hospital rate.</td></tr>
+          <tr><td><a href="https://www.cdc.gov/nhsn/au-case-examples/reducing-carbapenem-use.html">CDC critical-access case example</a>: local resistance data plus prospective review informed stewardship.</td><td>The antibiogram feeds a timed pharmacist-review draft.</td><td>A single case does not prove Day Three will reproduce its utilization result.</td></tr>
+          <tr><td><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC11574594/">2024, 19-hospital process evaluation</a>: staffing, turnover, and bandwidth were barriers.</td><td>Long-lived work is registered up front and resumes from durable state.</td><td>No national prevalence or clinical outcome is claimed.</td></tr>
         </tbody>
       </table>
     </div>

@@ -111,6 +111,19 @@ the [2024 GRAM analysis](https://pubmed.ncbi.nlm.nih.gov/39299261/), and the
 The public interface uses scoped denominators and does not generalize those study samples to all
 hospitals.
 
+Three newer sources sharpen the product position:
+
+- CDC's [2025 national update](https://www.cdc.gov/antibiotic-use/hcp/data-research/stewardship-report.html)
+  reports that 97% of acute-care hospitals reported all seven Core Elements in 2024, while 16%
+  reported all six implementation priorities. Day Three therefore supports execution depth; it
+  does not claim hospitals have no stewardship program. These national figures are not a CAH rate.
+- A [CDC critical-access-hospital case example](https://www.cdc.gov/nhsn/au-case-examples/reducing-carbapenem-use.html)
+  paired an antibiogram with prospective telepharmacist review. That directly supports the product's
+  local-evidence-to-human-review sequence, but one case is not treated as an outcome forecast.
+- A [2024 process evaluation in 19 CAHs](https://pmc.ncbi.nlm.nih.gov/articles/PMC11574594/)
+  reported staffing shortages, turnover, and lack of bandwidth. The durable wake ladder addresses
+  continuity of work; it is not presented as evidence of clinical effectiveness.
+
 ## Repository map
 
 - `app/day_three/`: project domain logic
@@ -119,6 +132,7 @@ hospitals.
 - `app/fixtures/`: synthetic inputs, adjacent truth, and recorded model outputs
 - `app/tests/`: unit, integration, claims, safety, and UI contract tests
 - `app/scripts/`: recording, grading, accessibility, demo, and deployment verification
+- `docs/research-traceability.md`: source-to-product decisions and rejected claims
 - `SUBMISSION_KIT.md`: evidence-backed demo and Devpost copy
 
 ## Disclosure

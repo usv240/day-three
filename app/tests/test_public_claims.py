@@ -22,6 +22,8 @@ def test_public_copy_preserves_evidence_scope_and_build_honesty():
         "spine-109051079423.us-central1.run.app",
         "pages the pharmacist",
         "paged the pharmacist",
+        "97% of critical access",
+        "16% of critical access",
     ):
         assert unsupported not in public_copy
 
@@ -39,3 +41,7 @@ def test_public_copy_preserves_evidence_scope_and_build_honesty():
     assert "day-three-109051079423.us-central1.run.app" in public_copy
     assert "github.com/usv240/day-three" in public_copy
     assert "architecture-map" in public_copy
+    assert "97%" in public_copy and "16%" in public_copy
+    assert "national survey is not a critical-access-hospital rate" in public_copy
+    assert "pmc11574594" in public_copy
+    assert "reducing-carbapenem-use" in public_copy
