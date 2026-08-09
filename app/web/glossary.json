@@ -1,0 +1,95 @@
+{
+  "_comment": "Every popover follows the same contract: a plain definition, why it matters here, then a real source. Glossary lives as data so the same wording is reused by the page, the console and the README.",
+
+  "antibiogram": {
+    "title": "Antibiogram",
+    "plain": "A summary of which antibiotics still work against the bacteria found in this specific hospital.",
+    "why": "National averages can look very different from what is actually growing in one small town. Prescribing against the wrong picture is how the wrong drug gets chosen.",
+    "source": "CLSI M39, Analysis and Presentation of Cumulative Antimicrobial Susceptibility Test Data",
+    "url": "https://clsi.org/standards/products/microbiology/documents/m39/"
+  },
+  "empiric": {
+    "title": "Empiric therapy",
+    "plain": "The antibiotic a doctor starts before anyone knows which bacteria is causing the infection.",
+    "why": "It is an educated guess, made because waiting two days for the lab could be dangerous. The guess is usually broad on purpose.",
+    "source": "CDC Core Elements of Hospital Antibiotic Stewardship",
+    "url": "https://www.cdc.gov/antibiotic-use/hcp/core-elements/hospital.html"
+  },
+  "deescalation": {
+    "title": "De-escalation",
+    "plain": "Switching from a broad antibiotic to a narrower one once the lab identifies the bacteria.",
+    "why": "Narrower drugs do less damage to the body's own bacteria and slow the spread of resistance. Guidelines recommend reviewing this at 48 to 72 hours.",
+    "source": "Epidemiology and Outcomes of Broad-Spectrum Antibiotic De-escalation",
+    "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11776815/"
+  },
+  "susceptible": {
+    "title": "Susceptible, S",
+    "plain": "The lab tested this antibiotic against this bacteria and it worked.",
+    "why": "Only S counts as susceptible. Intermediate results are counted in the total but not as a success, which is why a percentage can be lower than it first appears.",
+    "source": "CLSI M39",
+    "url": "https://clsi.org/standards/products/microbiology/documents/m39/"
+  },
+  "resistant": {
+    "title": "Resistant, R",
+    "plain": "The lab tested this antibiotic against this bacteria and it did not work.",
+    "why": "If a patient is on a drug the bacteria is resistant to, the treatment is probably doing nothing. That is the urgent case this system looks for.",
+    "source": "CLSI M39",
+    "url": "https://clsi.org/standards/products/microbiology/documents/m39/"
+  },
+  "first-isolate": {
+    "title": "First isolate rule",
+    "plain": "Only the first time a given bacteria is found in a given patient counts toward the summary.",
+    "why": "Without this rule, one very sick patient tested ten times would dominate the hospital's picture. CLSI applies it regardless of which part of the body the sample came from.",
+    "source": "CLSI M39",
+    "url": "https://clsi.org/standards/products/microbiology/documents/m39/"
+  },
+  "suppressed": {
+    "title": "Why some cells show no number",
+    "plain": "Fewer than 30 samples were tested, so no percentage is shown at all.",
+    "why": "A percentage from a handful of samples is misleading. CLSI requires at least 30 before reporting a rate, and there is published analysis of how unreliable small numbers are.",
+    "source": "Estimated Impact of Low Isolate Numbers on the Reliability of Cumulative Antibiogram Data",
+    "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9927543/"
+  },
+  "simulated-clock": {
+    "title": "Simulated clock",
+    "plain": "A control that moves this demo's clock forward so you can watch five weeks happen in a minute.",
+    "why": "The agents genuinely react to the time they are given. The same scheduler code runs against real wall clock time in production. Nothing here is pre-recorded.",
+    "source": "Design note in spine/TECHNICAL_DESIGN.md",
+    "url": "#architecture"
+  },
+  "verifier": {
+    "title": "The Verifier",
+    "plain": "A separate agent that checks every statement before a human sees it, and rejects anything it cannot trace to the source document.",
+    "why": "It means a sentence cannot appear on screen unless the evidence behind it is real. It also blocks instructions hidden inside a document, because an injected conclusion has no supporting quote.",
+    "source": "Design note in spine/TECHNICAL_DESIGN.md",
+    "url": "#architecture"
+  },
+  "quarantine": {
+    "title": "Quarantined text",
+    "plain": "Text inside an uploaded document that looked like an instruction rather than laboratory data, so it was removed before any AI read it.",
+    "why": "A document should describe facts, not give orders. What was removed is always shown rather than silently dropped.",
+    "source": "Design note in spine/TECHNICAL_DESIGN.md",
+    "url": "#architecture"
+  },
+  "critical-access": {
+    "title": "Critical access hospital",
+    "plain": "A small rural hospital, usually 25 beds or fewer, often the only one for a long distance.",
+    "why": "These hospitals may have limited infectious-disease support. CDC says that in most critical access hospitals a pharmacist, usually onsite, provides stewardship leadership.",
+    "source": "Critical Need: More Data on Antimicrobial Stewardship Programs in Critical Access Hospitals",
+    "url": "https://academic.oup.com/ofid/article/11/4/ofae196/7641096"
+  },
+  "wake-ladder": {
+    "title": "The wake ladder",
+    "plain": "The set of times this agent will wake up during one course of antibiotics, registered all at once when the patient is admitted.",
+    "why": "Registering everything up front means a crash cannot lose the rest of the course. The agent then sleeps, costing nothing, until each moment arrives.",
+    "source": "Design note in day-three/TECHNICAL_DESIGN.md",
+    "url": "#architecture"
+  },
+  "registry": {
+    "title": "Agent Registry",
+    "plain": "A catalog where other departments in the hospital can find these agents, see what they produce, and consume them under controlled permissions.",
+    "why": "The antibiogram is useful to Infection Prevention and to the formulary committee, not only to pharmacy. Publishing it with versions and scopes is how that sharing stays governed.",
+    "source": "Gemini Enterprise Agent Platform, Agent Registry",
+    "url": "https://docs.cloud.google.com/gemini-enterprise-agent-platform/overview"
+  }
+}

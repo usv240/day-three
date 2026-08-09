@@ -1,0 +1,22 @@
+MERCY CRITICAL ACCESS HOSPITAL
+Department of Laboratory Medicine
+CULTURE AND SUSCEPTIBILITY REPORT
+
+Accession: 26-004182            Collected: 2026-03-04  06:40
+Specimen:  Urine, clean catch   Received:  2026-03-04  08:15
+Status:    FINAL                Reported:  2026-03-06  11:02
+
+ORGANISM ISOLATED:  Escherichia coli          >100,000 CFU/mL
+
+ANTIMICROBIAL              MIC        INTERP
+------------------------------------------------
+AMPICILLIN                 >16          R
+AMOXICILLIN-CLAVULANATE      8          I
+CEFAZOLIN                   <=4         S
+CEFTRIAXONE                 <=1         S
+CIPROFLOXACIN                >2         R
+NITROFURANTOIN             <=16         S
+TRIMETHOPRIM-SULFA           >4         R
+MEROPENEM                <=0.25         S
+
+Reviewed by: J. Whitfield, MT(ASCP)

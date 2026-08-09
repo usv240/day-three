@@ -1,0 +1,51 @@
+{
+  "transcription": "MERCY CRITICAL ACCESS HOSPITAL\nDepartment of Laboratory Medicine\nCULTURE AND SUSCEPTIBILITY REPORT\n\nAccession: 26-004311          Collected: 2026-03-09  22:15\nSpecimen:  Blood, aerobic     Received:  2026-03-09  23:40\nStatus:    FINAL              Reported:  2026-03-12  09:28\n\nORGANISM ISOLATED:  Klebsiella pneumoniae\n\nANTIMICROBIAL              MIC        INTERP\n--------------------------------------------\nAMPICILLIN                 >16          R\nCEFAZOLIN                   16          R\nCEFTRIAXONE                <=1          S\nCEFEPIME                   <=1          S\nCIPROFLOXACIN            <=0.25         S\nPIPERACILLIN-TAZOBACTAM     <=4          S\nMEROPENEM                <=0.25         S\n\nReviewed by: J. Whitfield, MT(ASCP)",
+  "organism": "Klebsiella pneumoniae",
+  "specimen_type": "Blood, aerobic",
+  "collected_at": "2026-03-09T22:15:00",
+  "is_surveillance": false,
+  "susceptibilities": [
+    {
+      "drug": "AMPICILLIN",
+      "interpretation": "R",
+      "mic": ">16",
+      "quoted_text": "AMPICILLIN                 >16          R"
+    },
+    {
+      "drug": "CEFAZOLIN",
+      "interpretation": "R",
+      "mic": "16",
+      "quoted_text": "CEFAZOLIN                   16          R"
+    },
+    {
+      "drug": "CEFTRIAXONE",
+      "interpretation": "S",
+      "mic": "<=1",
+      "quoted_text": "CEFTRIAXONE                <=1          S"
+    },
+    {
+      "drug": "CEFEPIME",
+      "interpretation": "S",
+      "mic": "<=1",
+      "quoted_text": "CEFEPIME                   <=1          S"
+    },
+    {
+      "drug": "CIPROFLOXACIN",
+      "interpretation": "S",
+      "mic": "<=0.25",
+      "quoted_text": "CIPROFLOXACIN            <=0.25         S"
+    },
+    {
+      "drug": "PIPERACILLIN-TAZOBACTAM",
+      "interpretation": "S",
+      "mic": "<=4",
+      "quoted_text": "PIPERACILLIN-TAZOBACTAM     <=4          S"
+    },
+    {
+      "drug": "MEROPENEM",
+      "interpretation": "S",
+      "mic": "<=0.25",
+      "quoted_text": "MEROPENEM                <=0.25         S"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+MERCY CRITICAL ACCESS HOSPITAL
+Department of Laboratory Medicine
+CULTURE AND SUSCEPTIBILITY REPORT
+
+Accession: 26-004356            Collected: 2026-03-11  14:05
+Specimen:  Wound, left foot     Received:  2026-03-11  15:20
+Status:    FINAL                Reported:  2026-03-13  10:44
+
+ORGANISM ISOLATED:  Staphylococcus aureus     METHICILLIN RESISTANT
+
+ANTIMICROBIAL              MIC        INTERP
+------------------------------------------------
+OXACILLIN                    >4         R
+CEFAZOLIN                    >8         R
+VANCOMYCIN                    1         S
+DOXYCYCLINE                <=0.5        S
+TRIMETHOPRIM-SULFA         <=10         S
+LINEZOLID                     2         S
+
+Reviewed by: J. Whitfield, MT(ASCP)

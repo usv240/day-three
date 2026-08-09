@@ -1,0 +1,45 @@
+{
+  "transcription": "MERCY CRITICAL ACCESS HOSPITAL\nDepartment of Laboratory Medicine\nCULTURE AND SUSCEPTIBILITY REPORT\n\nAccession: 26-004356            Collected: 2026-03-11  14:05\nSpecimen:  Wound, left foot     Received:  2026-03-11  15:20\nStatus:    FINAL                Reported:  2026-03-13  10:44\n\nORGANISM ISOLATED:  Staphylococcus aureus     METHICILLIN RESISTANT\n\nANTIMICROBIAL               MIC        INTERP\n---------------------------------------------\nOXACILLIN                    >4          R\nCEFAZOLIN                    >8          R\nVANCOMYCIN                    1          S\nDOXYCYCLINE                <=0.5         S\nTRIMETHOPRIM-SULFA          <=10         S\nLINEZOLID                     2          S\n\nReviewed by: J. Whitfield, MT(ASCP)",
+  "organism": "Staphylococcus aureus",
+  "specimen_type": "Wound, left foot",
+  "collected_at": "2026-03-11T14:05:00",
+  "is_surveillance": false,
+  "susceptibilities": [
+    {
+      "drug": "OXACILLIN",
+      "interpretation": "R",
+      "mic": ">4",
+      "quoted_text": "OXACILLIN                    >4          R"
+    },
+    {
+      "drug": "CEFAZOLIN",
+      "interpretation": "R",
+      "mic": ">8",
+      "quoted_text": "CEFAZOLIN                    >8          R"
+    },
+    {
+      "drug": "VANCOMYCIN",
+      "interpretation": "S",
+      "mic": "1",
+      "quoted_text": "VANCOMYCIN                    1          S"
+    },
+    {
+      "drug": "DOXYCYCLINE",
+      "interpretation": "S",
+      "mic": "<=0.5",
+      "quoted_text": "DOXYCYCLINE                <=0.5         S"
+    },
+    {
+      "drug": "TRIMETHOPRIM-SULFA",
+      "interpretation": "S",
+      "mic": "<=10",
+      "quoted_text": "TRIMETHOPRIM-SULFA          <=10         S"
+    },
+    {
+      "drug": "LINEZOLID",
+      "interpretation": "S",
+      "mic": "2",
+      "quoted_text": "LINEZOLID                     2          S"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+[
+  {
+    "fixture": "ecoli_urine_with_note",
+    "organism": "Escherichia coli",
+    "truth_count": 8,
+    "extracted": 8,
+    "correct": 8,
+    "wrong_interpretation": {},
+    "invented": {},
+    "missed": {},
+    "dropped_by_guard": [],
+    "quarantined": [
+      "instruction_override"
+    ]
+  },
+  {
+    "fixture": "kleb_blood",
+    "organism": "Klebsiella pneumoniae",
+    "truth_count": 7,
+    "extracted": 7,
+    "correct": 7,
+    "wrong_interpretation": {},
+    "invented": {},
+    "missed": {},
+    "dropped_by_guard": [],
+    "quarantined": []
+  },
+  {
+    "fixture": "staph_wound",
+    "organism": "Staphylococcus aureus",
+    "truth_count": 6,
+    "extracted": 6,
+    "correct": 6,
+    "wrong_interpretation": {},
+    "invented": {},
+    "missed": {},
+    "dropped_by_guard": [],
+    "quarantined": []
+  }
+]

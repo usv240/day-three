@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en" data-project="day-three" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Day Three: for judges</title>
+<meta name="description" content="Rubric map, requirements checklist, deployment proof, reproduction steps, and findings for Day Three.">
+<link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to main content</a>
+
+<header class="site">
+  <div class="wrap bar">
+    <div class="brand">Day Three <span>&mdash; for judges</span></div>
+    <nav aria-label="Sections">
+      <a href="/">Back to the site</a>
+      <a href="https://sixty-days-109051079423.us-central1.run.app">Sixty Days</a>
+      <a href="#rubric">Rubric map</a>
+      <a href="#requirements">Requirements</a>
+      <a href="#proof">Deployment proof</a>
+      <a href="#reproduce">Reproduce</a>
+      <a href="#findings">Findings</a>
+    </nav>
+    <button class="theme-toggle" id="theme-toggle" aria-pressed="false">Use dark mode</button>
+  </div>
+</header>
+
+<main id="main">
+
+<section class="judge-hero">
+  <div class="wrap">
+    <h1>For judges</h1>
+    <p class="lede narrow">Everything needed to evaluate this project, with the exact file and test
+      behind each claim. Written to be read by a person or parsed by a machine, since the rules note
+      that judging may include automated analysis.</p>
+    <div class="callout ok">
+      <p><b>Category:</b> The Fortified Enterprise Fleet. <b>Live service:</b>
+        <code>https://spine-109051079423.us-central1.run.app</code>.
+        <b>Try the guarantee yourself:</b> <code>POST /exit-test</code> runs the whole acceptance
+        suite and returns a structured pass or fail per clause.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Rubric map -->
+<section id="rubric">
+  <div class="wrap">
+    <h2>Rubric map</h2>
+    <div class="table-scroll">
+      <table class="plain">
+        <thead><tr><th>Criterion</th><th>What we built</th><th>Where</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><b>Innovation and Operational Utility, 40%</b><br><span class="small muted">Does it eliminate real friction? Is the twist present?</span></td>
+            <td>It builds local susceptibility evidence, then stands watch with it. CDC says many critical access hospitals adapt recommendations from nearby hospitals or collaboratives when local data or expertise are limited. This builds a local antibiogram from scanned reports, then wakes unattended at hour 48 to support review.</td>
+            <td><code>day_three/antibiogram.py</code><br><code>day_three/course.py</code></td>
+          </tr>
+          <tr>
+            <td><b>Track mandate: cataloged for cross-department use</b></td>
+            <td>An Agent Registry with versions, owners, declared consumers, required scopes, and an audit entry on every access attempt. Infection Prevention, the formulary committee, Quality each discover different agents.</td>
+            <td><code>day_three/registry.py</code><br><code>GET /day-three/registry</code></td>
+          </tr>
+          <tr>
+            <td><b>Track mandate: context across weeks of asynchronous operations</b></td>
+            <td>One Course Watch owns an antibiotic course for about five weeks across five decision points: hour 48, day 5 to 7, days 7, 10 and 14, discharge, and a readmission check at day 30 that feeds the outcome back into the antibiogram.</td>
+            <td><code>day_three/course.py</code><br><code>tests/test_course.py</code></td>
+          </tr>
+          <tr>
+            <td><b>Track mandate: production data, compliance, data sovereignty, security</b></td>
+            <td>Synthetic data run through production controls: storage and compute pinned to one
+              region and enforced in code, a redaction boundary before any model call, five
+              differentiated provisioned identity boundaries, one disclosed runtime identity,
+              and scope denial recorded in an audit trail.
+              <br><br><b>Scoped honestly:</b> Gemini 3.x is served only from the <code>global</code>
+              endpoint. It returns NOT_FOUND in every regional endpoint we tested, and Gemini 2.5,
+              which is regional, does not satisfy the mandatory requirement. So storage and compute
+              are pinned; model inference is not, and we say so rather than overclaiming. This is
+              precisely why the redaction gate exists: identifiers are stripped before anything
+              crosses that boundary.</td>
+            <td><code>spine/config.py</code> raises <code>RegionViolation</code>; see
+              <code>MODEL_LOCATION</code></td>
+          </tr>
+          <tr>
+            <td><b>Architecture: separation of concerns</b></td>
+            <td>Eight logical roles, each with one job, orchestrated in process through typed
+              routes and durable Firestore state. The roles are modular; they are not falsely
+              presented as eight isolated services.</td>
+            <td><code>spine/state.py</code></td>
+          </tr>
+          <tr>
+            <td><b>Architecture: state management and resumability</b></td>
+            <td>Steps are written before their side effects and completed after. Kill a worker mid run and it resumes from the last checkpoint. Lease-based claiming stops two workers processing the same run, and an expired lease frees a wedged run.</td>
+            <td><code>tests/test_state.py::test_resume_after_crash_does_not_repeat_completed_work</code></td>
+          </tr>
+          <tr>
+            <td><b>Architecture: recovery from a looping or hallucinating agent</b></td>
+            <td>A sentence cannot be rendered unless its claim was accepted. Five rejection rules, and a circuit breaker after three rejections on the same claim that pauses the run for a human rather than retrying forever.</td>
+            <td><code>spine/verify.py</code><br><code>POST /day-three/demo/fabricate</code></td>
+          </tr>
+          <tr>
+            <td><b>Architecture: tools isolated and scoped</b></td>
+            <td>Five service accounts are provisioned with differentiated IAM, and the deployed
+              service runs as <code>sa-reason</code>, which holds only Firestore and Trace roles.
+              <b>Scoped honestly:</b> today one Cloud Run service runs the whole fleet under that
+              one identity, so the separation is a provisioned boundary rather than a per-agent
+              runtime identity. The re-identification boundary is real: <code>sa-reidentify</code>
+              is a distinct account and <code>sa-reason</code> cannot assume it.</td>
+            <td><code>sa-intake</code>, <code>sa-reason</code>, <code>sa-notify</code>, <code>sa-redact</code>, <code>sa-reidentify</code></td>
+          </tr>
+          <tr>
+            <td><b>Demo: proof of action</b></td>
+            <td>The console on the main page drives the live deployed API. <code>scripts/demo_flow.py</code> runs the entire seventeen step flow against the deployed URL and prints a pass table.</td>
+            <td><code>scripts/demo_flow.py --url ...</code></td>
+          </tr>
+          <tr>
+            <td><b>Demo: documentation and reproducibility</b></td>
+            <td>Infrastructure as code for the Firestore indexes, one Dockerfile, one deploy script, and the reproduction steps below.</td>
+            <td><code>infra/firestore.indexes.json</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- Requirements -->
+<section id="requirements">
+  <div class="wrap">
+    <h2>Mandatory requirements checklist</h2>
+    <p class="muted narrow">Stated explicitly rather than left to be inferred.</p>
+    <div class="table-scroll">
+      <table class="plain">
+        <thead><tr><th>Requirement</th><th>How it is met</th><th>Where</th></tr></thead>
+        <tbody>
+          <tr><td>Gemini 3.5 or newer via Gemini API or Vertex AI</td>
+              <td><b>Gemini 3.5 Flash</b> reads the scanned reports, via Vertex AI. Measured on four
+                degraded synthetic scans: <b>29 of 29 susceptibility results correct, 0 wrong, 0
+                invented</b>. Recorded output and the grading script are in the repository.</td>
+              <td><code>day_three/intake.py</code><br><code>scripts/record_intake.py</code><br><code>fixtures/recordings/_accuracy_report.json</code></td></tr>
+          <tr><td>At least one Google agent framework</td>
+              <td>The <b>GenAI SDK</b> (<code>google-genai</code>), one of the four accepted
+                frameworks, is what every model interaction runs through: structured-output
+                extraction with a response schema, multimodal image reading, and the Gemma name
+                reviewer.</td>
+              <td><code>day_three/intake.py</code> class <code>VertexClient</code><br>
+                <code>spine/redact.py</code> class <code>GemmaReviewer</code></td></tr>
+          <tr><td>At least one Google Cloud infrastructure service</td>
+              <td><b>Cloud Run</b> (the service), <b>Firestore</b> (all durable state, three
+                composite indexes as code), <b>Cloud Scheduler</b> (the cron that wakes sleeping
+                agents), <b>Cloud Trace</b> (reasoning chains, verified landing), <b>Artifact
+                Registry</b> and <b>Cloud Build</b> (the image). Pub/Sub is in the original spine
+                design but is <b>not provisioned and not used</b>: <code>scan_due</code> claims a
+                wake, writes one idempotent due-action record, and completes it directly. That
+                record does not imply an external message, clinical act or submission. We list
+                what runs, not what was drawn.</td>
+              <td><code>deploy.sh</code>, project <code>agentic-fleet-2026</code></td></tr>
+          <tr><td>Additional Google AI models (bonus)</td>
+              <td><b>Gemma 4</b> (<code>gemma-4-26b-a4b-it-maas</code>) is the second layer of the
+                redaction gate: deterministic patterns strip identifiers with reliable shapes
+                first, then Gemma reviews for person names that have no shape. It returns spans
+                only, never prose, so it cannot alter clinical content, and the gate fails closed
+                if it errors. <b>Measured on live calls: 4 of 4 names recalled, 0 false positives,
+                0 identifiers leaked through the gate</b>, and it correctly returned nothing for a
+                clean control rather than over-redacting organism names.</td>
+              <td><code>spine/redact.py</code>, 11 tests in <code>tests/test_redact.py</code><br>
+                <code>scripts/record_gemma.py</code>,
+                <code>fixtures/recordings/gemma_names.json</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- Proof -->
+<section id="proof">
+  <div class="wrap">
+    <h2>Proof it runs on Google Cloud</h2>
+    <div class="narrow">
+      <ul>
+        <li><b>Project:</b> <code>agentic-fleet-2026</code>, region <code>us-central1</code>, pinned in code.</li>
+        <li><b>Cloud Run service:</b> <code>spine</code>, scale to zero, capped at three instances.</li>
+        <li><b>Cloud Scheduler:</b> <code>spine-scan-due</code> calls <code>/internal/scan-due</code> every
+          minute. That cron is the only reason a sleeping agent ever wakes.</li>
+        <li><b>Firestore:</b> native mode in <code>us-central1</code>, with three composite indexes
+          created from <code>infra/firestore.indexes.json</code>.</li>
+        <li><b>Cloud Trace:</b> OpenTelemetry export is wired and real trace identifiers have been
+          confirmed in Cloud Logging.</li>
+      </ul>
+      <div class="callout ok">
+        <p><b>Verify it yourself right now.</b> <code>GET /health</code> returns the live project,
+          region and worker revision. <code>POST /exit-test</code> runs the acceptance suite against
+          real Firestore and returns a per-clause pass table.</p>
+      </div>
+      <p class="small muted">A note on <code>/health</code>: it is deliberately not
+        <code>/healthz</code>, because Google's frontend reserves that path and never forwards it to
+        the container. A working service looked dead for hours before we found that.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Reproduce -->
+<section id="reproduce">
+  <div class="wrap">
+    <h2>Reproduce in five minutes</h2>
+    <div class="table-scroll">
+      <table class="plain">
+        <thead><tr><th>Step</th><th>Command</th></tr></thead>
+        <tbody>
+          <tr><td>Install</td><td><code>python -m venv .venv &amp;&amp; .venv/bin/pip install -r requirements.txt</code></td></tr>
+          <tr><td>Run the tests</td><td><code>PYTHONPATH=. pytest tests -q</code> &mdash; 165 tests, no cloud needed</td></tr>
+          <tr><td>Create the indexes</td><td><code>PROJECT_ID=... bash infra/apply_indexes.sh</code></td></tr>
+          <tr><td>Deploy</td><td><code>SIM_MODE=true bash deploy.sh spine</code></td></tr>
+          <tr><td>Prove the guarantee</td><td><code>curl -X POST $URL/exit-test</code></td></tr>
+          <tr><td>Run the whole demo</td><td><code>python scripts/demo_flow.py --url $URL</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- Findings -->
+<section id="findings">
+  <div class="wrap">
+    <h2>Findings and learnings</h2>
+    <div class="narrow">
+      <p>The rules require this section, and it is usually filled with generalities. These are the
+        specific things that actually happened.</p>
+
+      <details open><summary>The hallucination defence and the prompt injection defence turned out to be the same code</summary>
+        <p>We built the Verifier to stop fabricated claims, and separately planned an injection defence.
+        Then a test showed they were one mechanism: an injected instruction cannot produce an accepted
+        claim, because a claim must quote source material that supports it. An agent talked into a wrong
+        conclusion still cannot get that conclusion rendered. One guarantee, not two.</p></details>
+
+      <details><summary>We got a published clinical rule wrong, and a standard caught it</summary>
+        <p>Our first design folded specimen stratification into the CLSI first-isolate rule. CLSI is
+        explicit that the first isolate is selected <em>irrespective of body site</em>, and stratified
+        reporting is a separate optional presentation. A knowledgeable judge would have caught it. It is
+        corrected, tested, and recorded in the Registry changelog rather than quietly patched. This is
+        the strongest argument we have for building to a published standard: it can correct you.</p></details>
+
+      <details><summary>Tests found three real bugs we would not have found by reading</summary>
+        <p>A failed run kept its lease, so no other worker could resume it for ninety seconds. Our first
+        contradiction rule was string matching and would have passed "penicillin is safe" because the
+        quote happened to contain the word "allergy". And a test fixture invented a quote, which the
+        Verifier rejected, proving the grounding chain end to end on a case we did not plan.</p></details>
+
+      <details><summary>A reserved path cost us hours</summary>
+        <p><code>/healthz</code> is intercepted by Google's frontend and never reaches the container. We
+        only probed that one path, concluded the deployment was broken, and chased it across two projects,
+        two regions, and a service recreation before testing a second path and finding everything had been
+        working the whole time. Probe more than one endpoint before concluding anything.</p></details>
+
+      <details><summary>We could not get a practitioner, so we changed what credibility means</summary>
+        <p>No rural pharmacist was reachable inside the build window. Rather than claim a review we did not
+        have, we built to CLSI M39 and published a <a href="/conformance">conformance report</a> mapping
+        every rule to its implementation and its passing test. A judge can open the standard and check us.
+        Nobody can check a private conversation. That turned out to be a better answer than the one we
+        originally wanted.</p></details>
+
+      <details><summary>FastAPI silently degraded our request models to query parameters</summary>
+        <p><code>from __future__ import annotations</code> turns annotations into strings, and FastAPI
+        resolves them against module globals. Pydantic models defined inside a router factory are
+        invisible to that lookup, so every request 422'd with a confusing error. Models now live at module
+        level with a comment explaining why.</p></details>
+    </div>
+  </div>
+</section>
+
+<!-- Limits -->
+<section id="limits">
+  <div class="wrap">
+    <h2>Limits and safety</h2>
+    <div class="narrow">
+      <div class="callout danger">
+        <p><b>This never prescribes.</b> Every output is a draft that a licensed pharmacist must approve.
+          It cannot change an order and it never recommends a dose.</p>
+      </div>
+      <ul>
+        <li>All data is synthetic. No real patient information is used anywhere.</li>
+        <li>Scope is organism-to-drug appropriateness only, because that is checkable against a laboratory
+          result. Broader clinical judgement is not attempted.</li>
+        <li>It refuses to guess. If a culture has not finalised, it re-arms for hour 72 rather than
+          speculating.</li>
+        <li>The antibiogram is a screening aid, not a substitute for a laboratory's own reported
+          antibiogram.</li>
+        <li>No hospital, agency, or professional body endorses this project. Sources are cited by name for
+          reference only.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <p>Built for the All Things Agentic Hackathon. Synthetic data only. Not medical advice and not a
+      medical device.</p>
+  </div>
+</footer>
+
+<div class="popover" id="popover" role="dialog" aria-modal="false" hidden></div>
+<script>
+  /* Theme only; this page has no console. */
+  const toggle = document.querySelector("#theme-toggle");
+  const themes = ["light", "dark"];
+  let theme = localStorage.getItem("theme");
+  if (!themes.includes(theme)) theme = "light";
+  function applyTheme() {
+    document.documentElement.setAttribute("data-theme", theme);
+    toggle.textContent = theme === "light" ? "Use dark mode" : "Use light mode";
+    toggle.setAttribute("aria-pressed", String(theme === "dark"));
+    localStorage.setItem("theme", theme);
+  }
+  toggle.addEventListener("click", () => {
+    theme = themes[(themes.indexOf(theme) + 1) % themes.length];
+    applyTheme();
+  });
+  applyTheme();
+</script>
+</body>
+</html>

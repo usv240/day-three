@@ -1,0 +1,21 @@
+MERCY CRITICAL ACCESS HOSPITAL
+Department of Laboratory Medicine
+CULTURE AND SUSCEPTIBILITY REPORT
+
+Accession: 26-004311            Collected: 2026-03-09  22:15
+Specimen:  Blood, aerobic       Received:  2026-03-09  23:40
+Status:    FINAL                Reported:  2026-03-12  09:28
+
+ORGANISM ISOLATED:  Klebsiella pneumoniae
+
+ANTIMICROBIAL              MIC        INTERP
+------------------------------------------------
+AMPICILLIN                 >16          R
+CEFAZOLIN                    16         R
+CEFTRIAXONE                 <=1         S
+CEFEPIME                    <=1         S
+CIPROFLOXACIN             <=0.25        S
+PIPERACILLIN-TAZOBACTAM      <=4        S
+MEROPENEM                <=0.25         S
+
+Reviewed by: J. Whitfield, MT(ASCP)
