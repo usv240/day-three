@@ -3,8 +3,9 @@
 The execution kit for the final submission artifacts. Product statements in this file must match
 the deployed system and the current claim audit; aspirational beats are labelled conditional.
 
-Scorecard context: the 17-step deployed flow, public README, repository diagram, and public
-repository are complete. The final video and any genuinely integrated Imagen asset remain. Bonus is specified in
+Scorecard context: the 17-step deployed flow, public README, standalone repository, submission-ready
+architecture SVG, and three additional Google model integrations are complete. The final video and
+external publication steps remain. Bonus evidence is specified in
 `shared/BONUS_PLAN.md`.
 
 ---
@@ -49,16 +50,17 @@ Implemented and protected by the deployed acceptance flow:
 | 2:45 | `/day-three/registry?department=infection_prevention` in URL bar; then the consume denial via console | "These agents are catalogued for the whole hospital. Infection Prevention discovers the antibiogram, and when it asks without the right scopes, it's refused, and the refusal is audited." |
 | 3:05 | Cloud Run dashboard; optionally a verified fresh trace | "This is the Cloud Run service in us-central1, configured to scale to zero." If and only if the fresh trace is verified, add: "And this is the trace for the request you just watched." |
 | 3:25 | `/conformance` page | "We couldn't get a rural pharmacist in the build window, so we did something better than claiming a review: we built to the published CLSI standard, and every rule links its implementation and its passing test. You can check us." |
-| 3:40 | `/judges` page, slow scroll | "Eight implemented agent roles, one hundred and eighty-six standalone tests, two hundred and seventy-nine across the combined integration workspace, and an exit test a judge can run with one request. Day Three supports the antibiotic review that limited teams can miss." |
+| 3:40 | `/judges` page, slow scroll | "Eight implemented agent roles, one hundred and eighty-nine standalone tests, two hundred and seventy-nine across the combined integration workspace, and a ten-clause shared-substrate exit test a judge can run with one request. Day Three supports the antibiotic review that limited teams can miss." |
 
 **Upload:** YouTube, public, English captions on (auto then corrected), title
 "Day Three - All Things Agentic Hackathon".
 
 ## 3. Architecture diagram
 
-One diagram, rendered from this Mermaid source (render at 2x, export PNG for README and a still
-in the video's 3:05 beat; also commit the .mmd). Legibility rule from UI_STANDARD: readable at
-video resolution, max ~12 boxes visible, groups do the organizing.
+Use the committed submission-ready docs/architecture.svg for Devpost and the video still. It is
+1600 by 900, accessible, and distinguishes the live clinical path from recorded onboarding
+media. The canonical Mermaid source remains below. If Devpost requires PNG instead of SVG,
+render it at 2x; keep the diagram readable at video resolution and under roughly twelve boxes.
 
 ```mermaid
 flowchart LR
@@ -116,7 +118,7 @@ Order fixed; each bullet is a section with listed content. Reuse `/judges` text;
 - **Tagline:** The antibiotic review limited teams can miss.
 - **Description:** landing page problem text + who it's for + the three how-it-works cards
 - **Features/functionality:** 8-agent table + the three track mandates with how each is met
-- **Tech:** Gemini 3.5 Flash (Vertex AI, measured 29/29), Gemma 4 MaaS, GenAI SDK,
+- **Tech:** Gemini 3.5 Flash (Vertex AI, measured 29/29), Gemma 4 MaaS, Gemini 3.1 Flash Image, Veo 3.1 Fast, GenAI SDK,
   Cloud Run, Firestore, Cloud Scheduler, Cloud Trace/Logging, Artifact Registry, Cloud Build,
   OpenTelemetry. Pub/Sub and Secret Manager are not used.
 - **Data sources:** synthetic Synthea-style patients; synthetic degraded scans with ground truth;
@@ -125,3 +127,17 @@ Order fixed; each bullet is a section with listed content. Reuse `/judges` text;
 - **Hosted URL:** `https://day-three-109051079423.us-central1.run.app`
 - **Video URL:** filled after the public upload
 - **Repo URL:** `https://github.com/usv240/day-three` (public)
+
+## 6. Final submission checklist
+
+- [ ] Public YouTube or Vimeo video under four minutes with corrected English captions
+- [ ] Live Cloud Run proof visible in the video
+- [x] Public hosted project, no credentials required
+- [x] Public standalone repository
+- [x] Submission-ready architecture SVG plus canonical Mermaid source
+- [x] Three additional Google model integrations with public prompts and hashes
+- [x] 17/17 acceptance, 189 tests, accessibility, and 10/10 shared-substrate exit test
+- [ ] Publish docs/public-build-story.md and add its public URL
+- [ ] Publish docs/social-post.md with #AllThingsAgenticHackathon and add its public URL
+- [ ] Final link and citation check immediately before Devpost submission
+- [ ] Freeze the submitted revision and keep it available through judging

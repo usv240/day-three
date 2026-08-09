@@ -10,6 +10,7 @@ Works against a local TestClient by default, or a deployed URL with --url.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import os
 import sys
 
@@ -48,6 +49,16 @@ class Client:
         response = self._http.post(path, json=json or {})
         return response.json()
 
+    def get_bytes(self, path):
+        response = self._http.get(path)
+        response.raise_for_status()
+        return response.content
+
+    def get_bytes(self, path):
+        response = self._http.get(path)
+        response.raise_for_status()
+        return response.content
+
 
 def main() -> int:
     parser = argparse.ArgumentParser()
@@ -59,6 +70,14 @@ def main() -> int:
 
     c = Client(args.url)
     print(f"Day Three demo flow, {c.mode}\n")
+
+    media = c.get("/static/media/bonus-media-provenance.json")
+    for record in (media["image"], media["video"]):
+        payload = c.get_bytes(f"/static/media/{record['asset']}")
+        if len(payload) != record["bytes"] or hashlib.sha256(payload).hexdigest() != record["sha256"]:
+            raise RuntimeError(f"bonus media integrity failed: {record['asset']}")
+    print("  PASS  recorded Google onboarding media is public and hash-matched")
+
     failures: list[str] = []
 
     def step(n: str, ok: bool, detail: str = "") -> None:

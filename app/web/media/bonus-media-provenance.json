@@ -1,0 +1,21 @@
+{
+  "project": "Day Three",
+  "provider": "Google Vertex AI",
+  "image": {
+    "model": "gemini-3.1-flash-image",
+    "location": "global",
+    "prompt": "Create a premium editorial onboarding illustration for a hospital antibiotic\nreview workflow. Show an abstract, non-data-bearing path from a scanned laboratory page, through\na durable clock checkpoint, to a human review card. Use warm ivory, slate, muted teal, and one\nrestrained coral accent. Calm civic-technology aesthetic, dimensional paper and glass forms,\nwide 16:9 composition. No people, no patient data, no readable text, no numbers, no drug names,\nno medical symbols, no logos, no watermark, and no treatment recommendation.",
+    "asset": "day-three-visual-briefing.png",
+    "bytes": 1491656,
+    "sha256": "7bb8f6463b44a50eaf4f07c76d439bae3c7f3e3a2c245967dc100ff0f893fe17"
+  },
+  "recorded_at": "2026-08-09T22:55:51.562744+00:00",
+  "video": {
+    "model": "veo-3.1-fast-generate-001",
+    "location": "us-central1",
+    "prompt": "A four-second premium abstract workflow animation on a warm ivory background.\nA scanned-paper shape enters a precise glass verification gate, a quiet clock advances, and a\nsealed review card stops before a human handoff boundary. Muted teal, slate, and restrained coral,\ncalm civic technology style, smooth slow camera motion. No people, no readable text, no numbers,\nno patient data, no medicines, no logos, no watermark, no audio.",
+    "asset": "day-three-wake-briefing.mp4",
+    "bytes": 743541,
+    "sha256": "404e16ca903f8731a748b8421e6d20861a458219195bc7057569b899666bae33"
+  }
+}

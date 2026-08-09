@@ -16,7 +16,7 @@ or claim hospital-wide coverage from its small demonstration dataset.
 | Gate | Result |
 |---|---:|
 | Public acceptance flow | **17/17** |
-| Standalone tests | **186 passed** |
+| Standalone tests | **189 passed** |
 | Recorded extraction fields | **29/29** |
 | Shared substrate exit test | **10/10** |
 | Accessibility gate | **Pass, light and dark themes** |
@@ -45,6 +45,11 @@ uncertainty, review status, and safety boundary visible throughout that chain.
 
 ## Architecture
 
+![Day Three as-built architecture](docs/architecture.svg)
+
+The submission-ready SVG distinguishes the live clinical path from recorded build-time onboarding
+media. The Mermaid source remains below for diffable architecture review.
+
 ```mermaid
 flowchart LR
     A[Synthetic microbiology reports] --> B[Cloud Run: day-three]
@@ -57,6 +62,8 @@ flowchart LR
     S[Shared Cloud Scheduler worker] --> F
     B --> T[Cloud Trace and Logging]
     R --> H[Pharmacist-reviewed output]
+    M[Gemini 3.1 Flash Image and Veo 3.1 Fast] -. recorded at build time .-> O[Static onboarding media]
+    O -. outside clinical path .-> B
 ```
 
 The eight “agents” are logical Python roles and route stages inside one `day-three` Cloud Run
@@ -71,6 +78,10 @@ an unfiltered shared worker on wall-clock time. A Sixty Days rehearsal therefore
 Three's clock or consume one of its demonstration wakes.
 
 The source version of the diagram is in [`docs/architecture.mmd`](docs/architecture.mmd).
+
+The recorded media prompts, exact model IDs, byte counts, and SHA-256 hashes are in
+[the public provenance manifest](app/web/media/bonus-media-provenance.json).
+[BONUS_EVIDENCE.md](BONUS_EVIDENCE.md) maps every optional contribution to public proof.
 
 ## Reproduce locally
 

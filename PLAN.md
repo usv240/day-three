@@ -96,7 +96,7 @@ Layer two: it sleeps, per patient, and wakes at hour 48 to ask the question nobo
 | Architecture: state management (line 494) | Firestore checkpointing, lease based claiming, idempotent tools, resumable mid run |
 | Demo: proof of action (line 504) | Unedited live run: antibiogram mutating, agent waking at hour 52, Verifier overruling |
 | Demo: documentation (line 506) | Architecture diagram, reproducible README, judge mode page, Cloud Run and Vertex AI proof |
-| Bonus: additional Google models (line 518) | Gemma redaction gate is implemented. Imagen for a non-clinical decorative summary-card asset remains planned and is not claimed as built. |
+| Bonus: additional Google models (line 518) | Gemma 4 redaction, Gemini 3.1 Flash Image onboarding, and Veo 3.1 Fast motion briefing are implemented, publicly served, hash-recorded, and tested. Media stays outside the clinical path. |
 
 ---
 
@@ -244,4 +244,4 @@ Narrated in a real voice. Rules.md line 1097 says narration beats a silent scree
 - [ ] Judge mode page live at /judges
 - [ ] Blog post published, stating it was created for this hackathon
 - [ ] Social post with the hashtag
-- [ ] Additional Google models disclosed: Gemma, Imagen
+- [x] Additional Google models disclosed: Gemma 4, Gemini 3.1 Flash Image, Veo 3.1 Fast

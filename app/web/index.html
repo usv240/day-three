@@ -151,6 +151,32 @@
           dose, approve, or change an order.</p>
       </div>
     </div>
+    <div class="model-briefing" aria-labelledby="visual-briefing-title">
+      <div class="briefing-copy">
+        <span class="model-chip">Optional first-use briefing</span>
+        <h3 id="visual-briefing-title">See the control boundary before running it</h3>
+        <p>Google image and video models turn the workflow into a quiet visual preview: read,
+          verify, wait, then stop for pharmacist review. The media contains no patient data,
+          clinical values, drug names, or recommendation.</p>
+        <dl class="model-proof">
+          <div><dt>Image</dt><dd>Gemini 3.1 Flash Image</dd></div>
+          <div><dt>Motion</dt><dd>Veo 3.1 Fast</dd></div>
+          <div><dt>Role</dt><dd>Onboarding only; never clinical evidence</dd></div>
+        </dl>
+        <a class="text-link" href="/static/media/bonus-media-provenance.json">Inspect prompts, models, and hashes</a>
+      </div>
+      <div class="briefing-media">
+        <img src="/static/media/day-three-visual-briefing.png"
+          alt="Abstract paper, verification gate, clock, and human-review boundary."
+          width="1376" height="768" loading="lazy">
+        <video controls muted playsinline preload="metadata"
+          poster="/static/media/day-three-visual-briefing.png"
+          aria-label="Four-second abstract Day Three workflow briefing generated with Veo">
+          <source src="/static/media/day-three-wake-briefing.mp4" type="video/mp4">
+          The optional motion briefing is unavailable in this browser.
+        </video>
+      </div>
+    </div>
   </div>
 </section>
 
