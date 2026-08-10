@@ -27,4 +27,14 @@ curl "$DAY_THREE_URL/day-three/registry/managed"
 ```
 
 The provisioning script is idempotent. It creates missing entries and updates existing metadata.
-It does not provision Agent Runtime or claim per-agent runtime identities.
+
+`provision_platform.ps1` creates the regional Model Armor templates and the managed
+Client-to-Agent Gateway. `deploy_runtimes.py` creates one Agent Runtime resource for each of the
+four published roles with `identity_type=AGENT_IDENTITY`, zero idle instances, and the same ingress
+gateway binding. `/day-three/platform` reads these resources from their managed APIs live.
+
+Security status: Google documents disabling agent-token-sharing prevention when a gateway-bound
+Agent Identity calls other Google Cloud services. That exception is not persisted here and is not
+active on the deployed resources. Direct Runtime calls therefore fail closed at Model Armor until
+that specific security tradeoff is explicitly approved. Registry, Runtime, Identity, Gateway, and
+the two Model Armor resources are real; full governed invocation is not claimed in this state.

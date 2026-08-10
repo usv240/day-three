@@ -139,7 +139,7 @@ Order fixed; each bullet is a section with listed content. Reuse `/judges` text;
 - [x] Public standalone repository
 - [x] Submission-ready architecture SVG plus canonical Mermaid source
 - [x] Three additional Google model integrations with public prompts and hashes
-- [x] 18/18 acceptance, 214 tests, accessibility, and 10/10 shared-substrate exit test
+- [x] 18/18 acceptance, 222 tests, accessibility, and 10/10 shared-substrate exit test
 - [ ] Publish docs/public-build-story.md and add its public URL
 - [ ] Publish docs/social-post.md with #AllThingsAgenticHackathon and add its public URL
 - [ ] Final link and citation check immediately before Devpost submission

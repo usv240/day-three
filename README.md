@@ -31,7 +31,7 @@ terminal, credentials, or prior clinical knowledge.
 | Gate | Reproducible result |
 |---|---:|
 | Deployed public acceptance flow | **18/18** |
-| Standalone automated tests | **214 passed** |
+| Standalone automated tests | **222 passed** |
 | Recorded extraction fields | **29/29** |
 | Shared-substrate exit test | **10/10** |
 | Accessibility gate | **Pass: light and dark themes** |
@@ -154,9 +154,12 @@ motivated durable handoffs. Low-isolate evidence led to suppression rather than 
 9. [Review of antimicrobial de-escalation timing](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11776815/) supports review around 48 to 72 hours; the product still waits for final, supported evidence.
 10. [Systematic review of stewardship cost evidence](https://aricjournal.biomedcentral.com/articles/10.1186/s13756-019-0471-0) provides historical context from included studies; its savings are not claimed as Day Three results.
 11. [Systematic review and meta-analysis of de-escalation](https://www.mdpi.com/2813-0618/2/4/25) provides outcome context from included studies; its length-of-stay finding is not a product promise.
-12. [Google Cloud Agent Registry overview](https://docs.cloud.google.com/agent-registry/overview) defines the managed discovery and governance plane; Day Three uses four manually registered standard REST agents and does not claim Agent Runtime or per-agent identity.
-13. [Google Cloud manual agent registration](https://docs.cloud.google.com/agent-registry/register-agents) documents standard REST registration through a Service resource and discovery through the projected Agent resource.
-14. [openFDA Drug Shortages](https://open.fda.gov/apis/drug/drugshortages/) documents the daily public feed and warns against medical-care decisions; the watcher preserves that warning and requires pharmacist review.
+12. [Google Cloud Agent Registry overview](https://docs.cloud.google.com/agent-registry/overview) defines the managed discovery plane. Day Three has four registered capabilities plus four Agent Runtime resources with distinct Agent Identities. The live resource proof is at `/day-three/platform`.
+13. [Agent Runtime](https://docs.cloud.google.com/gemini-enterprise-agent-platform/build/runtime) documents the managed execution layer used by the four published roles.
+14. [Agent Gateway overview](https://docs.cloud.google.com/gemini-enterprise-agent-platform/govern/gateways/agent-gateway-overview) documents the Client-to-Agent gateway bound to every Runtime here.
+15. [Model Armor prompt and response sanitization](https://docs.cloud.google.com/model-armor/sanitize-prompts-responses) documents the two live regional templates. Direct Runtime invocation currently remains fail-closed under Google's default agent-token protection while the required token-sharing exception receives explicit security approval.
+16. [Google Cloud manual agent registration](https://docs.cloud.google.com/agent-registry/register-agents) documents standard REST registration through a Service resource and discovery through the projected Agent resource.
+17. [openFDA Drug Shortages](https://open.fda.gov/apis/drug/drugshortages/) documents the daily public feed and warns against medical-care decisions; the watcher preserves that warning and requires pharmacist review.
 
 For the source hierarchy, exact source-to-decision mapping, and rejected claims, read the
 [research traceability ledger](docs/research-traceability.md).

@@ -28,6 +28,7 @@ from day_three.antibiogram import Antibiogram, Curator, Interpretation, Isolate
 from day_three.course import LADDER, Course, CourseWatch, WakeKind
 from day_three.intake import ExtractionError, IntakeAgent, ReplayClient
 from day_three.managed_registry import ManagedAgentRegistry, ManagedRegistryError
+from day_three.managed_platform import ManagedPlatformError, ManagedPlatformEvidence
 from day_three.reconcile import Kind, PatientContext, Reconciler
 from day_three.registry import Department, ScopeDenied, day_three_catalog
 from day_three.store import AntibiogramStore, CourseStore, IsolateStore
@@ -101,6 +102,7 @@ def build_router(client, clock, scheduler, runner) -> APIRouter:
     isolates = IsolateStore(client)
     shortages = ShortageStore(client)
     managed_registry = ManagedAgentRegistry(client.project)
+    managed_platform = ManagedPlatformEvidence(client.project)
 
     # --- Fixtures: the real scans and the real recorded Gemini output --------------
     #
@@ -386,6 +388,15 @@ def build_router(client, clock, scheduler, runner) -> APIRouter:
             "count": len(agents),
             "agents": agents,
         }
+
+    @router.get("/day-three/platform")
+    def managed_platform_evidence() -> dict[str, Any]:
+        """Read Runtime, Identity, Gateway, and Model Armor evidence from managed APIs live."""
+        try:
+            return managed_platform.read()
+        except ManagedPlatformError as exc:
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
+
 
     @router.post("/day-three/registry/consume")
     def consume(request: ConsumeRequest) -> dict[str, Any]:
