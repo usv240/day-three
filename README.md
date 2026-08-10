@@ -186,6 +186,8 @@ The explicit empty JSON body in the exit-test request matters; a bodyless POST r
 - `app/tests/`: unit, integration, claim, safety, and UI-contract tests
 - `app/scripts/`: recording, grading, accessibility, demo, and deployment verification
 - `docs/research-traceability.md`: source-to-product decisions and rejected claims
+- [Validation evidence](VALIDATION_EVIDENCE.md): research-to-test evidence, adversarial checks, and explicit limits
+- [Project differentiation](PROJECT_DIFFERENTIATION.md): concrete separation from the other submission and shared-spine disclosure
 - `SUBMISSION_KIT.md`: evidence-backed demo and Devpost copy
 
 ## Disclosure
