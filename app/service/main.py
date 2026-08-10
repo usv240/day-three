@@ -37,6 +37,9 @@ from spine.state import Runner, RunStatus, StepDef
 from spine.untrusted import prepare
 from spine.verify import Claim, ClaimKind, SourceRef, Verifier
 from spine.wake import Wake, WakeScheduler, WakeStatus
+from day_three.store import CourseStore, IsolateStore
+from day_three.wake_actions import CourseActionExecutor
+from day_three.shortages import OpenFdaClient, ShortageStore, ShortageWatch
 
 settings = load_settings()
 settings.assert_region_pinned()
@@ -76,6 +79,9 @@ def record_due_action(wake: Wake) -> None:
     consume this due-action state under their own human-review boundaries.
     """
     with span("wake", "dispatch", **{"wake.id": wake.wake_id, "wake.kind": wake.kind}):
+        domain = CourseActionExecutor(
+            CourseStore(client), IsolateStore(client), scheduler(), ShortageStore(client)
+        ).execute(wake)
         client.collection("wake_actions").document(wake.wake_id).set({
             "wake_id": wake.wake_id,
             "run_id": wake.run_id,
@@ -85,6 +91,7 @@ def record_due_action(wake: Wake) -> None:
             "recorded_at": clock.now(),
             "status": "due_action_recorded",
             "external_side_effect": False,
+            "domain": domain,
         })
 
 
@@ -146,6 +153,18 @@ def scan_due(limit: int = 50) -> dict[str, Any]:
                 "No external contact or submission occurred."
             ),
         }
+
+
+@app.post("/internal/refresh-shortages")
+def refresh_shortages() -> dict[str, Any]:
+    """Refresh public operational data on wall-clock time, isolated from demo time travel."""
+    with span("run", "refresh-shortages"):
+        try:
+            return ShortageWatch(
+                OpenFdaClient(), ShortageStore(client), RealClock()
+            ).refresh_if_stale()
+        except Exception as exc:
+            raise HTTPException(status_code=503, detail=type(exc).__name__) from exc
 
 
 @app.get("/runs/{run_id}")
@@ -217,7 +236,17 @@ def sim_advance(request: AdvanceRequest) -> dict[str, Any]:
     return {
         "simulated_now": now.isoformat(),
         "advanced_by_hours": delta.total_seconds() / 3600,
-        "woke": [{"wake_id": w.wake_id, "kind": w.kind, "run_id": w.run_id} for w in fired],
+        "woke": [
+            {
+                "wake_id": w.wake_id,
+                "kind": w.kind,
+                "run_id": w.run_id,
+                "domain": (
+                    client.collection("wake_actions").document(w.wake_id).get().to_dict() or {}
+                ).get("domain", {}),
+            }
+            for w in fired
+        ],
     }
 
 

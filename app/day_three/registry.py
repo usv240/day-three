@@ -197,16 +197,19 @@ def day_three_catalog(now: datetime) -> Registry:
         )
     )
 
-    # NOT PUBLISHED: shortage-watch.
-    #
-    # The design (day-three/PLAN.md) specifies an agent that polls FDA and ASHP shortage feeds and
-    # filters them to this formulary. It is not built: no code polls any feed. What *is* built is
-    # the Reconciler's ability to accept a shortage list and produce a `shortage_adjust`
-    # recommendation, which is tested.
-    #
-    # Publishing a catalogue entry for an agent that does not exist would be a false claim on a
-    # public endpoint, and Rules.md line 471 notes judging may include automated analysis that
-    # reads claims literally. The entry goes in when the agent does.
+    registry.publish(
+        AgentCard(
+            name="shortage-watch",
+            version="1.0.0",
+            owner="supply-chain",
+            summary="Refreshes official openFDA shortage data and filters it to the hospital formulary.",
+            produces="A source-dated national availability snapshot for pharmacy and supply chain review.",
+            consumed_by=(Department.PHARMACY, Department.SUPPLY_CHAIN),
+            required_scopes=("read:shortages",),
+            stability=Stability.EXPERIMENTAL,
+            human_approval_required=True,
+        )
+    )
 
     registry.publish(
         AgentCard(

@@ -13,7 +13,7 @@
 
 <header class="site">
   <div class="wrap bar">
-    <div class="brand">Day Three <span>&mdash; antibiotic stewardship for hospitals that cannot staff it</span></div>
+    <div class="brand">Day Three <span>- antibiotic stewardship for hospitals that cannot staff it</span></div>
     <nav aria-label="Sections">
       <a href="#problem">The problem</a>
       <a href="#how">How it works</a>
@@ -200,7 +200,7 @@
       <span>Clock:</span>
       <b id="clock-now">loading</b>
       <span class="note">Simulated clock<button class="info" data-info="simulated-clock" aria-label="What is the simulated clock?">i</button>
-        &mdash; production runs the same scheduler on real time.</span>
+        - production runs the same scheduler on real time.</span>
     </div>
 
     <div class="console">
@@ -359,20 +359,33 @@
   <div class="wrap">
     <h2>Architecture</h2>
     <div class="narrow">
-      <p>Eight logical roles, each with one job, orchestrated inside one Cloud Run service through
+      <p>Nine logical roles, each with one job, orchestrated inside one Cloud Run service through
         typed routes and durable Firestore state. Wakes, claims, checkpoints, and audit records are
-        persisted; the roles are modular, not falsely presented as eight isolated services.</p>
+        persisted; the roles are modular, not falsely presented as nine isolated services. Four
+        public capabilities also live in Google Cloud's managed Agent Registry.</p>
     </div>
     <div class="architecture-map" aria-label="Day Three system architecture">
       <div class="arch-node"><small>Inputs</small><strong>Recorded synthetic scans</strong>
         <span>Culture reports and a synthetic antibiotic course</span></div>
       <div class="arch-arrow" aria-hidden="true">&rarr;</div>
       <div class="arch-node accent"><small>Cloud Run &middot; day-three</small>
-        <strong>Eight bounded roles on the shared spine</strong>
-        <span>Redaction, intake, curation, wakes, reconciliation, verification, routing, registry</span></div>
+        <strong>Nine bounded roles on the shared spine</strong>
+        <span>Redaction, intake, curation, shortage watch, wakes, reconciliation, verification, routing, registry</span></div>
       <div class="arch-arrow" aria-hidden="true">&rarr;</div>
       <div class="arch-node"><small>Durable proof</small><strong>Firestore and Cloud Trace</strong>
         <span>Runs, wakes, claims, scopes, audit records, and trace identifiers</span></div>
+    </div>
+    <div class="journey" aria-label="Live enterprise integration proof">
+      <div class="journey-step">
+        <span class="step-index">Managed discovery plane</span>
+        <h3>Four agents in Google Cloud Agent Registry</h3>
+        <p>The public proof route queries the managed API using the Cloud Run identity. <a class="text-link" href="/day-three/registry/managed">Inspect managed agents</a>.</p>
+      </div>
+      <div class="journey-step">
+        <span class="step-index">Official operational data</span>
+        <h3>Daily openFDA shortage watch</h3>
+        <p>A bounded refresh filters the national feed to six formulary drugs. It never substitutes for local inventory. <a class="text-link" href="/day-three/shortages">Inspect source-dated snapshot</a>.</p>
+      </div>
     </div>
     <div class="table-scroll">
       <table class="plain">
@@ -381,11 +394,12 @@
           <tr><td>Intake</td><td>Reads scanned culture reports into structured records. Anything it cannot quote exactly is dropped, never guessed.</td></tr>
           <tr><td>Curator</td><td>Maintains the antibiogram to CLSI M39. Applies each report as a delta so you can see exactly which cells moved.</td></tr>
           <tr><td>Course Watch</td><td>Owns one antibiotic course for about five weeks, sleeping between five decision points.</td></tr>
+          <tr><td>Shortage Watch</td><td>Refreshes official openFDA data at most once per day and filters it to the demo formulary. A pharmacist still verifies local inventory.</td></tr>
           <tr><td>Reconciler</td><td>Compares the regimen against the identified organism, the local antibiogram, allergies and shortages.</td></tr>
           <tr><td>Drafter</td><td>Writes the recommendation. Every sentence must carry a claim.</td></tr>
           <tr><td>Verifier<button class="info" data-info="verifier" aria-label="What is the Verifier?">i</button></td><td>Adversarial. Rejects any claim it cannot trace to the source document, and circuit breaks rather than looping.</td></tr>
           <tr><td>Router</td><td>Prepares a pharmacist-review escalation and waits for sign off. Never sends or executes.</td></tr>
-          <tr><td>Registrar<button class="info" data-info="registry" aria-label="What is the Agent Registry?">i</button></td><td>Publishes agents so other departments can discover and consume them under enforced scopes.</td></tr>
+          <tr><td>Registrar<button class="info" data-info="registry" aria-label="What is the Agent Registry?">i</button></td><td>Publishes four capabilities to Google Cloud Agent Registry and applies local scope policy before invoking supported capabilities.</td></tr>
         </tbody>
       </table>
     </div>

@@ -15,8 +15,6 @@ def test_public_copy_preserves_evidence_scope_and_build_honesty():
         "nearly all critical access hospitals",
         "only 5 percent",
         "95 percent of survivors",
-        "nine agents",
-        "shortage-watch",
         "communicating only through durable events",
         "no agent calls another directly",
         "spine-109051079423.us-central1.run.app",
@@ -31,7 +29,9 @@ def test_public_copy_preserves_evidence_scope_and_build_honesty():
     assert "selected 21-program evaluation" in public_copy
     assert "cumulative" in public_copy
     assert "synthetic composite" in public_copy
-    assert "201 tests" in public_copy
+    assert "214 tests" in public_copy
+    assert "google cloud agent registry" in public_copy
+    assert "openfda" in public_copy
     assert "15 tests in" in public_copy
     assert "165 tests" not in public_copy
     assert "11 tests in" not in public_copy

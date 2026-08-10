@@ -87,6 +87,8 @@ class Course:
     started_at: datetime
     regimen: tuple[str, ...]
     indication: str
+    allergies: tuple[str, ...] = ()
+    renal_impairment: bool = False
     is_empiric: bool = True
     status: CourseStatus = CourseStatus.ACTIVE
     discharged_at: datetime | None = None

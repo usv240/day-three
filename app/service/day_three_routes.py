@@ -15,6 +15,7 @@ These are the endpoints the demo drives, in the order the video uses them:
 from __future__ import annotations
 
 import json
+import uuid
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
@@ -26,9 +27,11 @@ from pydantic import BaseModel, Field
 from day_three.antibiogram import Antibiogram, Curator, Interpretation, Isolate
 from day_three.course import LADDER, Course, CourseWatch, WakeKind
 from day_three.intake import ExtractionError, IntakeAgent, ReplayClient
+from day_three.managed_registry import ManagedAgentRegistry, ManagedRegistryError
 from day_three.reconcile import Kind, PatientContext, Reconciler
 from day_three.registry import Department, ScopeDenied, day_three_catalog
-from day_three.store import AntibiogramStore, CourseStore
+from day_three.store import AntibiogramStore, CourseStore, IsolateStore
+from day_three.shortages import ShortageStore
 from spine.verify import Claim, ClaimKind, SourceRef, Verifier
 
 FACILITY = "mercy-critical-access-25"
@@ -57,6 +60,8 @@ class CourseRequest(BaseModel):
     patient_id: str
     regimen: list[str]
     indication: str = "suspected sepsis"
+    allergies: list[str] = []
+    renal_impairment: bool = False
 
 
 class ReconcileRequest(BaseModel):
@@ -93,6 +98,9 @@ def build_router(client, clock, scheduler, runner) -> APIRouter:
     router = APIRouter(prefix="", tags=["day-three"])
     antibiograms = AntibiogramStore(client)
     courses = CourseStore(client)
+    isolates = IsolateStore(client)
+    shortages = ShortageStore(client)
+    managed_registry = ManagedAgentRegistry(client.project)
 
     # --- Fixtures: the real scans and the real recorded Gemini output --------------
     #
@@ -141,7 +149,8 @@ def build_router(client, clock, scheduler, runner) -> APIRouter:
         """Clean slate. Used once before recording so the demo starts from a known state."""
         antibiograms.reset(FACILITY)
         removed = courses.reset()
-        return {"antibiogram": "cleared", "courses_removed": removed}
+        isolates_removed = isolates.reset()
+        return {"antibiogram": "cleared", "courses_removed": removed, "isolates_removed": isolates_removed}
 
     # --- Intake -----------------------------------------------------------------
 
@@ -156,6 +165,7 @@ def build_router(client, clock, scheduler, runner) -> APIRouter:
         grid = load_grid()
         curator = Curator(grid)
         changed = curator.ingest(result.isolates[0])
+        isolates.save(result.isolates[0], request.artifact_id)
         antibiograms.save(grid)
 
         return {
@@ -198,6 +208,8 @@ def build_router(client, clock, scheduler, runner) -> APIRouter:
             started_at=now,
             regimen=tuple(request.regimen),
             indication=request.indication,
+            allergies=tuple(request.allergies),
+            renal_impairment=request.renal_impairment,
         )
         watch = CourseWatch(scheduler(), clock)
         registered = watch.open_course(course)
@@ -325,6 +337,16 @@ def build_router(client, clock, scheduler, runner) -> APIRouter:
         }
 
     # --- Registry ---------------------------------------------------------------
+    @router.get("/day-three/shortages")
+    def shortage_snapshot() -> dict[str, Any]:
+        snapshot = shortages.get()
+        if snapshot is None:
+            return {
+                "status": "awaiting_first_background_refresh",
+                "safety": "National availability signal only. A pharmacist verifies local inventory.",
+            }
+        return {"status": "available", **snapshot}
+
 
     @router.get("/day-three/registry")
     def registry(department: str = "pharmacy") -> dict[str, Any]:
@@ -351,27 +373,69 @@ def build_router(client, clock, scheduler, runner) -> APIRouter:
             ],
         }
 
+    @router.get("/day-three/registry/managed")
+    def managed_registry_agents() -> dict[str, Any]:
+        """Prove discovery in Google Cloud's managed Agent Registry, not only our catalogue."""
+        try:
+            agents = managed_registry.list_day_three_agents()
+        except ManagedRegistryError as exc:
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
+        return {
+            "platform": "Google Cloud Agent Registry",
+            "location": managed_registry.location,
+            "count": len(agents),
+            "agents": agents,
+        }
+
     @router.post("/day-three/registry/consume")
     def consume(request: ConsumeRequest) -> dict[str, Any]:
-        """Cross-department consumption, with the denial filmed when scopes are missing."""
+        """Authorize, invoke a supported capability, and persist the access decision."""
         catalog = day_three_catalog(clock.now())
         dept = Department(request.department)
         for scope in request.granted_scopes:
             catalog.grant(dept, scope)
 
+        def persist_audit(entry: dict[str, Any], invoked: bool) -> str:
+            audit_id = f"agent_access_{uuid.uuid4().hex}"
+            client.collection("agent_access_log").document(audit_id).set(
+                {
+                    **entry,
+                    "audit_id": audit_id,
+                    "invoked": invoked,
+                    "recorded_at": clock.now(),
+                }
+            )
+            return audit_id
+
         try:
             card = catalog.consume(dept, request.agent)
         except ScopeDenied as exc:
+            audit = catalog.access_log[-1]
+            audit_id = persist_audit(audit, invoked=False)
             return {
                 "allowed": False,
+                "invoked": False,
                 "reason": str(exc),
-                "audit": catalog.access_log[-1],
+                "audit": {**audit, "audit_id": audit_id},
             }
+
+        invoked = card.name in {"curator", "shortage-watch"}
+        if card.name == "curator":
+            result = antibiograms.view(load_grid())
+        elif card.name == "shortage-watch":
+            result = shortages.get() or {"status": "awaiting_first_background_refresh"}
+        else:
+            result = None
+        audit = catalog.access_log[-1]
+        audit_id = persist_audit(audit, invoked=invoked)
         return {
             "allowed": True,
+            "invoked": invoked,
             "agent": card.qualified_name,
             "produces": card.produces,
-            "audit": catalog.access_log[-1],
+            "result": result,
+            "reason": None if invoked else "Authorized, but this agent has no cross-department invocation adapter.",
+            "audit": {**audit, "audit_id": audit_id},
         }
 
     # --- Conformance ------------------------------------------------------------

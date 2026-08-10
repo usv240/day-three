@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
   <title id="title">Day Three as-built architecture</title>
-  <desc id="desc">A browser calls the Day Three Cloud Run service. Eight bounded roles use a durable spine, Firestore, Cloud Scheduler, Cloud Trace, Gemini, and Gemma. Gemini Image and Veo generate recorded, static onboarding media outside the clinical path.</desc>
+  <desc id="desc">A browser calls the Day Three Cloud Run service. Nine bounded roles use a durable spine, Firestore, Cloud Scheduler, Cloud Trace, Google Cloud Agent Registry, openFDA, Gemini, and Gemma. Image and video models generate recorded onboarding media outside the clinical path.</desc>
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f8fafc"/><stop offset="1" stop-color="#edf4fb"/></linearGradient>
     <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#102033" flood-opacity=".10"/></filter>
@@ -21,16 +21,18 @@
   <text x="110" y="242" class="label">PUBLIC SURFACE</text><text x="110" y="282" class="h">Browser</text>
   <text x="110" y="318" class="body">Landing page</text><text x="110" y="346" class="body">Live console</text><text x="110" y="374" class="body">Judge evidence</text>
   <rect x="425" y="170" width="520" height="410" class="box accent"/>
-  <text x="460" y="208" class="label">CLOUD RUN · DAY-THREE</text><text x="460" y="250" class="h">Eight bounded roles</text>
-  <rect x="460" y="280" width="210" height="92" class="box"/><text x="480" y="314" class="body">Intake · Curator</text><text x="480" y="344" class="body">Course Watch</text>
-  <rect x="700" y="280" width="210" height="92" class="box"/><text x="720" y="314" class="body">Reconciler · Drafter</text><text x="720" y="344" class="body">Verifier · Router</text>
+  <text x="460" y="208" class="label">CLOUD RUN / DAY-THREE</text><text x="460" y="250" class="h">Nine bounded roles</text>
+  <rect x="460" y="280" width="210" height="92" class="box"/><text x="480" y="314" class="body">Intake / Curator</text><text x="480" y="344" class="body">Shortage Watch</text>
+  <rect x="700" y="280" width="210" height="92" class="box"/><text x="720" y="314" class="small">Course Watch / Reconciler</text><text x="720" y="344" class="small">Drafter / Verifier / Router / Registrar</text>
   <rect x="460" y="398" width="450" height="140" class="box safe"/>
   <text x="485" y="433" class="label">DURABLE SPINE</text><text x="485" y="470" class="body">Typed state · leases · idempotent wakes</text>
   <text x="485" y="500" class="body">redaction · quarantine · claim verification</text>
   <rect x="1030" y="170" width="480" height="238" class="box"/>
-  <text x="1060" y="208" class="label">GOOGLE CLOUD · US-CENTRAL1</text><text x="1060" y="250" class="h">Durable services</text>
-  <text x="1060" y="292" class="body">Firestore · runs, wakes, claims, courses</text><text x="1060" y="326" class="body">Cloud Scheduler · due-wake worker</text>
-  <text x="1060" y="360" class="body">Cloud Trace and Logging · observable proof</text>
+  <text x="1060" y="208" class="label">MANAGED SERVICES / OFFICIAL DATA</text><text x="1060" y="250" class="h">Durable and discoverable</text>
+  <text x="1060" y="282" class="small">Firestore / runs, wakes, claims, courses</text>
+  <text x="1060" y="312" class="small">Cloud Scheduler / due-wake worker</text>
+  <text x="1060" y="342" class="small">Agent Registry / four managed REST agents</text>
+  <text x="1060" y="372" class="small">Cloud Trace / openFDA source-dated snapshot</text>
   <rect x="1030" y="458" width="480" height="180" class="box safe"/>
   <text x="1060" y="496" class="label">VERTEX AI · GLOBAL ENDPOINT</text><text x="1060" y="536" class="h">Clinical-path models</text>
   <text x="1060" y="575" class="body">Gemini 3.5 Flash · measured scan reading</text><text x="1060" y="607" class="body">Gemma 4 MaaS · spans-only name review</text>

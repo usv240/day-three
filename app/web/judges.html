@@ -13,7 +13,7 @@
 
 <header class="site">
   <div class="wrap bar">
-    <div class="brand">Day Three <span>&mdash; for judges</span></div>
+    <div class="brand">Day Three <span>- for judges</span></div>
     <nav aria-label="Sections">
       <a href="/">Back to the site</a>
       <a href="https://sixty-days-109051079423.us-central1.run.app">Sixty Days</a>
@@ -41,11 +41,11 @@
         <code>https://day-three-109051079423.us-central1.run.app</code>.
         <b>Shared substrate proof:</b> <code>POST /exit-test</code> runs ten scheduling,
         verification, quarantine, crash, and resume clauses. Day Three's product-specific proof is
-        the separate 17-step deployed flow.</p>
+        the separate 18-step deployed flow.</p>
     </div>
     <div class="judge-metrics" aria-label="Verified Day Three evidence">
-      <div class="judge-metric"><b>17/17</b><span>deployed demo-flow checks</span></div>
-      <div class="judge-metric"><b>201</b><span>standalone repository tests</span></div>
+      <div class="judge-metric"><b>18/18</b><span>deployed demo-flow checks</span></div>
+      <div class="judge-metric"><b>214</b><span>standalone repository tests</span></div>
       <div class="judge-metric"><b>29/29</b><span>recorded extraction fields</span></div>
       <div class="judge-metric"><b>10/10</b><span>shared-substrate exit-test clauses</span></div>
     </div>
@@ -53,7 +53,7 @@
       <h2 id="fast-path-title">If you have sixty seconds</h2>
       <p>Run the clean-slate console to see a real wake and a fabricated-number rejection; then
         open the conformance map for the source-to-code-to-test chain. The repository contains the
-        exact 17-step HTTP acceptance script and recorded model grades.</p>
+        exact 18-step HTTP acceptance script and recorded model grades.</p>
       <div class="evaluator-actions">
         <a href="/#console">Run the live workflow</a>
         <a href="/conformance">Open conformance</a>
@@ -78,12 +78,12 @@
           </tr>
           <tr>
             <td><b>Track mandate: cataloged for cross-department use</b></td>
-            <td>An Agent Registry with versions, owners, declared consumers, required scopes, and an audit entry on every access attempt. Infection Prevention, the formulary committee, Quality each discover different agents.</td>
-            <td><code>day_three/registry.py</code><br><code>GET /day-three/registry</code></td>
+            <td>Four standard REST agents are registered in Google Cloud Agent Registry. The public proof route reads the managed API. A local policy layer adds versions, declared consumers, required scopes, durable audit entries, and real invocation for Curator and Shortage Watch.</td>
+            <td><code>day_three/managed_registry.py</code><br><code>GET /day-three/registry/managed</code><br><code>POST /day-three/registry/consume</code></td>
           </tr>
           <tr>
             <td><b>Track mandate: context across weeks of asynchronous operations</b></td>
-            <td>One Course Watch owns an antibiotic course for about five weeks across five decision points: hour 48, day 5 to 7, days 7, 10 and 14, discharge, and a readmission check at day 30 that feeds the outcome back into the antibiogram.</td>
+            <td>One Course Watch owns an antibiotic course for about five weeks. At hour 48, the due wake now loads the persisted isolate, executes reconciliation, verifies every claim, and stores a pharmacist-review draft. Missing culture data creates one bounded recheck instead of a guess or loop.</td>
             <td><code>day_three/course.py</code><br><code>tests/test_course.py</code></td>
           </tr>
           <tr>
@@ -103,9 +103,9 @@
           </tr>
           <tr>
             <td><b>Architecture: separation of concerns</b></td>
-            <td>Eight logical roles, each with one job, orchestrated in process through typed
+            <td>Nine logical roles, each with one job, orchestrated in process through typed
               routes and durable Firestore state. The roles are modular; they are not falsely
-              presented as eight isolated services.</td>
+              presented as nine isolated services.</td>
             <td><code>spine/state.py</code></td>
           </tr>
           <tr>
@@ -205,6 +205,10 @@
           shared spine worker every minute. It transactionally claims due wakes from the same
           Firestore substrate used by Day Three; the demo's simulated-clock route exercises the
           identical claim-and-dispatch path without waiting days.</li>
+        <li><b>Agent Registry:</b> four manually registered standard REST agents in
+          <code>us-central1</code>. The runtime has viewer-only IAM, and
+          <code>GET /day-three/registry/managed</code> reads the managed discovery plane live.</li>
+        <li><b>Official data:</b> the dedicated <code>day-three-shortage-refresh</code> wall-clock job calls an isolated route daily. openFDA results are stored with source date, errors, and the medical-care disclaimer boundary; the job never scans simulated wakes.</li>
         <li><b>Firestore:</b> native mode in <code>us-central1</code>, with three composite indexes
           created from <code>infra/firestore.indexes.json</code>.</li>
         <li><b>Cloud Trace:</b> OpenTelemetry export is wired and real trace identifiers have been
@@ -232,9 +236,10 @@
         <tbody>
           <tr><td>Enter the app</td><td><code>cd app</code></td></tr>
           <tr><td>Install</td><td><code>python -m venv .venv &amp;&amp; .venv/bin/pip install -e ".[dev]"</code></td></tr>
-          <tr><td>Run the tests</td><td><code>python -m pytest -q</code> &mdash; 201 tests, no cloud needed</td></tr>
+          <tr><td>Run the tests</td><td><code>python -m pytest -q</code> - 214 tests, no cloud needed</td></tr>
           <tr><td>Create the indexes</td><td><code>PROJECT_ID=... bash infra/apply_indexes.sh</code></td></tr>
           <tr><td>Deploy</td><td><code>SIM_MODE=true bash deploy.sh</code></td></tr>
+          <tr><td>Register managed agents</td><td><code>python infra/register_agents.py</code> after granting the documented editor and runtime viewer roles</td></tr>
           <tr><td>Prove the guarantee</td><td><code>curl -X POST -H "Content-Type: application/json" -d '{}' $URL/exit-test</code></td></tr>
           <tr><td>Run the whole demo</td><td><code>python scripts/demo_flow.py --url $URL</code></td></tr>
         </tbody>

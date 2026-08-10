@@ -101,6 +101,7 @@ let fixtureIndex = 0;
 
 let patientCounter = 0;
 let courseRunId = null;
+let latestPatientId = null;
 
 async function loadFixture(name) {
   const { ok, data } = await api(`/day-three/fixtures/${name}`);
@@ -169,9 +170,10 @@ async function ingestFixture(name, label) {
   }
 
   patientCounter += 1;
+  latestPatientId = `pt_${patientCounter}`;
   const { ok, data } = await api("/day-three/intake", {
     artifact_id: `art_${patientCounter}_${name}`,
-    patient_id: `pt_${patientCounter}`,
+    patient_id: latestPatientId,
     document: fixture.ground_truth,
     extraction: fixture.extraction,
   });
@@ -220,7 +222,7 @@ async function ingestFixture(name, label) {
 $("#btn-reset").addEventListener("click", async () => {
   await api("/sim/reset", {});
   await api("/day-three/reset", {});
-  patientCounter = 0; courseRunId = null; fixtureIndex = 0;
+  patientCounter = 0; courseRunId = null; latestPatientId = null; fixtureIndex = 0;
   $("#btn-report").disabled = false;
   $("#btn-report").textContent = "Load report 1 of 3";
   $("#btn-hostile").disabled = false;
@@ -245,7 +247,7 @@ $("#btn-hostile").addEventListener("click", () =>
 
 $("#btn-admit").addEventListener("click", async () => {
   const { ok, data } = await api("/day-three/course", {
-    patient_id: "pt_admitted",
+    patient_id: latestPatientId || "pt_admitted",
     regimen: ["piperacillin-tazobactam", "vancomycin"],
     indication: "suspected sepsis",
   });
@@ -268,9 +270,15 @@ async function advance(hours, label) {
     log("clock", `${label}. <span class="chip wait">nothing woke</span>`,
         "Correct. Nothing is due yet, so no agent runs and nothing is spent.");
   } else {
-    mine.forEach((w) =>
+    mine.forEach((w) => {
+      const domain = w.domain || {};
       log("course watch", `<span class="chip ok">woke by itself</span> ${w.kind}`,
-          "Nobody triggered this. The scheduler found it was due.", "accept"));
+          domain.detail || "Nobody triggered this. The scheduler found it was due.", "accept");
+      if (domain.action === "pharmacist_review_draft_created") {
+        log("reconciler", `<span class="chip ok">automatic draft</span> ${domain.recommendation_kind}`,
+            `Grounded: ${domain.all_claims_grounded}. Pharmacist approval required.`, "accept");
+      }
+    });
   }
   if (hours === 47) {
     $("#btn-advance-47").disabled = true;
@@ -298,7 +306,7 @@ $("#btn-reconcile").addEventListener("click", async () => {
   }
 
   const { ok, data } = await api("/day-three/reconcile", {
-    patient_id: "pt_admitted",
+    patient_id: latestPatientId || "pt_admitted",
     regimen: ["piperacillin-tazobactam", "vancomycin"],
     organism: fixture.extraction.organism,
     susceptibilities,

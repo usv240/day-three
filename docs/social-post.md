@@ -22,8 +22,8 @@ collected. Counts remain correct, but the selected susceptibility profile can di
 
 Current proof:
 
-- 201 standalone tests
-- 17 of 17 public acceptance checks
+- 214 standalone tests
+- 18 of 18 public acceptance checks
 - 29 of 29 recorded extraction fields
 - 10 of 10 shared-substrate exit-test clauses
 - Accessibility passing in light and dark themes
@@ -45,7 +45,7 @@ I created this post for the purposes of entering the All Things Agentic Hackatho
 
 Day Three is a deployed stewardship agent that reads synthetic lab reports, builds a local
 antibiogram, waits for the 48-hour review, and stops for pharmacist approval. Its Verifier rejects
-unsupported and empty quotes. Proven by 201 tests and a 17 of 17 public flow.
+unsupported and empty quotes. Proven by 214 tests and a 18 of 18 public flow.
 
 Live: https://day-three-109051079423.us-central1.run.app
 

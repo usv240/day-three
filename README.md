@@ -4,7 +4,8 @@
 
 Day Three turns synthetic microbiology reports into a privacy-protected local antibiogram, keeps a
 five-week antibiotic-course review ladder alive, and prepares a source-grounded reconciliation for
-a pharmacist. The agent carries the context and the clock; the pharmacist keeps the decision.
+a pharmacist. Its background worker also filters official openFDA shortage data to the demo
+formulary. The agent carries the context and the clock; the pharmacist keeps the decision.
 
 > **New here?** Open the live app, press **Start from a clean slate**, and follow the numbered
 > controls. Nothing in the demo uses real patient data.
@@ -29,8 +30,8 @@ terminal, credentials, or prior clinical knowledge.
 
 | Gate | Reproducible result |
 |---|---:|
-| Deployed public acceptance flow | **17/17** |
-| Standalone automated tests | **201 passed** |
+| Deployed public acceptance flow | **18/18** |
+| Standalone automated tests | **214 passed** |
 | Recorded extraction fields | **29/29** |
 | Shared-substrate exit test | **10/10** |
 | Accessibility gate | **Pass: light and dark themes** |
@@ -56,8 +57,8 @@ cumulative context, wake status, and human-approval boundary together from intak
 | **1. Read** | Transcribes a synthetic microbiology report and removes direct identifiers before model review. | No real patient report enters this project. |
 | **2. Curate** | Normalizes organism and susceptibility fields, preserves provenance, and rejects unsupported values. | Ambiguous or unsupported facts are not silently filled in. |
 | **3. Aggregate** | Builds a deliberately small cumulative antibiogram with first-isolate handling and low-count suppression. | It is a demonstration view, not a certified laboratory report. |
-| **4. Wait** | Registers the complete five-week wake ladder in durable state, then sleeps until work is due. | The production clock remains wall-clock driven. |
-| **5. Reconcile** | Compares the final result with the synthetic course and drafts a cited review. | A pharmacist decides whether any clinical action is appropriate. |
+| **4. Wait** | Registers the complete five-week wake ladder in durable state, then sleeps until work is due. At hour 48, a claimed wake invokes reconciliation against the latest persisted isolate. | The production clock remains wall-clock driven. Missing culture data triggers one bounded recheck, never a guess or infinite loop. |
+| **5. Reconcile** | Compares the final result with the synthetic course, local grid, and latest source-dated national shortage signal, then verifies and stores a cited draft automatically. | A pharmacist verifies local inventory and decides whether any clinical action is appropriate. |
 | **6. Verify** | Rejects fabricated percentages, missing support, and claims outside the narrow task. | The service cannot prescribe, dose, order, page, or edit a chart. |
 
 ## Architecture
@@ -74,17 +75,23 @@ flowchart LR
     I --> C[Curate and aggregate]
     C --> W[Course Watch]
     W --> R[Reconcile and verify]
+    D[openFDA Drug Shortages] --> SW[Shortage Watch: daily bounded refresh]
+    SW --> R
+    DS[Daily wall-clock shortage refresh] --> SW
     B <--> F[(Firestore: structured runs, wakes, isolates, courses)]
     I --> V[Vertex AI: Gemini 3.5 Flash and Gemma 4 MaaS]
     S[Shared Cloud Scheduler worker] --> F
+    B <--> G[Google Cloud Agent Registry: 4 managed entries]
     B --> T[Cloud Trace and Logging]
     R --> H[Pharmacist-reviewed output]
     M[Gemini 3.1 Flash Image and Veo 3.1 Fast] -. recorded at build time .-> O[Static onboarding media]
     O -. outside clinical path .-> B
 ```
 
-The eight “agents” are logical Python roles and route stages inside one `day-three` Cloud Run
-service. They are not eight services. There is no Pub/Sub hop. The deployed service runs as `sa-reason`,
+The nine logical roles are Python modules and route stages inside one `day-three` Cloud Run
+service. They are not nine services. Four cross-department capabilities are also registered as
+standard REST agents in Google Cloud Agent Registry and can be queried through the public
+[`/day-three/registry/managed`](https://day-three-109051079423.us-central1.run.app/day-three/registry/managed) proof route. There is no Pub/Sub hop. The deployed service runs as `sa-reason`,
 while the separately provisioned identities document intended privilege boundaries rather than
 pretending there is per-agent runtime isolation.
 
@@ -124,13 +131,14 @@ the core workflow.
 - Recommendations must cite observable source fields; the verifier can abstain or reject.
 - Every source reference must contain a nonempty quote; one valid reference cannot launder an empty one.
 - Percentages are suppressed below the selected low-isolate threshold.
+- openFDA is a national availability signal, refreshed at most once per 24 hours and never treated as local inventory or medical advice.
 - No autonomous prescribing, dosing, messaging, paging, ordering, or chart mutation.
 - The router persists a review escalation; it does not contact a clinician.
 
 ## Research and citations
 
 Research changed the product, not just the pitch. National adoption data changed the framing from
-“hospitals lack programs” to **teams need help executing consistently**. Critical-access studies
+"hospitals lack programs" to **teams need help executing consistently**. Critical-access studies
 motivated durable handoffs. Low-isolate evidence led to suppression rather than false precision.
 
 ### Complete source list
@@ -146,6 +154,9 @@ motivated durable handoffs. Low-isolate evidence led to suppression rather than 
 9. [Review of antimicrobial de-escalation timing](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11776815/) supports review around 48 to 72 hours; the product still waits for final, supported evidence.
 10. [Systematic review of stewardship cost evidence](https://aricjournal.biomedcentral.com/articles/10.1186/s13756-019-0471-0) provides historical context from included studies; its savings are not claimed as Day Three results.
 11. [Systematic review and meta-analysis of de-escalation](https://www.mdpi.com/2813-0618/2/4/25) provides outcome context from included studies; its length-of-stay finding is not a product promise.
+12. [Google Cloud Agent Registry overview](https://docs.cloud.google.com/agent-registry/overview) defines the managed discovery and governance plane; Day Three uses four manually registered standard REST agents and does not claim Agent Runtime or per-agent identity.
+13. [Google Cloud manual agent registration](https://docs.cloud.google.com/agent-registry/register-agents) documents standard REST registration through a Service resource and discovery through the projected Agent resource.
+14. [openFDA Drug Shortages](https://open.fda.gov/apis/drug/drugshortages/) documents the daily public feed and warns against medical-care decisions; the watcher preserves that warning and requires pharmacist review.
 
 For the source hierarchy, exact source-to-decision mapping, and rejected claims, read the
 [research traceability ledger](docs/research-traceability.md).
@@ -176,6 +187,9 @@ curl -X POST -H "Content-Type: application/json" -d '{}' http://127.0.0.1:8000/e
 
 Deploying from `app/` with `bash deploy.sh` targets the independent Cloud Run service `day-three`.
 The explicit empty JSON body in the exit-test request matters; a bodyless POST receives HTTP 411.
+Managed discovery is reproducible with `python infra/register_agents.py`; the script creates or
+updates the four standard REST entries. See `app/infra/README.md` for the editor and viewer IAM
+commands and the public verification route.
 
 ## Repository map
 

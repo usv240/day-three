@@ -9,15 +9,17 @@ Serialisation is explicit rather than generic, so a schema change shows up as a 
 
 from __future__ import annotations
 
+import hashlib
 from datetime import datetime, timezone
 from typing import Any
 
 from google.cloud import firestore
 
-from day_three.antibiogram import Antibiogram, Cell
+from day_three.antibiogram import Antibiogram, Cell, Interpretation, Isolate, Susceptibility
 
 ANTIBIOGRAM_COLLECTION = "antibiograms"
 COURSES_COLLECTION = "courses"
+LATEST_ISOLATES_COLLECTION = "latest_isolates"
 
 
 def _cell_key(organism: str, drug: str) -> str:
@@ -125,6 +127,8 @@ class CourseStore:
                 "started_at": course.started_at,
                 "regimen": list(course.regimen),
                 "indication": course.indication,
+                "allergies": list(course.allergies),
+                "renal_impairment": course.renal_impairment,
                 "is_empiric": course.is_empiric,
                 "status": course.status.value,
                 "discharged_at": course.discharged_at,
@@ -138,6 +142,85 @@ class CourseStore:
 
     def all(self) -> list[dict[str, Any]]:
         return [{"course_id": d.id, **(d.to_dict() or {})} for d in self._collection.stream()]
+
+    def record_due_action(self, course_id: str, action: dict[str, Any]) -> None:
+        document = self._collection.document(course_id)
+        snapshot = document.get()
+        if not snapshot.exists:
+            raise KeyError(course_id)
+        data = snapshot.to_dict() or {}
+        actions = [
+            item for item in data.get("due_actions", [])
+            if item.get("wake_id") != action["wake_id"]
+        ]
+        actions.append(dict(action))
+        data["due_actions"] = actions
+        document.set(data)
+
+    def reset(self) -> int:
+        deleted = 0
+        for doc in self._collection.stream():
+            doc.reference.delete()
+            deleted += 1
+        return deleted
+
+
+class IsolateStore:
+    """Latest structured isolate per pseudonymous patient, without raw report text."""
+
+    def __init__(self, client: firestore.Client) -> None:
+        self._collection = client.collection(LATEST_ISOLATES_COLLECTION)
+
+    @staticmethod
+    def _patient_key(patient_id: str) -> str:
+        return hashlib.sha256(patient_id.encode("utf-8")).hexdigest()[:24]
+
+    def save(self, isolate: Isolate, artifact_id: str) -> None:
+        self._collection.document(self._patient_key(isolate.patient_id)).set(
+            {
+                "patient_id": isolate.patient_id,
+                "artifact_id": artifact_id,
+                "isolate_id": isolate.isolate_id,
+                "organism": isolate.organism,
+                "collected_at": isolate.collected_at,
+                "specimen_type": isolate.specimen_type,
+                "is_surveillance": isolate.is_surveillance,
+                "susceptibilities": [
+                    {
+                        "drug": item.drug,
+                        "interpretation": item.interpretation.value,
+                        "mic": item.mic,
+                        "source_ref": item.source_ref,
+                    }
+                    for item in isolate.susceptibilities
+                ],
+                "updated_at": datetime.now(timezone.utc),
+            }
+        )
+
+    def latest_for_patient(self, patient_id: str) -> dict[str, Any] | None:
+        snapshot = self._collection.document(self._patient_key(patient_id)).get()
+        if not snapshot.exists:
+            return None
+        data = snapshot.to_dict() or {}
+        isolate = Isolate(
+            isolate_id=data["isolate_id"],
+            patient_id=data["patient_id"],
+            organism=data["organism"],
+            collected_at=_as_utc(data.get("collected_at")) or datetime.now(timezone.utc),
+            susceptibilities=tuple(
+                Susceptibility(
+                    drug=item["drug"],
+                    interpretation=Interpretation(item["interpretation"]),
+                    mic=item.get("mic"),
+                    source_ref=item.get("source_ref"),
+                )
+                for item in data.get("susceptibilities", [])
+            ),
+            specimen_type=data.get("specimen_type", "unknown"),
+            is_surveillance=bool(data.get("is_surveillance", False)),
+        )
+        return {"artifact_id": data["artifact_id"], "isolate": isolate}
 
     def reset(self) -> int:
         deleted = 0

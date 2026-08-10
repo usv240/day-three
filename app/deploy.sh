@@ -70,6 +70,31 @@ run_gcloud run deploy "${SERVICE}" \
   --labels "hackathon=all-things-agentic,component=${SERVICE}"
 
 URL="$(run_gcloud run services describe "${SERVICE}" --project "${PROJECT_ID}" --region "${REGION}" --format 'value(status.url)' | tr -d '\r')"
+REFRESH_JOB="day-three-shortage-refresh"
+REFRESH_ARGS=(
+  --project "${PROJECT_ID}"
+  --location "${REGION}"
+  --schedule "0 5 * * *"
+  --time-zone "Etc/UTC"
+  --uri "${URL}/internal/refresh-shortages"
+  --http-method POST
+  --message-body "{}"
+  --attempt-deadline 60s
+  --max-retry-attempts 3
+  --quiet
+)
+if run_gcloud scheduler jobs describe "${REFRESH_JOB}" \
+  --project "${PROJECT_ID}" --location "${REGION}" >/dev/null 2>&1; then
+  run_gcloud scheduler jobs update http "${REFRESH_JOB}" "${REFRESH_ARGS[@]}" \
+    --update-headers "Content-Type=application/json"
+else
+  run_gcloud scheduler jobs create http "${REFRESH_JOB}" "${REFRESH_ARGS[@]}" \
+    --headers "Content-Type=application/json"
+fi
+
+echo
+echo "Background refresh: ${REFRESH_JOB} at 05:00 UTC"
+
 echo
 echo "Deployed: ${URL}"
 echo

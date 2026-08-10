@@ -86,10 +86,10 @@ Layer two: it sleeps, per patient, and wakes at hour 48 to ask the question nobo
 | Rules.md criterion | What we do |
 |---|---|
 | Innovation and Operational Utility, 40 percent (line 480) | Supports timely review with local susceptibility evidence in settings with constrained stewardship resources. Published reviews report an average 732-dollar saving in their US studies and a mean 4.6-day stay reduction after de-escalation; neither figure is promised as this product's outcome. |
-| **Track mandate: agents cataloged for cross-department use (line 378)** | Agent Registry with versions, owners, contracts and scopes. Four real cross department consumers. Filmed |
+| **Track mandate: agents cataloged for cross-department use (line 378)** | Four standard REST agents in Google Cloud Agent Registry, plus local versions, owners, contracts, enforced scopes, durable access audits, and supported capability invocation. |
 | **Track mandate: context across weeks of asynchronous operations (line 378)** | Course Watch spans roughly five weeks per patient across five wake points; the antibiogram accumulates over months |
-| **Track mandate: production data, compliance, data sovereignty, security (line 378)** | Region-pinned resources with a build test, an enforced redaction boundary, scoped in-process components, break-glass audit and a denied cross-boundary read filmed |
-| Multi-Agent Nexus: is the task complex enough (line 488) | Eight implemented agents with distinct jobs, multiple triggers and a data plane that must be built before reasoning can happen. Shortage-feed monitoring remains design-only and is not counted or catalogued. |
+| **Track mandate: production data, compliance, data sovereignty, security (line 378)** | Region-pinned storage and compute, an enforced redaction boundary, managed registry viewer IAM, durable scope audits, and current public openFDA data with provenance and explicit clinical limits. |
+| Multi-Agent Nexus: is the task complex enough (line 488) | Nine implemented logical roles with distinct jobs, multiple triggers, an evidence data plane, managed discovery, and a bounded official-data watcher. |
 | Multi-Agent Nexus: Unlikely Hero (line 488) | Marta, a clearly labelled synthetic composite of a part-time contract pharmacist |
 | Architecture: separation of concerns (line 498) | Each implemented agent has one job and declared inputs and outputs; the deployed system is one Cloud Run service, not separate service accounts per agent |
 | Architecture: failure tolerance and hallucination recovery (line 498) | Verifier rejects unsourced claims on camera; circuit breaker after three rejections |
@@ -108,7 +108,7 @@ Layer two: it sleeps, per patient, and wakes at hour 48 to ask the question nobo
 | **Curator** | Maintains the living antibiogram to CLSI M39 rules: first isolate per patient irrespective of body site, n under 30 suppressed, diagnostic isolates only |
 | **Course Watch** | One agent per antibiotic course. Sleeps and wakes repeatedly across the whole course, not once. See section 6a |
 | **Reconciler** | Compares current regimen against identified organism, susceptibilities, local antibiogram, allergies and renal function |
-| **Shortage Watch (design only; not built or catalogued)** | Proposed monitor for FDA and ASHP shortage feeds. The implemented Reconciler can accept a supplied shortage list, but no code polls a feed. |
+| **Shortage Watch** | Refreshes the official openFDA Drug Shortages API at most once per 24 hours, filters six demo formulary drugs, preserves provenance and stale errors, and never substitutes for local inventory review. |
 | **Drafter** | Writes the recommendation, every sentence cited to a susceptibility result or a guideline section |
 | **Verifier** | Adversarial. Rejects any claim without a resolvable source reference |
 | **Router** | Persists a pharmacist-review escalation, holds for sign off, never sends or executes |
@@ -136,18 +136,20 @@ months. That is what "weeks of asynchronous operations" means and we now demonst
 
 Rules.md line 378 requires demonstrating how agents are "cataloged for cross-department use", and
 line 874 asks to show how an organization can discover them. The catalog is not decorative here,
-because three agents produce output other departments genuinely need:
+because four agents produce output other departments genuinely need:
 
 | Agent published | Consuming department | What they get |
 |---|---|---|
 | **Curator** | Infection Prevention | The living antibiogram, for outbreak and resistance trend detection |
 | **Curator** | Pharmacy and Therapeutics | Local susceptibility evidence for formulary decisions |
-| **Shortage Watch (future)** | Supply Chain | Proposed capability only; absent from the public registry until a real feed monitor is built and tested |
+| **Shortage Watch** | Supply Chain | A source-dated openFDA snapshot filtered to the demo formulary, explicitly limited to a national signal |
 | **Intake** | Quality and Reporting | Structured isolates for NHSN antimicrobial resistance reporting |
 
 Each entry carries a version, an owner, a declared input and output contract, its required scopes,
 and a changelog. **On camera we show a second department discovering the Curator in the registry
 and consuming it**, which turns a compliance checkbox into a demo beat.
+The same four public capabilities are manually registered as standard REST agents in Google Cloud
+Agent Registry. `GET /day-three/registry/managed` proves that managed projection live.
 
 ### 6c. Production data posture (as built)
 
@@ -195,12 +197,12 @@ This section appears verbatim in the "What it does not do" block required by
 | 1:15 to 1:50 | Admit a patient on broad empiric therapy. Course Watch registers the five-wake ladder. Advance to hour 47 (nothing fires), then hour 52 (the de-escalation review is executed and recorded). |
 | 1:50 to 2:25 | Reconciler proposes a narrower drug from the recorded report, grounds every claim, and labels the result as requiring pharmacist approval. No approval is fabricated. |
 | 2:25 to 2:50 | **The Verifier rejects a claim on camera:** a fabricated percentage for a cell suppressed under the n-under-30 rule. |
-| 2:50 to 3:20 | Infection Prevention discovers Curator. Consumption without `read:antibiogram` is refused and audited; the same request with the scope succeeds. |
+| 2:50 to 3:20 | Infection Prevention discovers Curator in the local policy catalogue, sees four managed Agent Registry entries, then proves denied and permitted invocation with durable audits. |
 | 3:20 to 3:40 | Open `/conformance`: four CLSI-derived rules, each mapped to code and a passing test. |
 | 3:40 to 4:00 | Show the live URL, Cloud Run revision and a confirmed trace identifier, then the as-built architecture. |
 
-Shortage Watch is not built or demonstrated. The Reconciler can accept a supplied shortage list,
-but no code polls a feed and the public registry intentionally excludes the proposed agent.
+Shortage Watch is a bounded public-data integration, not a local inventory oracle. The video must
+show its source date and pharmacist-review warning rather than implying availability at a hospital.
 
 Narrated in a real voice. Rules.md line 1097 says narration beats a silent screencast.
 

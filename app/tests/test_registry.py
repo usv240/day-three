@@ -36,21 +36,14 @@ def test_infection_prevention_discovers_the_antibiogram(catalog):
     assert [c.name for c in found] == ["curator"]
 
 
-def test_the_catalogue_only_publishes_agents_that_exist(catalog):
-    """The rule that keeps the public endpoint honest.
-
-    shortage-watch is designed in day-three/PLAN.md but not built: no code polls any feed.
-    Publishing a catalogue entry for it would be a false claim on a public endpoint, and
-    Rules.md line 471 notes judging may include automated analysis that reads claims literally.
-    """
+def test_the_catalogue_only_publishes_built_agents(catalog):
+    """Shortage Watch appears only because its official feed, store, route, and tests exist."""
     published = {c.name for c in catalog.discover(Department.PHARMACY)}
-    assert "shortage-watch" not in published
-    assert published == {"curator", "intake", "reconciler"}
+    assert published == {"curator", "intake", "reconciler", "shortage-watch"}
 
 
-def test_supply_chain_discovers_nothing_yet(catalog):
-    """It gains shortage-watch on the day that agent is actually built, not before."""
-    assert catalog.discover(Department.SUPPLY_CHAIN) == []
+def test_supply_chain_discovers_only_the_operational_shortage_agent(catalog):
+    assert [card.name for card in catalog.discover(Department.SUPPLY_CHAIN)] == ["shortage-watch"]
 
 
 def test_quality_reporting_discovers_intake(catalog):
@@ -59,7 +52,7 @@ def test_quality_reporting_discovers_intake(catalog):
 
 def test_pharmacy_sees_everything_it_owns(catalog):
     names = {c.name for c in catalog.discover(Department.PHARMACY)}
-    assert names == {"curator", "intake", "reconciler"}
+    assert names == {"curator", "intake", "reconciler", "shortage-watch"}
 
 
 def test_discovery_is_scoped_not_a_public_directory(catalog):
@@ -196,7 +189,7 @@ def test_stability_is_declared_so_consumers_can_judge_risk(catalog):
 
 
 def test_every_published_agent_declares_what_it_produces(catalog):
-    for name in ("curator", "intake", "reconciler"):
+    for name in ("curator", "intake", "reconciler", "shortage-watch"):
         card = catalog.latest(name)
         assert len(card.produces) > 20
         assert len(card.summary) > 20

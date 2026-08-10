@@ -34,8 +34,8 @@ from selected critical-access hospitals is not generalized to all rural hospital
 ## Product evidence, separate from literature
 
 - Four recorded Gemini 3.5 Flash calls are graded 29/29 against adjacent synthetic truth.
-- The standalone repository passes 201 tests.
-- The deployed public acceptance flow passes 17/17.
+- The standalone repository passes 214 tests.
+- The deployed public acceptance flow passes 18/18.
 - The shared resilience exit test passes 10/10.
 
 These measurements establish behavior on committed synthetic fixtures. They do not establish
@@ -43,9 +43,9 @@ clinical effectiveness, external validity, or institutional validation.
 
 ## Claims deliberately rejected
 
-- “Hospitals do not have stewardship programs” — contradicted by current national adoption data.
-- “Nearly all critical-access hospitals lack expertise” — unsupported breadth.
-- “This saves $732 per patient” or “reduces stay by 4.6 days” — review findings, not product effects.
-- “The Router pages the pharmacist” — no messaging integration exists; it persists a review
+- "Hospitals do not have stewardship programs" â€" contradicted by current national adoption data.
+- "Nearly all critical-access hospitals lack expertise" â€" unsupported breadth.
+- "This saves $732 per patient" or "reduces stay by 4.6 days" â€" review findings, not product effects.
+- "The Router pages the pharmacist" â€" no messaging integration exists; it persists a review
   escalation and nothing is sent.
-- “Eight agents are eight services” — they are logical roles in one Cloud Run service.
+- "Eight agents are eight services" â€" they are logical roles in one Cloud Run service.

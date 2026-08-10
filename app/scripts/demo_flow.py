@@ -79,8 +79,11 @@ def main() -> int:
     print("  PASS  recorded Google onboarding media is public and hash-matched")
 
     failures: list[str] = []
+    checks = 0
 
     def step(n: str, ok: bool, detail: str = "") -> None:
+        nonlocal checks
+        checks += 1
         print(f"  {'PASS' if ok else 'FAIL'}  {n}{'  |  ' + detail if detail else ''}")
         if not ok:
             failures.append(n)
@@ -153,7 +156,7 @@ def main() -> int:
     # 3. A patient is admitted on broad empiric therapy
     course = c.post(
         "/day-three/course",
-        {"patient_id": "pt_admitted", "regimen": ["piperacillin-tazobactam", "vancomycin"]},
+        {"patient_id": "pt_1", "regimen": ["piperacillin-tazobactam", "vancomycin"]},
     )
     step(
         "five week wake ladder registered at admission",
@@ -175,6 +178,14 @@ def main() -> int:
         str([w["kind"] for w in mine]),
     )
 
+    step(
+        "hour 48 wake creates a verified pharmacist-review draft",
+        len(mine) == 1
+        and mine[0]["domain"]["action"] == "pharmacist_review_draft_created"
+        and mine[0]["domain"]["all_claims_grounded"] is True,
+        str(mine[0].get("domain", {}) if mine else {}),
+    )
+
     # 6. The recommendation, grounded in cited results.
     # The susceptibilities and the document both come from Gemini's real recorded reading of the
     # scan, so the Verifier is grounding against genuine model output, not a hand-written string.
@@ -182,7 +193,7 @@ def main() -> int:
     rec = c.post(
         "/day-three/reconcile",
         {
-            "patient_id": "pt_admitted",
+            "patient_id": "pt_1",
             "regimen": ["piperacillin-tazobactam", "vancomycin"],
             "organism": fixture["extraction"]["organism"],
             "susceptibilities": {
@@ -231,7 +242,11 @@ def main() -> int:
             "granted_scopes": ["read:antibiogram"],
         },
     )
-    step("granted department consumes successfully", allowed["allowed"] is True)
+    step(
+        "granted department invokes the live curator capability",
+        allowed["allowed"] is True and allowed["invoked"] is True
+        and allowed["result"]["facility_id"] == "mercy-critical-access-25",
+    )
 
     # 9. Conformance
     conformance = c.get("/conformance")
@@ -244,7 +259,7 @@ def main() -> int:
     if failures:
         print(f"{len(failures)} step(s) failed: {', '.join(failures)}")
         return 1
-    print("Every demo step passed. The four minute flow is real.")
+    print(f"{checks}/{checks} Day Three demo checks passed. The four minute flow is real.")
     return 0
 
 
