@@ -4,9 +4,8 @@ The execution kit for the final submission artifacts. Product statements in this
 the deployed system and the current claim audit; aspirational beats are labelled conditional.
 
 Scorecard context: the 18-step deployed flow, public README, standalone repository, submission-ready
-architecture SVG, and three additional Google model integrations are complete. The final video and
-external publication steps remain. Bonus evidence is specified in
-`shared/BONUS_PLAN.md`.
+architecture SVG, three additional Google model integrations, and the public build story are complete.
+The final video and social publication remain. Bonus evidence is specified in `BONUS_EVIDENCE.md`.
 
 ---
 
@@ -140,7 +139,8 @@ Order fixed; each bullet is a section with listed content. Reuse `/judges` text;
 - [x] Submission-ready architecture SVG plus canonical Mermaid source
 - [x] Three additional Google model integrations with public prompts and hashes
 - [x] 18/18 acceptance, 225 tests, accessibility, and 10/10 shared-substrate exit test
-- [ ] Publish docs/public-build-story.md and add its public URL
+- [x] Public build story published: https://dev.to/ujwal240/the-antibiotic-review-that-software-quietly-forgets-2ane
+- [ ] Add the public build story URL to the Day Three Devpost submission
 - [ ] Publish docs/social-post.md with #AllThingsAgenticHackathon and add its public URL
 - [ ] Final link and citation check immediately before Devpost submission
 - [ ] Freeze the submitted revision and keep it available through judging

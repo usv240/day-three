@@ -244,6 +244,6 @@ Narrated in a real voice. Rules.md line 1097 says narration beats a silent scree
 - [ ] Demo video under 4 minutes, public on YouTube, English, Google Cloud proof visible
 - [ ] Text description including features, technologies, data sources, findings and learnings
 - [ ] Judge mode page live at /judges
-- [ ] Blog post published, stating it was created for this hackathon
+- [x] Blog post published with the required hackathon-purpose disclosure: https://dev.to/ujwal240/the-antibiotic-review-that-software-quietly-forgets-2ane
 - [ ] Social post with the hashtag
 - [x] Additional Google models disclosed: Gemma 4, Gemini 3.1 Flash Image, Veo 3.1 Fast
