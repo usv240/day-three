@@ -13,6 +13,8 @@ from day_three.reconcile import (
     Kind,
     PatientContext,
     Reconciler,
+    claim_for_rendering,
+    headline_for_rendering,
     is_broad,
     spectrum,
 )
@@ -78,7 +80,9 @@ def test_unknown_drugs_are_treated_as_broad():
 
 def test_recommends_narrowing_when_a_narrower_susceptible_option_exists(reconciler):
     patient = PatientContext("pt_1", regimen=("piperacillin-tazobactam",))
-    isolate = isolate_with(("ceftriaxone", Interpretation.S), ("meropenem", Interpretation.S))
+    isolate = isolate_with(
+        ("ceftriaxone", Interpretation.S), ("meropenem", Interpretation.S)
+    )
 
     rec = reconciler.reconcile(patient, isolate, ART)
     assert rec.kind is Kind.DEESCALATE
@@ -109,7 +113,9 @@ def test_every_recommendation_carries_a_grounded_claim(reconciler):
 
 def test_recommendations_always_require_a_pharmacist(reconciler):
     patient = PatientContext("pt_1", regimen=("meropenem",))
-    rec = reconciler.reconcile(patient, isolate_with(("ceftriaxone", Interpretation.S)), ART)
+    rec = reconciler.reconcile(
+        patient, isolate_with(("ceftriaxone", Interpretation.S)), ART
+    )
     assert rec.requires_pharmacist is True
 
 
@@ -131,7 +137,9 @@ def test_never_suggests_a_drug_the_patient_is_allergic_to(reconciler):
 
 def test_flags_resistance_to_the_current_drug_as_urgent(reconciler):
     patient = PatientContext("pt_1", regimen=("ciprofloxacin",))
-    isolate = isolate_with(("ciprofloxacin", Interpretation.R), ("ceftriaxone", Interpretation.S))
+    isolate = isolate_with(
+        ("ciprofloxacin", Interpretation.R), ("ceftriaxone", Interpretation.S)
+    )
 
     rec = reconciler.reconcile(patient, isolate, ART)
     assert rec.kind is Kind.ESCALATE
@@ -205,10 +213,88 @@ def test_does_not_speculate_before_the_culture_finalises(reconciler):
     assert "does not speculate" in " ".join(rec.notes)
 
 
+def test_never_synthesises_a_quote_for_an_unquoted_susceptibility(reconciler):
+    """Regression, found by probing the deployed reconcile endpoint.
+
+    An earlier version fell back to f"{DRUG} {INTERPRETATION}" when the extraction had produced
+    no quote. For any drug printed without an MIC column, which is a common real report format,
+    that manufactured string genuinely appears in the document, so the Verifier accepted a claim
+    whose quote the model never produced. The chain from model output to rendered sentence was
+    silently broken while every check still looked green.
+    """
+    from day_three.antibiogram import Isolate
+
+    document = "Organism: Staphylococcus aureus\nOXACILLIN            R\nVANCOMYCIN            S\n"
+    isolate = Isolate(
+        isolate_id="i1",
+        patient_id="pt_1",
+        organism="Staphylococcus aureus",
+        collected_at=datetime(2026, 3, 1, tzinfo=timezone.utc),
+        susceptibilities=(
+            Susceptibility("vancomycin", Interpretation.S, source_ref=None),
+        ),
+    )
+    rec = reconciler.reconcile(
+        PatientContext("pt_1", regimen=("linezolid",)), isolate, "art"
+    )
+    verifier = Verifier(artifacts={"art": document})
+
+    assert rec.claims, "the recommendation should still surface for a pharmacist"
+    for claim in rec.claims:
+        assert (
+            claim.source_refs == ()
+        ), "no quote must mean no source reference, never a made-up one"
+        assert not verifier.verify(
+            claim
+        ).accepted, "an unquoted claim must not be renderable"
+
+
+def test_rejected_claim_sentence_is_withheld_at_the_rendering_boundary(reconciler):
+    """A client must not receive unsupported prose that it could render despite the verdict."""
+    from day_three.antibiogram import Isolate
+
+    isolate = Isolate(
+        isolate_id="i1",
+        patient_id="pt_1",
+        organism="Staphylococcus aureus",
+        collected_at=datetime(2026, 3, 1, tzinfo=timezone.utc),
+        susceptibilities=(
+            Susceptibility("vancomycin", Interpretation.S, source_ref=None),
+        ),
+    )
+    rec = reconciler.reconcile(
+        PatientContext("pt_1", regimen=("linezolid",)), isolate, "art"
+    )
+    payload = claim_for_rendering(
+        rec.claims[0], Verifier(artifacts={"art": "VANCOMYCIN S"})
+    )
+
+    assert payload["accepted"] is False
+    assert payload["text"] is None
+    assert payload["rejection_code"] == "no_source"
+    assert payload["rejection_reason"]
+    safe_headline = headline_for_rendering(rec, [payload])
+    assert "susceptible" not in safe_headline.lower()
+    assert "source verification" in safe_headline.lower()
+
+
+def test_a_quoted_susceptibility_still_grounds_normally(reconciler):
+    """The fix must not break the happy path."""
+    isolate = isolate_with(("ceftriaxone", Interpretation.S))
+    rec = reconciler.reconcile(
+        PatientContext("pt_1", regimen=("meropenem",)), isolate, ART
+    )
+    verifier = Verifier(artifacts={ART: LAB})
+    assert rec.claims
+    assert all(verifier.verify(c).accepted for c in rec.claims)
+
+
 def test_never_recommends_a_dose(reconciler):
     """Scope discipline. Dosing is out of scope and stays out of scope."""
     patient = PatientContext("pt_1", regimen=("meropenem",), renal_impairment=True)
-    rec = reconciler.reconcile(patient, isolate_with(("ceftriaxone", Interpretation.S)), ART)
+    rec = reconciler.reconcile(
+        patient, isolate_with(("ceftriaxone", Interpretation.S)), ART
+    )
 
     text = (rec.headline + " " + " ".join(rec.notes)).lower()
     assert "does not recommend doses" in text
@@ -219,8 +305,12 @@ def test_never_recommends_a_dose(reconciler):
 # --- Feeding the Verifier ---------------------------------------------------------
 
 
-def test_resistant_results_become_records_that_forbid_calling_it_susceptible(reconciler):
-    isolate = isolate_with(("ciprofloxacin", Interpretation.R), ("ceftriaxone", Interpretation.S))
+def test_resistant_results_become_records_that_forbid_calling_it_susceptible(
+    reconciler,
+):
+    isolate = isolate_with(
+        ("ciprofloxacin", Interpretation.R), ("ceftriaxone", Interpretation.S)
+    )
     records = reconciler.records_for(isolate)
 
     assert len(records) == 1

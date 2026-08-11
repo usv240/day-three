@@ -6,7 +6,7 @@ from datetime import timedelta
 from typing import Any
 
 from day_three.course import WakeKind
-from day_three.reconcile import PatientContext, Reconciler
+from day_three.reconcile import PatientContext, Reconciler, claim_for_rendering
 from spine.verify import Verifier
 from spine.wake import Wake
 
@@ -57,7 +57,10 @@ class CourseActionExecutor:
         else:
             action, detail = REVIEW_BY_KIND.get(
                 wake.kind,
-                ("course_review_materialized", "A bounded pharmacist review task was created."),
+                (
+                    "course_review_materialized",
+                    "A bounded pharmacist review task was created.",
+                ),
             )
             result = {"action": action, "detail": detail}
 
@@ -72,7 +75,9 @@ class CourseActionExecutor:
         self._courses.record_due_action(course_id, recorded)
         return recorded
 
-    def _reconcile_or_replan(self, wake: Wake, course: dict[str, Any]) -> dict[str, Any]:
+    def _reconcile_or_replan(
+        self, wake: Wake, course: dict[str, Any]
+    ) -> dict[str, Any]:
         isolate_record = self._isolates.latest_for_patient(course["patient_id"])
         if isolate_record is None:
             recheck_count = int(wake.payload.get("recheck_count", 0))
@@ -110,8 +115,12 @@ class CourseActionExecutor:
                 if susceptibility.source_ref
             )
         }
-        shortage_snapshot = self._shortages.get() if self._shortages is not None else None
-        active_shortages = frozenset((shortage_snapshot or {}).get("active_formulary_shortages", []))
+        shortage_snapshot = (
+            self._shortages.get() if self._shortages is not None else None
+        )
+        active_shortages = frozenset(
+            (shortage_snapshot or {}).get("active_formulary_shortages", [])
+        )
         reconciler = Reconciler(shortages=active_shortages)
         recommendation = reconciler.reconcile(
             PatientContext(
@@ -123,14 +132,11 @@ class CourseActionExecutor:
             isolate,
             artifact_id,
         )
-        verifier = Verifier(artifacts=artifacts, records=reconciler.records_for(isolate))
+        verifier = Verifier(
+            artifacts=artifacts, records=reconciler.records_for(isolate)
+        )
         claims = [
-            {
-                "text": claim.text,
-                "accepted": verifier.verify(claim).accepted,
-                "quoted": claim.source_refs[0].quoted_text if claim.source_refs else None,
-            }
-            for claim in recommendation.claims
+            claim_for_rendering(claim, verifier) for claim in recommendation.claims
         ]
         grounded = all(claim["accepted"] for claim in claims)
         if not grounded:
@@ -146,5 +152,7 @@ class CourseActionExecutor:
             "suggested": recommendation.suggested,
             "claims": claims,
             "all_claims_grounded": True,
-            "shortage_source_last_updated": (shortage_snapshot or {}).get("source_last_updated"),
+            "shortage_source_last_updated": (shortage_snapshot or {}).get(
+                "source_last_updated"
+            ),
         }

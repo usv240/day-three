@@ -20,7 +20,7 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 
 from day_three.antibiogram import Antibiogram, Interpretation, Isolate
-from spine.verify import Claim, ClaimKind, Record, SourceRef
+from spine.verify import Claim, ClaimKind, Record, SourceRef, Verifier
 
 # Narrower is better. Lower rank means narrower spectrum, which means less collateral damage to
 # the patient's own flora and less selective pressure driving resistance.
@@ -75,6 +75,38 @@ class Recommendation:
     suggested: str | None = None
     requires_pharmacist: bool = True
     notes: list[str] = field(default_factory=list)
+
+
+def claim_for_rendering(claim: Claim, verifier: Verifier) -> dict[str, object]:
+    """Expose a claim sentence only after verification accepts it.
+
+    Returning unsupported prose beside ``accepted=False`` is not a safe rendering boundary:
+    a client can ignore the flag and display the sentence. Rejected claims retain the verdict
+    and reason for audit, while their ungrounded prose is withheld.
+    """
+    result = verifier.verify(claim)
+    accepted = result.accepted
+    return {
+        "text": claim.text if accepted else None,
+        "accepted": accepted,
+        "quoted": claim.source_refs[0].quoted_text if claim.source_refs else None,
+        "rejection_code": result.code.value if result.code else None,
+        "rejection_reason": result.reason if not accepted else None,
+    }
+
+
+def headline_for_rendering(
+    recommendation: Recommendation, verified_claims: list[dict[str, object]]
+) -> str:
+    """Remove clinical assertions when any supporting claim fails verification."""
+    if verified_claims and not all(
+        item.get("accepted") is True for item in verified_claims
+    ):
+        return (
+            "A pharmacist review candidate was identified, but its clinical rationale failed "
+            "source verification and was withheld."
+        )
+    return recommendation.headline
 
 
 def spectrum(drug: str) -> int:
@@ -133,7 +165,7 @@ class Reconciler:
                         f"The isolate is resistant to {drug}.",
                         ClaimKind.SUSCEPTIBILITY,
                         artifact_id,
-                        hit.source_ref or f"{drug.upper()} {hit.interpretation.value}",
+                        hit.source_ref,
                     )
                 )
                 return Recommendation(
@@ -164,7 +196,9 @@ class Reconciler:
                     kind=Kind.NO_CHANGE,
                     headline="No narrower option this organism is susceptible to. Continue.",
                     claims=claims,
-                    notes=["Broad therapy is justified here by the susceptibility result."],
+                    notes=[
+                        "Broad therapy is justified here by the susceptibility result."
+                    ],
                 )
             return Recommendation(
                 kind=Kind.NO_CHANGE,
@@ -180,18 +214,24 @@ class Reconciler:
                 f"The isolate is susceptible to {narrowest}.",
                 ClaimKind.SUSCEPTIBILITY,
                 artifact_id,
-                evidence.source_ref or f"{narrowest.upper()} {evidence.interpretation.value}",
+                evidence.source_ref,
             )
         )
 
         # 3. Is that narrower option actually available?
         if narrowest in self._shortages:
-            fallback = next((d for d in candidates[1:] if d not in self._shortages), None)
+            fallback = next(
+                (d for d in candidates[1:] if d not in self._shortages), None
+            )
             return Recommendation(
                 kind=Kind.SHORTAGE_ADJUST,
                 headline=(
                     f"{narrowest} would be the right de-escalation, but it is in shortage."
-                    + (f" Next best available option is {fallback}." if fallback else "")
+                    + (
+                        f" Next best available option is {fallback}."
+                        if fallback
+                        else ""
+                    )
                 ),
                 claims=claims,
                 suggested=fallback,
@@ -243,11 +283,28 @@ class Reconciler:
 
     @staticmethod
     def _claim(
-        claim_id: str, text: str, kind: ClaimKind, artifact_id: str, quoted: str
+        claim_id: str, text: str, kind: ClaimKind, artifact_id: str, quoted: str | None
     ) -> Claim:
+        """Build a claim from the extraction's own quote, or from no quote at all.
+
+        This deliberately does **not** synthesise a quote when one is missing. An earlier version
+        fell back to `f"{DRUG} {INTERPRETATION}"`, and for any drug printed without an MIC column
+        (a common real report format) that manufactured string genuinely appears in the document,
+        so the Verifier accepted it. The quote was real in the page but invented by us rather than
+        extracted by the model, which silently breaks the chain from model output to rendered
+        sentence.
+
+        With no quote, the claim carries no source reference and the Verifier rejects it under
+        NO_SOURCE. The recommendation can still be shown to a pharmacist; the unsupported sentence
+        cannot.
+        """
         return Claim(
             id=claim_id,
             text=text,
             kind=kind,
-            source_refs=(SourceRef(artifact_id=artifact_id, quoted_text=quoted),),
+            source_refs=(
+                (SourceRef(artifact_id=artifact_id, quoted_text=quoted),)
+                if quoted
+                else ()
+            ),
         )

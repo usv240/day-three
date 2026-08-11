@@ -29,7 +29,13 @@ from day_three.course import LADDER, Course, CourseWatch, WakeKind
 from day_three.intake import ExtractionError, IntakeAgent, ReplayClient
 from day_three.managed_registry import ManagedAgentRegistry, ManagedRegistryError
 from day_three.managed_platform import ManagedPlatformError, ManagedPlatformEvidence
-from day_three.reconcile import Kind, PatientContext, Reconciler
+from day_three.reconcile import (
+    Kind,
+    PatientContext,
+    Reconciler,
+    claim_for_rendering,
+    headline_for_rendering,
+)
 from day_three.registry import Department, ScopeDenied, day_three_catalog
 from day_three.store import AntibiogramStore, CourseStore, IsolateStore
 from day_three.shortages import ShortageStore
@@ -84,6 +90,7 @@ class ConsumeRequest(BaseModel):
 
 FIXTURES = Path(__file__).resolve().parent.parent / "fixtures"
 
+
 def available_fixture_names() -> list[str]:
     """Only publish recordings that have the scan and truth needed to run intake."""
     return sorted(
@@ -129,7 +136,9 @@ def build_router(client, clock, scheduler, runner) -> APIRouter:
         return {
             "name": safe,
             "extraction": json.loads(recording.read_text(encoding="utf-8")),
-            "ground_truth": truth.read_text(encoding="utf-8") if truth.exists() else None,
+            "ground_truth": (
+                truth.read_text(encoding="utf-8") if truth.exists() else None
+            ),
             "image_url": f"/day-three/fixtures/{safe}/image",
         }
 
@@ -152,7 +161,11 @@ def build_router(client, clock, scheduler, runner) -> APIRouter:
         antibiograms.reset(FACILITY)
         removed = courses.reset()
         isolates_removed = isolates.reset()
-        return {"antibiogram": "cleared", "courses_removed": removed, "isolates_removed": isolates_removed}
+        return {
+            "antibiogram": "cleared",
+            "courses_removed": removed,
+            "isolates_removed": isolates_removed,
+        }
 
     # --- Intake -----------------------------------------------------------------
 
@@ -160,7 +173,9 @@ def build_router(client, clock, scheduler, runner) -> APIRouter:
     def intake(request: IntakeRequest) -> dict[str, Any]:
         agent = IntakeAgent(ReplayClient({"default": request.extraction}))
         try:
-            result = agent.parse(request.artifact_id, request.document, request.patient_id)
+            result = agent.parse(
+                request.artifact_id, request.document, request.patient_id
+            )
         except ExtractionError as exc:
             raise HTTPException(status_code=422, detail=str(exc)) from exc
 
@@ -202,7 +217,9 @@ def build_router(client, clock, scheduler, runner) -> APIRouter:
     @router.post("/day-three/course")
     def open_course(request: CourseRequest) -> dict[str, Any]:
         now = clock.now()
-        run_id = runner().start("day-three", "antibiotic-course", {"patient": request.patient_id})
+        run_id = runner().start(
+            "day-three", "antibiotic-course", {"patient": request.patient_id}
+        )
         course = Course(
             course_id=f"crs_{request.patient_id}_{int(now.timestamp())}",
             run_id=run_id,
@@ -277,18 +294,11 @@ def build_router(client, clock, scheduler, runner) -> APIRouter:
             artifacts={request.artifact_id: request.document},
             records=reconciler.records_for(isolate),
         )
-        verified = [
-            {
-                "text": c.text,
-                "accepted": verifier.verify(c).accepted,
-                "quoted": c.source_refs[0].quoted_text if c.source_refs else None,
-            }
-            for c in recommendation.claims
-        ]
+        verified = [claim_for_rendering(c, verifier) for c in recommendation.claims]
 
         return {
             "kind": recommendation.kind.value,
-            "headline": recommendation.headline,
+            "headline": headline_for_rendering(recommendation, verified),
             "suggested": recommendation.suggested,
             "requires_pharmacist_approval": recommendation.requires_pharmacist,
             "notes": recommendation.notes,
@@ -308,7 +318,9 @@ def build_router(client, clock, scheduler, runner) -> APIRouter:
         """
         grid = load_grid()
         suppressed = [
-            (o, d, c) for (o, d), c in grid.cells.items() if c.suppressed and c.tested > 0
+            (o, d, c)
+            for (o, d), c in grid.cells.items()
+            if c.suppressed and c.tested > 0
         ]
         if not suppressed:
             raise HTTPException(
@@ -317,12 +329,16 @@ def build_router(client, clock, scheduler, runner) -> APIRouter:
             )
         organism, drug, cell = suppressed[0]
 
-        verifier = Verifier(artifacts={"art_grid": f"{organism} {drug} tested={cell.tested}"})
+        verifier = Verifier(
+            artifacts={"art_grid": f"{organism} {drug} tested={cell.tested}"}
+        )
         invented = Claim(
             id="clm_fabricated",
             text=f"Local resistance to {drug} is approximately 40 percent.",
             kind=ClaimKind.MEASUREMENT,
-            source_refs=(SourceRef("art_grid", f"{organism} {drug} tested={cell.tested}"),),
+            source_refs=(
+                SourceRef("art_grid", f"{organism} {drug} tested={cell.tested}"),
+            ),
         )
         result = verifier.verify(invented)
 
@@ -349,14 +365,15 @@ def build_router(client, clock, scheduler, runner) -> APIRouter:
             }
         return {"status": "available", **snapshot}
 
-
     @router.get("/day-three/registry")
     def registry(department: str = "pharmacy") -> dict[str, Any]:
         catalog = day_three_catalog(clock.now())
         try:
             dept = Department(department)
         except ValueError as exc:
-            raise HTTPException(status_code=400, detail=f"unknown department {department}") from exc
+            raise HTTPException(
+                status_code=400, detail=f"unknown department {department}"
+            ) from exc
 
         return {
             "department": dept.value,
@@ -396,7 +413,6 @@ def build_router(client, clock, scheduler, runner) -> APIRouter:
             return managed_platform.read()
         except ManagedPlatformError as exc:
             raise HTTPException(status_code=503, detail=str(exc)) from exc
-
 
     @router.post("/day-three/registry/consume")
     def consume(request: ConsumeRequest) -> dict[str, Any]:
@@ -445,7 +461,11 @@ def build_router(client, clock, scheduler, runner) -> APIRouter:
             "agent": card.qualified_name,
             "produces": card.produces,
             "result": result,
-            "reason": None if invoked else "Authorized, but this agent has no cross-department invocation adapter.",
+            "reason": (
+                None
+                if invoked
+                else "Authorized, but this agent has no cross-department invocation adapter."
+            ),
             "audit": {**audit, "audit_id": audit_id},
         }
 
@@ -502,7 +522,11 @@ def build_router(client, clock, scheduler, runner) -> APIRouter:
                 },
             ],
             "ladder": [
-                {"kind": kind.value, "offset_hours": offset.total_seconds() / 3600, "why": why}
+                {
+                    "kind": kind.value,
+                    "offset_hours": offset.total_seconds() / 3600,
+                    "why": why,
+                }
                 for kind, offset, why in LADDER
             ],
             "safety": [
