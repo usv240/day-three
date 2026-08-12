@@ -58,7 +58,7 @@ Snapshot from the committed repositories:
 | Shared spine package | 10 Python files, 1,991 lines | 10 Python files, 1,991 lines |
 | Test suite | 15 Python files, 2,473 lines | 17 Python files, 2,282 lines |
 | Web surface | 5 files, 93,724 bytes | 4 files, 73,301 bytes |
-| Standalone test result | 225 passed | 205 passed |
+| Standalone test result | 230 passed | 205 passed |
 
 Line counts are descriptive evidence of separate implementation surfaces, not a quality score.
 

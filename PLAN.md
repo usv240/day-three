@@ -1,8 +1,9 @@
 # Day Three: Plan
 
-> **As-built correction (August 8):** Shortage Watch entries below are design-only. No feed
-> polling code was built, it is not demonstrated on the site, and it is deliberately absent from
-> the public Registry. See `AS_BUILT.md`; executable code and tests are authoritative.
+> **As-built update (August 12):** Shortage Watch is implemented. A dedicated daily worker reads
+> the official openFDA Drug Shortages feed, filters it to the six-drug synthetic formulary, stores
+> source-dated results and errors, and keeps pharmacist verification as the local-inventory
+> boundary. It is demonstrated publicly and published as one of four managed Registry capabilities.
 
 **Track:** The Fortified Enterprise Fleet
 **Hosted project:** `https://day-three-109051079423.us-central1.run.app`
@@ -216,7 +217,7 @@ Narrated in a real voice. Rules.md line 1097 says narration beats a silent scree
 | Aug 11 | Intake agent: multimodal parse to structured isolates, with source spans preserved |
 | Aug 12 | Curator: CLSI M39 antibiogram construction and mutation, live grid UI |
 | Aug 13 | Watch and Reconciler: the 48 hour mechanism on the spine clock; idempotency tests |
-| Aug 14 | Drafter, Verifier wiring, Router and pharmacist approval flow. Shortage Watch was proposed but not built. |
+| Aug 14 | Drafter, Verifier wiring, Router and pharmacist approval flow; planned final hardening of the implemented Shortage Watch. |
 | Aug 15 | Landing page, judge mode, glossary, light and dark, mobile pass, accessibility pass |
 | Aug 16 | Deploy, capture Google Cloud proof, record video, write README and architecture diagram |
 
