@@ -24,9 +24,19 @@ class Courses:
         self.actions.append(action)
 
 
+# The redacted report as stored at intake. The wake path must verify quotes against this, not
+# against a document rebuilt out of the quotes.
+REPORT = """CULTURE AND SUSCEPTIBILITY REPORT
+Organism: Escherichia coli
+CEFTRIAXONE <=1 S
+"""
+
+
 class Isolates:
-    def __init__(self, present=True):
+    def __init__(self, present=True, quote="CEFTRIAXONE <=1 S", artifact_text=REPORT):
         self.present = present
+        self.quote = quote
+        self.artifact_text = artifact_text
 
     def latest_for_patient(self, patient_id):
         if not self.present:
@@ -40,11 +50,15 @@ class Isolates:
                 Susceptibility(
                     drug="ceftriaxone",
                     interpretation=Interpretation.S,
-                    source_ref="CEFTRIAXONE <=1 S",
+                    source_ref=self.quote,
                 ),
             ),
         )
-        return {"artifact_id": "art_demo", "isolate": isolate}
+        return {
+            "artifact_id": "art_demo",
+            "artifact_text": self.artifact_text,
+            "isolate": isolate,
+        }
 
 
 def wake(kind="deescalation_review", **payload):
@@ -75,6 +89,30 @@ def test_hour_48_wake_creates_grounded_pharmacist_review_draft():
     assert result["all_claims_grounded"] is True
     assert result["requires_pharmacist_approval"] is True
     assert result["external_side_effect"] is False
+
+
+def test_a_quote_absent_from_the_stored_report_is_not_grounded_at_wake_time():
+    """Regression: the wake path used to verify quotes against a document built from the quotes.
+
+    That made the containment check tautological, so a susceptibility line the model invented
+    would verify against itself and be rendered to a pharmacist as grounded. This is the
+    unattended path, where nobody is watching, so it is the worst place for that to be true.
+    Here the stored report says nothing about ceftriaxone susceptibility.
+    """
+    hallucinated = Isolates(quote="CEFTRIAXONE <=1 S", artifact_text="Organism: Escherichia coli\n")
+    result = CourseActionExecutor(Courses(), hallucinated, scheduler()).execute(wake())
+
+    assert result["action"] == "recommendation_halted", "the draft must be withheld entirely"
+    assert result["all_claims_grounded"] is False
+    assert "recommendation_kind" not in result, "no recommendation may be handed to a human"
+
+
+def test_a_record_with_no_stored_report_fails_closed():
+    """Older records predate stored text. With nothing truthful to check, claims must not pass."""
+    legacy = Isolates(artifact_text="")
+    result = CourseActionExecutor(Courses(), legacy, scheduler()).execute(wake())
+    assert result["action"] == "recommendation_halted"
+    assert result["all_claims_grounded"] is False
 
 
 def test_missing_culture_replans_once_for_hour_72_instead_of_guessing():

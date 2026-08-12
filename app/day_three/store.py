@@ -175,11 +175,23 @@ class IsolateStore:
     def _patient_key(patient_id: str) -> str:
         return hashlib.sha256(patient_id.encode("utf-8")).hexdigest()[:24]
 
-    def save(self, isolate: Isolate, artifact_id: str) -> None:
+    def save(self, isolate: Isolate, artifact_id: str, artifact_text: str = "") -> None:
+        """Persist the isolate together with the redacted report text it came from.
+
+        `artifact_text` is the **redacted** document, which is what the model was shown and what
+        it quoted from, so it is safe to store and its quotes match by construction.
+
+        Storing it is what makes verification at wake time real. Without it the wake path had to
+        rebuild a pseudo-document by concatenating the very quotes it was about to check, which
+        made the containment test tautological: a hallucinated susceptibility line would have
+        verified against itself. The interactive path never had this problem because the caller
+        posts the real document.
+        """
         self._collection.document(self._patient_key(isolate.patient_id)).set(
             {
                 "patient_id": isolate.patient_id,
                 "artifact_id": artifact_id,
+                "artifact_text": artifact_text,
                 "isolate_id": isolate.isolate_id,
                 "organism": isolate.organism,
                 "collected_at": isolate.collected_at,
@@ -220,7 +232,11 @@ class IsolateStore:
             specimen_type=data.get("specimen_type", "unknown"),
             is_surveillance=bool(data.get("is_surveillance", False)),
         )
-        return {"artifact_id": data["artifact_id"], "isolate": isolate}
+        return {
+            "artifact_id": data["artifact_id"],
+            "artifact_text": data.get("artifact_text", ""),
+            "isolate": isolate,
+        }
 
     def reset(self) -> int:
         deleted = 0

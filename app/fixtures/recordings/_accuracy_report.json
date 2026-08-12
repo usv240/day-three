@@ -1,5 +1,17 @@
 [
   {
+    "fixture": "ecoli_urine",
+    "organism": "Escherichia coli",
+    "truth_count": 8,
+    "extracted": 8,
+    "correct": 8,
+    "wrong_interpretation": {},
+    "invented": {},
+    "missed": {},
+    "dropped_by_guard": [],
+    "quarantined": []
+  },
+  {
     "fixture": "ecoli_urine_with_note",
     "organism": "Escherichia coli",
     "truth_count": 8,

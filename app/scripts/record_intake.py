@@ -24,6 +24,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from day_three.intake import (  # noqa: E402
     EXTRACTION_SCHEMA,
+    ReplayClient,
     SYSTEM_PROMPT,
     ExtractionError,
     IntakeAgent,
@@ -71,8 +72,51 @@ def grade(name: str, result, truth: dict[str, str]) -> dict:
     }
 
 
+def rescore_from_recordings() -> int:
+    """Rebuild the full accuracy report from saved recordings, with no model calls.
+
+    Why this exists. Re-recording a single fixture used to rewrite `_accuracy_report.json` with
+    only that fixture, silently shrinking the published evidence: the site said 29 of 29
+    susceptibility results while the shipped report summed to 21, because one of the four
+    fixtures had been dropped from it. The recordings themselves were never lost, so the report
+    can always be rebuilt from them for free. Grading uses the same `grade` function as the live
+    path, so a rebuilt row is identical to the row the live run wrote.
+    """
+    rows: list[dict] = []
+    for path in sorted(RECORDINGS.glob("*.json")):
+        if path.stem.startswith("_") or not (SCANS / f"{path.stem}.txt").exists():
+            continue
+        raw = json.loads(path.read_text(encoding="utf-8"))
+        result = IntakeAgent(ReplayClient({"default": raw})).parse(
+            artifact_id=path.stem,
+            document="",
+            patient_id=f"pt_{path.stem}",
+            image=(SCANS / f"{path.stem}.jpg").read_bytes(),
+        )
+        truth = truth_susceptibilities((SCANS / f"{path.stem}.txt").read_text(encoding="utf-8"))
+        rows.append(grade(path.stem, result, truth))
+
+    (RECORDINGS / "_accuracy_report.json").write_text(
+        json.dumps(rows, indent=2), encoding="utf-8"
+    )
+    total_truth = sum(r["truth_count"] for r in rows)
+    total_correct = sum(r["correct"] for r in rows)
+    total_invented = sum(len(r["invented"]) for r in rows)
+    for row in rows:
+        print(f"  {row['fixture']:<24} {row['correct']}/{row['truth_count']}")
+    print("=" * 60)
+    print(f"  correct   {total_correct}/{total_truth} across {len(rows)} fixtures")
+    print(f"  invented  {total_invented}  (must be 0)")
+    return 0 if total_invented == 0 and total_correct == total_truth else 1
+
+
 def main() -> int:
-    wanted = sys.argv[1:] or None
+    argv = sys.argv[1:]
+    if "--rescore" in argv:
+        # No live calls, no cost. Use this whenever the report needs to be rebuilt.
+        return rescore_from_recordings()
+
+    wanted = argv or None
     RECORDINGS.mkdir(parents=True, exist_ok=True)
 
     images = sorted(SCANS.glob("*.jpg"))
@@ -81,6 +125,11 @@ def main() -> int:
     if not images:
         print("No fixtures found. Run scripts/make_fixtures.py first.")
         return 1
+    if wanted:
+        print(
+            "Recording a subset. The report will be rebuilt from every saved recording afterwards "
+            "so this run cannot shrink the published evidence.\n"
+        )
 
     print(f"Live Gemini calls: model={MODEL} project={PROJECT} location={LOCATION}")
     print(f"{len(images)} image(s). This costs real money, unlike every other path in the demo.\n")
@@ -123,6 +172,12 @@ def main() -> int:
         if scored["quarantined"]:
             print(f"    quarantine : {scored['quarantined']}")
         print()
+
+    # Rebuild from every saved recording, not just the ones re-recorded in this run. Writing
+    # `report` directly is what dropped a fixture from the published evidence before.
+    if wanted:
+        print("Rebuilding the full report from all saved recordings.\n")
+        return rescore_from_recordings()
 
     (RECORDINGS / "_accuracy_report.json").write_text(
         json.dumps(report, indent=2), encoding="utf-8"

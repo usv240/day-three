@@ -182,7 +182,14 @@ def build_router(client, clock, scheduler, runner) -> APIRouter:
         grid = load_grid()
         curator = Curator(grid)
         changed = curator.ingest(result.isolates[0])
-        isolates.save(result.isolates[0], request.artifact_id)
+        # Persist the redacted text, not the raw posting. It is what the model was shown and what
+        # it quoted from, so the hour-48 wake can verify those quotes against a real document
+        # instead of against a reconstruction of the quotes themselves.
+        isolates.save(
+            result.isolates[0],
+            request.artifact_id,
+            result.redaction.text if result.redaction else "",
+        )
         antibiograms.save(grid)
 
         return {

@@ -108,13 +108,16 @@ class CourseActionExecutor:
 
         isolate = isolate_record["isolate"]
         artifact_id = isolate_record["artifact_id"]
-        artifacts = {
-            artifact_id: "\n".join(
-                susceptibility.source_ref or ""
-                for susceptibility in isolate.susceptibilities
-                if susceptibility.source_ref
-            )
-        }
+        # Verify against the redacted report text stored at intake, never against a document
+        # rebuilt from the quotes themselves. Rebuilding made the containment check circular:
+        # the artifact WAS the concatenation of the quotes, so no quote could ever fail to be
+        # found and a hallucinated susceptibility line would verify against itself.
+        #
+        # If an older record predates stored text there is nothing truthful to check against, so
+        # the artifact stays empty and every quote fails. That rejects the claims and suppresses
+        # the rendered sentences, which is the correct direction to fail.
+        artifact_text = isolate_record.get("artifact_text") or ""
+        artifacts = {artifact_id: artifact_text}
         shortage_snapshot = (
             self._shortages.get() if self._shortages is not None else None
         )
@@ -144,6 +147,9 @@ class CourseActionExecutor:
                 "action": "recommendation_halted",
                 "detail": "The automatic draft failed source verification and was withheld.",
                 "claims": claims,
+                # Stated explicitly so a client never has to infer groundedness from the absence
+                # of a field. Both branches answer the same question.
+                "all_claims_grounded": False,
             }
         return {
             "action": "pharmacist_review_draft_created",
