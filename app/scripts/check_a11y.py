@@ -35,6 +35,7 @@ REQUIRED = [
     ("--border-strong", "--bg", 3.0, "grid and table rules"),
     ("--border-strong", "--surface", 3.0, "grid rules on cards"),
     ("--focus", "--bg", 3.0, "focus ring"),
+    ("--code-text", "--code-bg", 4.5, "developer request code"),
 ]
 
 
@@ -95,6 +96,17 @@ def main() -> int:
                 failures.append(f"{theme}: {label} {ratio:.2f} < {minimum}")
             print(f"    {'PASS' if ok else 'FAIL'}  {ratio:5.2f}  (min {minimum})  {label}")
         print()
+
+    print("Developer code cascade\n")
+    nested_code = re.search(r"\.developer-code\s+code\s*\{(.*?)\}", css, re.S)
+    nested_css = nested_code.group(1) if nested_code else ""
+    cascade_ok = "background: transparent" in nested_css and "color: inherit" in nested_css
+    if cascade_ok:
+        print("    PASS  nested code inherits the high-contrast block foreground")
+    else:
+        failures.append("developer code cascade does not reset inline code styling")
+        print("    FAIL  generic inline-code styling can override the request block")
+    print()
 
     print("Glossary coverage\n")
     glossary = json.loads((WEB / "glossary.json").read_text(encoding="utf-8"))
