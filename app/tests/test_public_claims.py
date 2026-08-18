@@ -29,7 +29,7 @@ def test_public_copy_preserves_evidence_scope_and_build_honesty():
     assert "selected 21-program evaluation" in public_copy
     assert "cumulative" in public_copy
     assert "synthetic composite" in public_copy
-    assert "230 tests" in public_copy
+    assert "240 tests" in public_copy
     assert "google cloud agent registry" in public_copy
     assert "openfda" in public_copy
     assert "15 tests in" in public_copy

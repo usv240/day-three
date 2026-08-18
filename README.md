@@ -31,7 +31,7 @@ terminal, credentials, or prior clinical knowledge.
 | Gate | Reproducible result |
 |---|---:|
 | Deployed public acceptance flow | **18/18** |
-| Standalone automated tests | **230 passed** |
+| Standalone automated tests | **240 passed** |
 | Recorded extraction fields | **29/29** |
 | Shared-substrate exit test | **10/10** |
 | Accessibility gate | **Pass: light and dark themes** |
@@ -70,15 +70,18 @@ media generated at build time. It never sees reports and never participates in a
 
 ```mermaid
 flowchart LR
-    A[Synthetic microbiology reports] --> B[Cloud Run: day-three]
+    A[Synthetic judge reports] --> B[Cloud Run: day-three]
+    API[Approved API client] --> K[Hash-only API key and server-derived tenant]
+    K --> DI[De-identified /v1 intake]
     B --> I[Intake and redaction]
+    DI --> I
     I --> C[Curate and aggregate]
-    C --> W[Course Watch]
+    C --> W[Course Watch for judge workflow]
     W --> R[Reconcile and verify]
     D[openFDA Drug Shortages] --> SW[Shortage Watch: daily bounded refresh]
     SW --> R
     DS[Daily wall-clock shortage refresh] --> SW
-    B <--> F[(Firestore: structured runs, wakes, isolates, courses)]
+    C <--> F[(Firestore: tenant grids and structured demo state)]
     I --> V[Vertex AI: Gemini 3.5 Flash and Gemma 4 MaaS]
     S[Shared Cloud Scheduler worker] --> F
     B <--> G[Google Cloud Agent Registry: 4 managed entries]
@@ -163,6 +166,50 @@ motivated durable handoffs. Low-isolate evidence led to suppression rather than 
 
 For the source hierarchy, exact source-to-decision mapping, and rejected claims, read the
 [research traceability ledger](docs/research-traceability.md).
+
+## Use it through the API
+
+The public web console remains a synthetic, credential-free judge experience. A separate `/v1`
+surface lets an approved integration use the useful low-risk slice with an `X-API-Key`.
+
+Day Three accepts only de-identified microbiology report text and a pseudonymous `SUBJECT-*`
+reference. Production requests call Gemini 3.5 Flash through the same transcription, quote,
+quarantine, and redaction path as the measured fixtures. Each key receives a separate calendar-year
+antibiogram. Raw report text is not persisted, low-count cells remain suppressed, and no endpoint
+can prescribe, dose, page, order, or change a chart.
+
+Full provisioning and rotation instructions are in [the beta API guide](docs/api-beta.md).
+
+Create a key:
+
+```bash
+cd app
+python scripts/create_beta_key.py --tenant clinic_one --label "Clinic one"
+```
+
+The command prints the key once and a hash-only JSON value. Store the JSON as the
+`BETA_API_KEY_HASHES` Secret Manager value, grant the Cloud Run service account Secret Accessor,
+and expose it to the service as that environment variable. Never commit or place the plaintext key
+in browser JavaScript.
+
+```bash
+curl -H "X-API-Key: $DAY_THREE_API_KEY" \
+  https://day-three-109051079423.us-central1.run.app/v1
+
+curl -X POST \
+  -H "X-API-Key: $DAY_THREE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"document":"DE-IDENTIFIED CULTURE REPORT ...","subject_ref":"SUBJECT-001","acknowledge_deidentified":true}' \
+  https://day-three-109051079423.us-central1.run.app/v1/intake
+
+curl -H "X-API-Key: $DAY_THREE_API_KEY" \
+  https://day-three-109051079423.us-central1.run.app/v1/antibiogram
+```
+
+Open `/docs`, select **Authorize**, and enter the same key to explore the schema. API keys are
+revocable access credentials, not permission to send protected health information. This hackathon
+beta remains a de-identified integration sandbox. A real clinical deployment still requires the
+hospital's security, privacy, governance, and validation processes.
 
 ## Reproduce locally
 

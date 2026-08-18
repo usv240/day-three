@@ -1,13 +1,16 @@
 flowchart LR
-    A[Synthetic microbiology reports] --> B[Cloud Run: day-three]
+    A[Synthetic judge reports] --> B[Cloud Run: day-three]
+    API[Approved API client] --> K[Hash-only API key and server-derived tenant]
+    K --> DI[De-identified /v1 intake]
     B --> I[Intake and redaction]
+    DI --> I
     I --> C[Curate and aggregate]
-    C --> W[Course Watch]
+    C --> W[Course Watch for judge workflow]
     W --> R[Reconcile and verify]
     D[openFDA Drug Shortages] --> SW[Shortage Watch: daily bounded refresh]
     SW --> R
     DS[Daily wall-clock shortage refresh] --> SW
-    B <--> F[(Firestore: structured runs, wakes, isolates, courses)]
+    C <--> F[(Firestore: tenant grids and structured demo state)]
     I --> V[Vertex AI: Gemini 3.5 Flash and Gemma 4 MaaS]
     S[Shared Cloud Scheduler worker] --> F
     B <--> G[Google Cloud Agent Registry: 4 managed entries]

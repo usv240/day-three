@@ -97,8 +97,12 @@ def record_due_action(wake: Wake) -> None:
 
 # Day Three mounts on the proven shared spine copied into this repository.
 from service.day_three_routes import build_router  # noqa: E402
+from service.beta_routes import build_beta_router  # noqa: E402
+from spine.api_access import ApiKeyAuthenticator  # noqa: E402
 
 app.include_router(build_router(client, clock, scheduler, runner))
+beta_auth = ApiKeyAuthenticator.from_environment()
+app.include_router(build_beta_router(client, RealClock(), beta_auth, project_id=settings.project_id, model_location=settings.model_location, model_name=settings.model_flash))
 _WEB = Path(__file__).resolve().parent.parent / "web"
 public_surface = "day-three"
 if _WEB.is_dir():
@@ -131,6 +135,7 @@ def health() -> dict[str, Any]:
         "sim_mode": settings.sim_mode,
         "replay_mode": settings.replay_mode,
         "tracing": tracing_active,
+        "beta_api": "configured" if beta_auth.enabled else "not_provisioned",
         "worker": worker_id,
         "now": clock.now().isoformat(),
     }
