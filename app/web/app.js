@@ -137,14 +137,18 @@ async function refreshGrid(changed = []) {
     return;
   }
 
-  meta.textContent = `Revision ${data.revision}. ${data.cells.length} organism and drug pairs from ${data.organisms.length} organism(s).`;
+  meta.textContent = `Revision ${data.revision}. ${data.organisms.length} organisms. ${data.cells.length} drug pairs.`;
   const changedKeys = new Set(changed.map((c) => `${c.organism}|${c.drug}`));
 
-  const head = `<thead><tr><th scope="col">Organism</th>${
-    data.drugs.map((d) => `<th scope="col">${d}</th>`).join("")}</tr></thead>`;
+  const shortOrganism = (organism) => {
+    const parts = organism.split(" ");
+    return parts.length > 1 ? `${parts[0][0]}. ${parts.slice(1).join(" ")}` : organism;
+  };
+  const head = `<thead><tr><th scope="col">Drug</th>${
+    data.organisms.map((organism) => `<th scope="col" aria-label="${organism}">${shortOrganism(organism)}</th>`).join("")}</tr></thead>`;
 
-  const body = data.organisms.map((organism) => {
-    const cells = data.drugs.map((drug) => {
+  const body = data.drugs.map((drug) => {
+    const cells = data.organisms.map((organism) => {
       const cell = data.cells.find((c) => c.organism === organism && c.drug === drug);
       if (!cell) return `<td class="s-none">not tested</td>`;
       const key = `${organism}|${drug}`;
@@ -154,7 +158,7 @@ async function refreshGrid(changed = []) {
       return `<td class="${classFor(cell)} ${changedKeys.has(key) ? "changed" : ""}"
         title="${cell.tested} tested, ${cell.susceptible} susceptible">${label}</td>`;
     }).join("");
-    return `<tr><th scope="row">${organism}</th>${cells}</tr>`;
+    return `<tr><th scope="row">${drug}</th>${cells}</tr>`;
   }).join("");
 
   table.innerHTML = head + `<tbody>${body}</tbody>`;

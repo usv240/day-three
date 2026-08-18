@@ -152,6 +152,37 @@ def main() -> int:
         print("    FAIL  developer journey or credential-storage boundary is incomplete")
     print()
 
+    print("Console workspace layout\n")
+    app_js = (WEB / "app.js").read_text(encoding="utf-8")
+    workspace_tokens = (
+        'class="pane controls-pane"',
+        'class="pane activity-pane"',
+        'class="pane antibiogram-pane"',
+        'class="guided-controls"',
+    )
+    layout_tokens = (
+        ".antibiogram-pane .table-scroll { overflow-x: visible; }",
+        ".antibiogram-pane table.grid { min-width: 0; table-layout: fixed;",
+        "grid-template-columns: minmax(340px, .85fr) minmax(340px, 1fr) minmax(420px, 1fr);",
+        "height: clamp(430px, calc(100vh - 250px), 520px);",
+    )
+    renderer_tokens = (
+        '<th scope="col">Drug</th>',
+        "const body = data.drugs.map((drug) =>",
+        "const cells = data.organisms.map((organism) =>",
+        '<th scope="row">${drug}</th>',
+    )
+    workspace_ok = (
+        all(token in landing for token in workspace_tokens)
+        and all(token in css for token in layout_tokens)
+        and all(token in app_js for token in renderer_tokens)
+    )
+    if workspace_ok:
+        print("    PASS  controls fit the task workspace and the full grid needs no horizontal scroll")
+    else:
+        failures.append("console workspace or transposed antibiogram layout is incomplete")
+        print("    FAIL  console remains document-shaped or the antibiogram remains horizontally wide")
+    print()
     print("Compact laptop layout\n")
     compact_query = "@media (min-width: 700px) and (max-height: 900px)"
     compact_start = css.find(compact_query)

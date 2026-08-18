@@ -190,52 +190,49 @@
 
     <div class="console-shell">
     <div class="console-intro">
-      <p><b>Recommended walkthrough:</b> reset, load three reports, test the hidden instruction,
-        admit the patient, advance the clock twice, ask the day-three question, then challenge the
-        verifier. Disabled controls enforce that order.</p>
+      <p><b>Recommended walkthrough:</b> follow steps 1 to 4. Disabled controls enforce that order,
+        and every state change runs live.</p>
       <a class="btn" href="/judges">Open judge evidence</a>
     </div>
     <div class="clock">
       <span>Clock:</span>
       <b id="clock-now">loading</b>
-      <span class="note">Simulated clock<button class="info" data-info="simulated-clock" aria-label="What is the simulated clock?">i</button>
-        - production runs the same scheduler on real time.</span>
+      <span class="note">Simulated<button class="info" data-info="simulated-clock" aria-label="What is the simulated clock?">i</button>. Production uses the same scheduler in real time.</span>
     </div>
 
     <div class="console">
       <!-- Inputs -->
-      <div class="pane">
+      <div class="pane controls-pane">
         <h3>Guided controls</h3>
-        <div class="btn-row" style="flex-direction:column; align-items:stretch; margin-top:0">
-          <span class="control-kicker">1 · Prepare</span>
-          <button class="btn-primary" id="btn-reset">Start from a clean slate</button>
+        <div class="guided-controls">
           <div class="control-group">
-          <span class="control-kicker">2 · Build local evidence</span>
-          <button id="btn-report" disabled>Load report 1 of 3</button>
-          <p class="control-help">Press three times to load three different organisms.</p>
-          <button id="btn-hostile" disabled>Test a report with hidden instructions</button>
-          <p class="small muted" style="margin:-4px 0 4px">Hidden instructions are
-            quarantined<button class="info" data-info="quarantine" aria-label="What does quarantined mean?">i</button>
-            before any AI reads the page.</p>
+            <span class="control-kicker">1 · Prepare</span>
+            <button class="btn-primary" id="btn-reset">Reset demo</button>
           </div>
           <div class="control-group">
-          <span class="control-kicker">3 · Start and wake the course</span>
-          <button id="btn-admit" disabled>Admit a patient on broad therapy</button>
-          <button id="btn-advance-47" disabled>Advance 47 hours</button>
-          <button id="btn-advance-5" disabled>Advance 5 more hours</button>
+            <span class="control-kicker">2 · Build local evidence</span>
+            <button id="btn-report" disabled>Load report 1 of 3</button>
+            <p class="control-help">Repeat until all three organisms are loaded.</p>
+            <button id="btn-hostile" disabled>Test hidden instructions</button>
+            <p class="control-help">Instruction-shaped lines are quarantined<button class="info" data-info="quarantine" aria-label="What does quarantined mean?">i</button> before AI.</p>
           </div>
           <div class="control-group">
-          <span class="control-kicker">4 · Review and challenge</span>
-          <button id="btn-reconcile" disabled>Ask the day three question</button>
-          <button id="btn-fabricate" disabled>Test an unsupported number</button>
+            <span class="control-kicker">3 · Start and wake the course</span>
+            <button id="btn-admit" disabled>Admit patient</button>
+            <button id="btn-advance-47" disabled>Advance 47 hours</button>
+            <button id="btn-advance-5" disabled>Advance 5 hours</button>
+          </div>
+          <div class="control-group">
+            <span class="control-kicker">4 · Review and challenge</span>
+            <button id="btn-reconcile" disabled>Ask day-three question</button>
+            <button id="btn-fabricate" disabled>Challenge unsupported number</button>
           </div>
         </div>
-        <p class="small muted" style="margin:0">Every button explains what it will cause before you
-          press it, and what happened afterwards.</p>
+        <p class="controls-note">Each action reports what happened in Agent activity.</p>
       </div>
 
       <!-- Activity -->
-      <div class="pane">
+      <div class="pane activity-pane">
         <h3>Agent activity</h3>
         <div class="stream" id="stream" aria-live="polite" aria-relevant="additions">
           <div class="event"><span class="agent">system</span><div>Ready. Press
@@ -244,20 +241,18 @@
       </div>
 
       <!-- Output -->
-      <div class="pane">
+      <div class="pane antibiogram-pane">
         <h3>The antibiogram
           <button class="info" data-info="antibiogram" aria-label="What is an antibiogram?">i</button>
         </h3>
         <p class="small muted" id="grid-meta">No reports ingested yet.</p>
         <div class="table-scroll"><table class="grid" id="grid">
-          <caption class="sr-only">Percent of samples susceptible to each antibiotic, by organism</caption>
+          <caption class="sr-only">Percent of samples susceptible, with drugs in rows and organisms in columns</caption>
         </table></div>
-        <p class="small muted" style="margin-top:10px">Each cell shows the percent of samples that
-          were susceptible<button class="info" data-info="susceptible" aria-label="What does susceptible mean?">i</button>
-          rather than resistant<button class="info" data-info="resistant" aria-label="What does resistant mean?">i</button>.
-          Only the first sample per patient counts<button class="info" data-info="first-isolate" aria-label="What is the first isolate rule?">i</button>,
-          and cells with fewer than 30 samples show no number at
-          all<button class="info" data-info="suppressed" aria-label="Why do some cells show no number?">i</button>.</p>
+        <p class="antibiogram-note">Percent susceptible<button class="info" data-info="susceptible" aria-label="What does susceptible mean?">i</button>,
+          not resistant<button class="info" data-info="resistant" aria-label="What does resistant mean?">i</button>.
+          First sample per patient only<button class="info" data-info="first-isolate" aria-label="What is the first isolate rule?">i</button>.
+          Fewer than 30 samples: no percentage<button class="info" data-info="suppressed" aria-label="Why do some cells show no number?">i</button>.</p>
       </div>
     </div>
     </div>

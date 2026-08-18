@@ -743,3 +743,54 @@ footer.site {
 @media (min-width: 981px) and (max-height: 900px) {
   .path-card { min-height: 190px; padding: 20px; }
 }
+/* Day Three console: a bounded task workspace, not a tall document. */
+#console .console { align-items: start; }
+.guided-controls { display: grid; gap: 10px; }
+.guided-controls .control-group { min-width: 0; }
+.guided-controls button { width: 100%; margin-bottom: 7px; }
+.controls-note, .antibiogram-note { margin: 8px 0 0; color: var(--text-muted); font-size: .78rem; line-height: 1.4; }
+.antibiogram-pane .table-scroll { overflow-x: visible; }
+.antibiogram-pane table.grid { min-width: 0; table-layout: fixed; font-size: .75rem; }
+.antibiogram-pane table.grid th, .antibiogram-pane table.grid td {
+  padding: 7px 5px; white-space: normal; overflow-wrap: anywhere; line-height: 1.2;
+}
+.antibiogram-pane table.grid th:first-child { width: 38%; }
+.antibiogram-pane table.grid thead th:not(:first-child) { font-size: .7rem; }
+
+@media (min-width: 1200px) {
+  #console .console {
+    grid-template-columns: minmax(340px, .85fr) minmax(340px, 1fr) minmax(420px, 1fr);
+  }
+  #console .pane { height: clamp(430px, calc(100vh - 250px), 520px); overflow-y: auto; overflow-x: hidden; }
+  .guided-controls { grid-template-columns: 1fr 1fr; }
+  .guided-controls .control-group { border-top: 0; border-left: 1px solid var(--border); padding: 0 0 0 10px; }
+  .guided-controls .control-group:nth-child(odd) { border-left: 0; padding-left: 0; }
+  .activity-pane .stream { height: calc(100% - 28px); max-height: none; }
+}
+
+@media (min-width: 900px) and (max-width: 1199px) {
+  #console .console {
+    grid-template-columns: minmax(0, 1fr) minmax(380px, .9fr);
+    grid-template-areas: "controls controls" "activity antibiogram";
+  }
+  .controls-pane { grid-area: controls; }
+  .activity-pane { grid-area: activity; }
+  .antibiogram-pane { grid-area: antibiogram; }
+  .guided-controls { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .guided-controls .control-group { border-top: 0; border-left: 1px solid var(--border); padding: 0 0 0 10px; }
+  .guided-controls .control-group:first-child { border-left: 0; padding-left: 0; }
+  .activity-pane, .antibiogram-pane { height: 430px; overflow-y: auto; overflow-x: hidden; }
+  .activity-pane .stream { height: calc(100% - 28px); max-height: none; }
+}
+
+@media (min-width: 700px) and (max-height: 900px) {
+  #console { padding: 28px 0; }
+  #console .section-heading { margin-bottom: 12px; }
+  #console .console-shell { padding: 12px; }
+  #console .console-intro { padding-bottom: 10px; }
+  #console .clock { margin-bottom: 10px; padding: 8px 12px; }
+}
+
+@media (min-width: 620px) and (max-width: 899px) {
+  .guided-controls { grid-template-columns: 1fr 1fr; }
+}
