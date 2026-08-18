@@ -1,10 +1,13 @@
+from datetime import timedelta
 import json
 
 import pytest
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.testclient import TestClient
 
 from spine.api_access import ApiKeyAuthenticator, ApiPrincipal, hash_api_key
+from spine.api_key_store import MemoryApiKeyStore
+from spine.developer_access import KeyIssuer, build_developer_router
 
 
 def app_for(auth: ApiKeyAuthenticator) -> TestClient:
@@ -48,3 +51,85 @@ def test_environment_contains_hashes_not_plaintext(monkeypatch):
     auth = ApiKeyAuthenticator.from_environment()
     assert app_for(auth).get("/v1/whoami", headers={"X-API-Key": "never-store-this"}).status_code == 200
 
+
+def developer_app(store, issuer):
+    auth = ApiKeyAuthenticator(dynamic_lookup=store.get)
+    app = FastAPI()
+    app.include_router(build_developer_router(
+        issuer, auth, product="Day Three", scope="day-three:use"
+    ))
+
+    @app.get("/v1/whoami")
+    def whoami(principal: ApiPrincipal = Depends(auth)):
+        return {"tenant_id": principal.tenant_id}
+
+    return TestClient(app)
+
+
+def test_invited_developer_can_issue_use_and_revoke_a_temporary_key():
+    store = MemoryApiKeyStore("day-three")
+    issuer = KeyIssuer(
+        store,
+        product="day-three",
+        scope="day-three:use",
+        prefix="dt_beta",
+        invitation_hash=hash_api_key("invite-once"),
+    )
+    api = developer_app(store, issuer)
+    issued = api.post("/developer/keys", json={
+        "invitation_code": "invite-once",
+        "tenant_id": "clinic_two",
+        "label": "Clinic two",
+        "acknowledge_terms": True,
+    })
+    assert issued.status_code == 201
+    key = issued.json()["api_key"]
+    assert key not in str(store.records)
+    assert api.get("/v1/whoami", headers={"X-API-Key": key}).json()["tenant_id"] == "clinic_two"
+    assert api.delete("/v1/key", headers={"X-API-Key": key}).status_code == 200
+    assert api.get("/v1/whoami", headers={"X-API-Key": key}).status_code == 401
+
+
+def test_invalid_invitation_cannot_issue_a_key():
+    store = MemoryApiKeyStore("day-three")
+    issuer = KeyIssuer(
+        store,
+        product="day-three",
+        scope="day-three:use",
+        prefix="dt_beta",
+        invitation_hash=hash_api_key("correct"),
+    )
+    api = developer_app(store, issuer)
+    response = api.post("/developer/keys", json={
+        "invitation_code": "wrong",
+        "tenant_id": "clinic_two",
+        "label": "Clinic two",
+        "acknowledge_terms": True,
+    })
+    assert response.status_code == 401
+    assert store.records == {}
+
+
+def test_expired_dynamic_key_is_rejected():
+    store = MemoryApiKeyStore("day-three")
+    key = "dt_beta_expired"
+    store.issue(
+        hash_api_key(key),
+        tenant_id="clinic_two",
+        label="Clinic two",
+        scopes=["day-three:use"],
+        issued_at=store.now - timedelta(hours=2),
+        expires_at=store.now - timedelta(hours=1),
+    )
+    assert app_for(ApiKeyAuthenticator(dynamic_lookup=store.get)).get(
+        "/v1/whoami", headers={"X-API-Key": key}
+    ).status_code == 401
+
+
+def test_dynamic_lookup_failure_fails_closed():
+    def broken(_digest):
+        raise RuntimeError("database unavailable")
+
+    with pytest.raises(HTTPException) as failure:
+        ApiKeyAuthenticator(dynamic_lookup=broken)("key")
+    assert failure.value.status_code == 503

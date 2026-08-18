@@ -99,10 +99,19 @@ def record_due_action(wake: Wake) -> None:
 from service.day_three_routes import build_router  # noqa: E402
 from service.beta_routes import build_beta_router  # noqa: E402
 from spine.api_access import ApiKeyAuthenticator  # noqa: E402
+from spine.api_key_store import FirestoreApiKeyStore  # noqa: E402
+from spine.developer_access import KeyIssuer, build_developer_router  # noqa: E402
 
 app.include_router(build_router(client, clock, scheduler, runner))
-beta_auth = ApiKeyAuthenticator.from_environment()
+developer_key_store = FirestoreApiKeyStore(client, "day-three")
+beta_auth = ApiKeyAuthenticator.from_environment(dynamic_lookup=developer_key_store.get)
+key_issuer = KeyIssuer.from_environment(
+    developer_key_store, product="day-three", scope="day-three:use", prefix="dt_beta"
+)
 app.include_router(build_beta_router(client, RealClock(), beta_auth, project_id=settings.project_id, model_location=settings.model_location, model_name=settings.model_flash))
+app.include_router(build_developer_router(
+    key_issuer, beta_auth, product="Day Three", scope="day-three:use"
+))
 _WEB = Path(__file__).resolve().parent.parent / "web"
 public_surface = "day-three"
 if _WEB.is_dir():
@@ -115,6 +124,10 @@ if _WEB.is_dir():
     @app.get("/judges", include_in_schema=False)
     def judges() -> FileResponse:
         return FileResponse(_WEB / "judges.html")
+
+    @app.get("/developer", include_in_schema=False)
+    def developer() -> FileResponse:
+        return FileResponse(_WEB / "developer.html")
 
 # Operational -----------------------------------------------------------------
 
@@ -136,6 +149,7 @@ def health() -> dict[str, Any]:
         "replay_mode": settings.replay_mode,
         "tracing": tracing_active,
         "beta_api": "configured" if beta_auth.enabled else "not_provisioned",
+        "developer_key_issuance": "invite_only" if key_issuer.enabled else "disabled",
         "worker": worker_id,
         "now": clock.now().isoformat(),
     }

@@ -31,7 +31,7 @@ terminal, credentials, or prior clinical knowledge.
 | Gate | Reproducible result |
 |---|---:|
 | Deployed public acceptance flow | **18/18** |
-| Standalone automated tests | **240 passed** |
+| Standalone automated tests | **244 passed** |
 | Recorded extraction fields | **29/29** |
 | Shared-substrate exit test | **10/10** |
 | Accessibility gate | **Pass: light and dark themes** |
@@ -178,9 +178,14 @@ quarantine, and redaction path as the measured fixtures. Each key receives a sep
 antibiogram. Raw report text is not persisted, low-count cells remain suppressed, and no endpoint
 can prescribe, dose, page, order, or change a chart.
 
-Full provisioning and rotation instructions are in [the beta API guide](docs/api-beta.md).
+Full provisioning, expiry, and rotation instructions are in [the beta API guide](docs/api-beta.md).
 
-Create a key:
+Invited developers can open [the live Developer page](https://day-three-109051079423.us-central1.run.app/developer), enter the invitation
+code supplied by the project owner, and generate a tenant-scoped key that expires after seven days.
+The plaintext key is shown once and remains only in page memory. The page includes a connection
+test, a copyable project request, immediate revocation, and a link to the interactive OpenAPI schema.
+
+Operators can also create a non-expiring key through Secret Manager:
 
 ```bash
 cd app
