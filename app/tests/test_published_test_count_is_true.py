@@ -15,6 +15,7 @@ SOURCES = {
     "SUBMISSION_KIT.md": r"18/18 acceptance,\s*(\d+) tests,",
     "app/web/judges.html": r"python -m pytest -q</code> - (\d+) tests",
     "docs/research-traceability.md": r"repository passes (\d+) tests",
+    "VALIDATION_EVIDENCE.md": r"Standalone test suite \| (\d+) passed",
 }
 
 

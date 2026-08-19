@@ -1,22 +1,33 @@
+%% Day Three, as built. Kept deliberately small: the pipeline reads left to right,
+%% and everything else attaches to exactly one stage.
 flowchart LR
-    A[Synthetic judge reports] --> B[Cloud Run: day-three]
-    API[Approved API client] --> K[Hash-only API key and server-derived tenant]
-    K --> DI[De-identified /v1 intake]
-    B --> I[Intake and redaction]
-    DI --> I
-    I --> C[Curate and aggregate]
-    C --> W[Course Watch for judge workflow]
-    W --> R[Reconcile and verify]
-    D[openFDA Drug Shortages] --> SW[Shortage Watch: daily bounded refresh]
-    SW --> R
-    DS[Daily wall-clock shortage refresh] --> SW
-    C <--> F[(Firestore: tenant grids and structured demo state)]
-    W --> MB[Agent Platform Memory Bank: deidentified handoff context]
-    MB --> R
-    I --> V[Vertex AI: Gemini 3.5 Flash and Gemma 4 MaaS]
-    S[Shared Cloud Scheduler worker] --> F
-    B <--> G[Google Cloud Agent Registry: 8 managed agents]
-    B --> T[Cloud Trace and Logging]
-    R --> H[Pharmacist-reviewed output]
-    M[Gemini 3.1 Flash Image and Veo 3.1 Fast] -. recorded at build time .-> O[Static onboarding media]
-    O -. outside clinical path .-> B
+    subgraph public["Public surface, no credentials"]
+        direction TB
+        UI[Judge console<br/>synthetic reports, simulated clock]
+        LV[Live check<br/>read a lab report now]
+        RT[Real timer<br/>wall-clock wake]
+    end
+
+    subgraph run["Cloud Run: day-three &nbsp;|&nbsp; us-central1 &nbsp;|&nbsp; scales to zero"]
+        direction LR
+        I[Intake<br/>redact, quote, quarantine] --> C[Curate<br/>antibiogram to CLSI M39]
+        C --> W[Course Watch<br/>5 wakes through day 14]
+        W --> R[Reconcile<br/>verify or abstain]
+    end
+
+    V[Vertex AI, global<br/>Gemini 3.5 Flash + Gemma 4 MaaS]
+    F[(Firestore<br/>grids, courses, wakes, proofs)]
+    SCH[Cloud Scheduler<br/>wakes every minute, shortages daily]
+
+    UI --> I
+    API[Approved client<br/>hash-only API key] --> I
+    I -->|redaction gate crossed here| V
+    LV -->|image only, graded, writes nothing| V
+    C <--> F
+    RT --> F
+    SCH --> W
+    SCH --> SW[Shortage Watch] --> R
+    FDA[openFDA] --> SW
+    R --> H[Pharmacist-reviewed draft]
+    G[Agent Registry, Runtime, Identity,<br/>Gateway, Model Armor] <--> I
+    R --> T[Cloud Trace and Logging]

@@ -30,6 +30,8 @@ terminal, credentials, or prior clinical knowledge.
 
 | Gate | Reproducible result |
 |---|---:|
+| Live Gemini call you can trigger yourself | **graded against committed truth, on demand** |
+| Wall-clock wake you can trigger yourself | **fires unattended, verified afterwards** |
 | Deployed public acceptance flow | **18/18** |
 | Standalone automated tests | **283 passed** |
 | Recorded extraction fields | **29/29** |
@@ -73,8 +75,8 @@ now have a control that removes the caveat.
 
 | Claim | Control | What it does |
 |---|---|---|
-| "Gemini really reads the scan" | **Read a scan live** | Calls Gemini 3.5 Flash on Vertex AI when you press it, with the image and no source text, then grades the fresh answer against the same ground-truth file behind the published 29/29. |
-| "The agent wakes itself" | **Register a real-time wake** | Registers a wake on wall-clock time in the `day-three-realtime` namespace. Only `day-three-realtime-wake-scan`, running every minute, can claim it. |
+| "Gemini really reads the scan" | **Read a lab report now** | Calls Gemini 3.5 Flash on Vertex AI when you press it, with the image and no source text, then grades the fresh answer against the same ground-truth file behind the published 29/29. |
+| "The agent wakes itself" | **Start a real timer** | Registers a wake on wall-clock time in the `day-three-realtime` namespace. Only `day-three-realtime-wake-scan`, running every minute, can claim it. |
 
 ```bash
 BASE=https://day-three-109051079423.us-central1.run.app
@@ -101,28 +103,39 @@ The solid path below is the live stewardship workflow. The dotted path is option
 media generated at build time. It never sees reports and never participates in a clinical output.
 
 ```mermaid
+%% Day Three, as built. Kept deliberately small: the pipeline reads left to right,
+%% and everything else attaches to exactly one stage.
 flowchart LR
-    A[Synthetic judge reports] --> B[Cloud Run: day-three]
-    API[Approved API client] --> K[Hash-only API key and server-derived tenant]
-    K --> DI[De-identified /v1 intake]
-    B --> I[Intake and redaction]
-    DI --> I
-    I --> C[Curate and aggregate]
-    C --> W[Course Watch for judge workflow]
-    W --> R[Reconcile and verify]
-    D[openFDA Drug Shortages] --> SW[Shortage Watch: daily bounded refresh]
-    SW --> R
-    DS[Daily wall-clock shortage refresh] --> SW
-    C <--> F[(Firestore: tenant grids and structured demo state)]
-    W --> MB[Agent Platform Memory Bank: deidentified handoff context]
-    MB --> R
-    I --> V[Vertex AI: Gemini 3.5 Flash and Gemma 4 MaaS]
-    S[Shared Cloud Scheduler worker] --> F
-    B <--> G[Google Cloud Agent Registry: 8 managed agents]
-    B --> T[Cloud Trace and Logging]
-    R --> H[Pharmacist-reviewed output]
-    M[Gemini 3.1 Flash Image and Veo 3.1 Fast] -. recorded at build time .-> O[Static onboarding media]
-    O -. outside clinical path .-> B
+    subgraph public["Public surface, no credentials"]
+        direction TB
+        UI[Judge console<br/>synthetic reports, simulated clock]
+        LV[Live check<br/>read a lab report now]
+        RT[Real timer<br/>wall-clock wake]
+    end
+
+    subgraph run["Cloud Run: day-three &nbsp;|&nbsp; us-central1 &nbsp;|&nbsp; scales to zero"]
+        direction LR
+        I[Intake<br/>redact, quote, quarantine] --> C[Curate<br/>antibiogram to CLSI M39]
+        C --> W[Course Watch<br/>5 wakes through day 14]
+        W --> R[Reconcile<br/>verify or abstain]
+    end
+
+    V[Vertex AI, global<br/>Gemini 3.5 Flash + Gemma 4 MaaS]
+    F[(Firestore<br/>grids, courses, wakes, proofs)]
+    SCH[Cloud Scheduler<br/>wakes every minute, shortages daily]
+
+    UI --> I
+    API[Approved client<br/>hash-only API key] --> I
+    I -->|redaction gate crossed here| V
+    LV -->|image only, graded, writes nothing| V
+    C <--> F
+    RT --> F
+    SCH --> W
+    SCH --> SW[Shortage Watch] --> R
+    FDA[openFDA] --> SW
+    R --> H[Pharmacist-reviewed draft]
+    G[Agent Registry, Runtime, Identity,<br/>Gateway, Model Armor] <--> I
+    R --> T[Cloud Trace and Logging]
 ```
 
 The nine logical roles are Python modules and route stages inside one `day-three` Cloud Run
@@ -314,7 +327,9 @@ commands and the public verification route.
 
 ## Repository map
 
-- `app/day_three/`: project domain logic
+- `app/day_three/`: project domain logic, including `grading.py` (one grader shared by the
+  recorder and the live route), `live_budget.py` (durable cap on the paid public call), and
+  `realtime_proof.py` (wall-clock due-work records)
 - `app/spine/`: copied, reviewed runtime substrate required by this standalone project
 - `app/service/`: public and operational routes
 - `app/fixtures/`: synthetic inputs, adjacent truth, and recorded model outputs
@@ -324,6 +339,7 @@ commands and the public verification route.
 - [Validation evidence](VALIDATION_EVIDENCE.md): research-to-test evidence, adversarial checks, and explicit limits
 - [Project differentiation](PROJECT_DIFFERENTIATION.md): concrete separation from the other submission and shared-spine disclosure
 - `SUBMISSION_KIT.md`: evidence-backed demo and Devpost copy
+- `LICENSE`: MIT, with an explicit not-a-medical-device clause
 
 ## Disclosure
 

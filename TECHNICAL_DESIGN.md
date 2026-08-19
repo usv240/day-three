@@ -67,7 +67,16 @@ runtime identities.
 - Gemma `gemma-4-26b-a4b-it-maas` reviews possible person-name spans.
 - Gemma evaluation measures 4/4 recall, 0 false positives, 0 leaks.
 
-No demo rehearsal silently calls a model. Recording scripts are explicit paid paths.
+No demo rehearsal silently calls a model. The console replays, and recording scripts are explicit
+paid paths.
+
+One route deliberately breaks that pattern. `POST /day-three/live-intake` calls Gemini on demand,
+credential-free, so a visitor can check that the recorded score is real instead of trusting it.
+It is the same construction as `scripts/record_intake.py` -- `IntakeAgent(VertexClient(...))` with
+no Gemma reviewer, image only, no source text -- so the fresh answer is graded by
+`day_three/grading.py`, the same grader that produced the published figure. It accepts only a
+committed fixture name, never free text, is bounded by a durable daily budget in
+`day_three/live_budget.py`, and writes nothing to the antibiogram.
 
 ## 5. Wake behavior
 
@@ -79,6 +88,13 @@ At hour 48 the executor loads the latest persisted structured isolate, combines 
 and latest openFDA snapshot, runs the Reconciler, verifies every claim, and stores a review draft.
 If the culture is absent, it creates exactly one hour-72 recheck and refuses to guess; the second
 miss stops. No path changes treatment, sends a message, or bypasses pharmacist approval.
+
+The console clock is simulated, which leaves that behaviour resting on a clock the visitor moved.
+`POST /day-three/realtime-proof` therefore books a due record on the wall clock in the separate
+`day-three-realtime` namespace, and only `/internal/scan-due-realtime` -- driven every minute by
+`day-three-realtime-wake-scan` -- can claim it. It does not use the shared wake table on purpose:
+the spine worker scans that table unfiltered on its own simulated clock and completed the first
+version of these with its own handler, leaving the proof silently unrecorded.
 
 ## 6. Data and verification
 
@@ -113,18 +129,29 @@ The product does not claim formal CLSI certification or institutional validation
   wakes from the same Firestore substrate; it is not a second Day Three service.
 - Cloud Scheduler: `day-three-shortage-refresh` calls an isolated wall-clock refresh route daily;
   it does not scan wakes or inherit the judge-controlled simulated clock.
+- Cloud Scheduler: `day-three-realtime-wake-scan` calls `/internal/scan-due-realtime` every minute
+  on wall-clock time, bounded to the `day-three-realtime` namespace, which is what makes the
+  public wall-clock proof unattended rather than button-driven.
 - Demo isolation: the service uses Firestore clock document `sim/clock-day-three`; simulated
-  advances claim only wakes whose durable run belongs to `day-three`. The production scan-due
-  worker remains shared and unfiltered on wall-clock time.
+  advances claim only wakes whose durable run belongs to `day-three`. The shared `spine-scan-due`
+  worker is unfiltered, but it also runs with simulation enabled, so it is not evidence that
+  anything fires on real time. That is why the wall-clock proof owns a separate scanner and its
+  own due-work collection rather than riding the shared wake table.
 - Cloud Trace/Logging: real configured telemetry.
 - Vertex AI global: Gemini and Gemma MaaS.
-- Google Cloud Agent Registry: four manually registered standard REST agents in `us-central1`;
+- Google Cloud Agent Registry: four manually registered standard REST agents in `us-central1`,
+  which the live registry exposes alongside four Runtime-projected entries, eight in total;
   the Cloud Run identity has viewer-only access for the public proof route.
 - openFDA Drug Shortages: public operational input refreshed at most once per 24 hours.
 - Artifact Registry and Cloud Build: container image build/deploy.
 
-Pub/Sub, Secret Manager integration, GCS scan ingestion, Vector Search,
-separate role services, and per-agent runtime identities are absent.
+- Secret Manager: `day-three-beta-api-keys` and `day-three-beta-enrollment` are mounted as
+  environment variables on the service; only hashes are stored, never a plaintext key.
+
+Pub/Sub, GCS scan ingestion, Vector Search, and separate role services are absent. Four Agent
+Runtime resources with distinct Agent Identities exist and are readable at `/day-three/platform`,
+but they are not in the request path: direct invocation stays fail-closed under Google's default
+agent-token protection, which this project chose not to disable.
 
 ## 9. Security and safety
 

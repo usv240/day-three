@@ -46,8 +46,8 @@ Implemented and protected by the deployed acceptance flow:
 | 1:35 | "Advance 47 hours"; then "Advance 5 more" | "Forty-seven hours pass. Nothing wakes; nothing is due. Five more, and the agent wakes itself. Nobody clicked it awake; the scheduler found it was due." |
 | 1:55 | Click "Ask the day three question" | "The question nobody was there to ask: is the drug still right? It recommends narrowing, and every sentence is pinned to a quoted line of the lab report. It prepares a pharmacist-review escalation and stops. Nothing is sent, and it cannot change an order." |
 | 2:20 | Click **Test an unsupported number** | "Now the part I care about most. We ask an agent to state a resistance rate for a cell with too few samples. There is no such number. It invents one, and the Verifier rejects it, with the reason. A sentence cannot reach a human here unless its evidence is real." |
-| 2:40 | Scroll to **Two things you should not take on trust**; press **Read a scan live** | "Everything you have seen replayed a recorded model answer, and the page says so. That is a fair thing to be sceptical about, so here is the same scan going to Gemini on Vertex AI right now, with no source text, graded by the same file behind our published number. Live, on camera, at whatever it scores." |
-| 3:05 | Press **Register a real-time wake**; read the due time aloud | "And the clock. That ladder ran on a simulated clock, labelled throughout. This registers a wake on the real clock that I cannot advance and cannot fake. A scheduled worker will claim it. I will come back to it." |
+| 2:40 | Scroll to **Two things you shouldn't take on trust**; press **Read a lab report now** | "Everything you have seen replayed a recorded model answer, and the page says so. That is a fair thing to be sceptical about, so here is the same scan going to Gemini on Vertex AI right now, with no source text, graded by the same file behind our published number. Live, on camera, at whatever it scores." |
+| 3:05 | Press **Start a real timer**; read the due time aloud | "And the clock. That ladder ran on a simulated clock, labelled throughout. This registers a wake on the real clock that I cannot advance and cannot fake. A scheduled worker will claim it. I will come back to it." |
 | 3:20 | `/day-three/registry/managed`, then the scope denial and the granted invocation | "Eight entries in Google Cloud Agent Registry, not a Python list. Our policy layer refuses Infection Prevention without the right scope and durably audits it; with the scope, it invokes the Curator. The background worker also filters official openFDA shortage data to this formulary." |
 | 3:40 | `/day-three/platform`, then the fired wake, then `/judges` | "Four Runtime resources with distinct Agent Identities, one Gateway, two Model Armor templates. Direct Runtime invocation is refused, and we left it refused rather than disable a Google security default to make a demo look better. And there is the wake: fired on the real clock, by a worker, with nobody watching." |
 
@@ -62,46 +62,44 @@ media. The canonical Mermaid source remains below. If Devpost requires PNG inste
 render it at 2x; keep the diagram readable at video resolution and under roughly twelve boxes.
 
 ```mermaid
+%% Day Three, as built. Kept deliberately small: the pipeline reads left to right,
+%% and everything else attaches to exactly one stage.
 flowchart LR
-  subgraph public["Judge / Pharmacist (browser)"]
-    UI[Site + Live Console]
-  end
-
-  subgraph gcp["Google Cloud: us-central1 (region-pinned, enforced in code)"]
-    subgraph run["Cloud Run: day-three (min 0, max 3)"]
-      API[FastAPI routes]
-      SPINE[Spine: clock | runs | wakes | Verifier | quarantine]
-      FLEET[Nine roles: Intake / Curator / CourseWatch / ShortageWatch / Reconciler / Drafter / Verifier / Router / Registrar]
+    subgraph public["Public surface, no credentials"]
+        direction TB
+        UI[Judge console<br/>synthetic reports, simulated clock]
+        LV[Live check<br/>read a lab report now]
+        RT[Real timer<br/>wall-clock wake]
     end
-    FS[(Firestore\nruns / wakes / claims / antibiogram / courses)]
-    SCHED[Shared Cloud Scheduler worker\nevery minute claims due Firestore wakes]
-    TRACE[Cloud Trace\nreasoning chains]
-    MEMORY[Agent Platform Memory Bank\ndeidentified handoff context]
-  end
-    REGISTRY[Google Cloud Agent Registry\n4 REST capabilities + 4 Runtime projections]
-    RUNTIME[4 Agent Runtime resources\n4 distinct Agent Identities]
-    GATEWAY[Client-to-Agent Gateway\n2 Model Armor templates]
 
-  subgraph global["Vertex AI: global endpoint (Gemini 3.x is not offered regionally)"]
-    GEM[Gemini 3.5 Flash\ntranscription-first extraction]
-    GEMMA[Gemma 4 MaaS\nname review, spans only]
-  end
+    subgraph run["Cloud Run: day-three &nbsp;|&nbsp; us-central1 &nbsp;|&nbsp; scales to zero"]
+        direction LR
+        I[Intake<br/>redact, quote, quarantine] --> C[Curate<br/>antibiogram to CLSI M39]
+        C --> W[Course Watch<br/>5 wakes through day 14]
+        W --> R[Reconcile<br/>verify or abstain]
+    end
 
-  UI --> API --> SPINE --> FS
-  SCHED --> FS
-  SPINE --> TRACE
-  API <--> REGISTRY
-  SPINE --> MEMORY --> SPINE
-  REGISTRY --- RUNTIME
-  RUNTIME --- GATEWAY
-  FDA[openFDA Drug Shortages] --> FLEET
-  FLEET -->|"redaction gate: identifiers stripped BEFORE this boundary"| GEM
-  FLEET --> GEMMA
+    V[Vertex AI, global<br/>Gemini 3.5 Flash + Gemma 4 MaaS]
+    F[(Firestore<br/>grids, courses, wakes, proofs)]
+    SCH[Cloud Scheduler<br/>wakes every minute, shortages daily]
+
+    UI --> I
+    API[Approved client<br/>hash-only API key] --> I
+    I -->|redaction gate crossed here| V
+    LV -->|image only, graded, writes nothing| V
+    C <--> F
+    RT --> F
+    SCH --> W
+    SCH --> SW[Shortage Watch] --> R
+    FDA[openFDA] --> SW
+    R --> H[Pharmacist-reviewed draft]
+    G[Agent Registry, Runtime, Identity,<br/>Gateway, Model Armor] <--> I
+    R --> T[Cloud Trace and Logging]
 ```
 
 Caption under the diagram, verbatim: "Storage and compute are pinned to us-central1 and enforced
 by code. Gemini 3.x is served only globally; the redaction gate is why crossing that boundary is
-acceptable."
+acceptable. The two public checks on the left are the ones a judge can run without a credential."
 
 ## 4. README skeleton (repo root)
 
