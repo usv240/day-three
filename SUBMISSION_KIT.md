@@ -92,39 +92,23 @@ media. The canonical Mermaid source remains below. If Devpost requires PNG inste
 render it at 2x; keep the diagram readable at video resolution and under roughly twelve boxes.
 
 ```mermaid
-%% Day Three, as built. Kept deliberately small: the pipeline reads left to right,
-%% and everything else attaches to exactly one stage.
-flowchart LR
-    subgraph public["Public surface, no credentials"]
-        direction TB
-        UI[Judge console<br/>synthetic reports, simulated clock]
-        LV[Live check<br/>read a lab report now]
-        RT[Real timer<br/>wall-clock wake]
-    end
+%% Day Three, as built. One service, one database, one scheduler.
+%% Kept deliberately small: this is the submission diagram, not an inventory.
+flowchart TB
+    B["Browser or API client<br/>no login needed"]
+    V["Vertex AI<br/>Gemini 3.5 Flash reads the report<br/>Gemma 4 checks it for identifiers"]
+    CR["Cloud Run: day-three<br/>us-central1, scales to zero<br/>Read, Curate, Schedule, Reconcile, Verify"]
+    PH["Pharmacist<br/>reviews and decides.<br/>Nothing acts alone."]
+    AR["Agent Registry<br/>8 entries. Other teams<br/>need the right scope."]
+    FS[("Firestore<br/>the antibiogram, and<br/>work due days from now")]
+    SCH["Cloud Scheduler<br/>checks for work<br/>that has come due"]
 
-    subgraph run["Cloud Run: day-three &nbsp;|&nbsp; us-central1 &nbsp;|&nbsp; scales to zero"]
-        direction LR
-        I[Intake<br/>redact, quote, quarantine] --> C[Curate<br/>antibiogram to CLSI M39]
-        C --> W[Course Watch<br/>5 wakes through day 14]
-        W --> R[Reconcile<br/>verify or abstain]
-    end
-
-    V[Vertex AI, global<br/>Gemini 3.5 Flash + Gemma 4 MaaS]
-    F[(Firestore<br/>grids, courses, wakes, proofs)]
-    SCH[Cloud Scheduler<br/>wakes every minute, shortages daily]
-
-    UI --> I
-    API[Approved client<br/>hash-only API key] --> I
-    I -->|redaction gate crossed here| V
-    LV -->|image only, graded, writes nothing| V
-    C <--> F
-    RT --> F
-    SCH --> W
-    SCH --> SW[Shortage Watch] --> R
-    FDA[openFDA] --> SW
-    R --> H[Pharmacist-reviewed draft]
-    G[Agent Registry, Runtime, Identity,<br/>Gateway, Model Armor] <--> I
-    R --> T[Cloud Trace and Logging]
+    B --> CR
+    CR -->|"identifiers removed first"| V
+    CR -->|"cited draft"| PH
+    CR <-->|"scope checks"| AR
+    CR <-->|"reads and writes"| FS
+    SCH -->|"wakes it up"| CR
 ```
 
 Caption under the diagram, verbatim: "Storage and compute are pinned to us-central1 and enforced
