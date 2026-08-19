@@ -794,3 +794,80 @@ footer.site {
 @media (min-width: 620px) and (max-width: 899px) {
   .guided-controls { grid-template-columns: 1fr 1fr; }
 }
+/* Canonical header and workflow focus mode. */
+.brand {
+  display: inline-flex; align-items: baseline; gap: .35rem; min-width: 0;
+  color: var(--text); text-decoration: none; white-space: nowrap;
+}
+.brand:hover { color: var(--text); }
+.brand span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+header.site nav { justify-content: center; }
+.theme-toggle { flex: 0 0 auto; white-space: nowrap; }
+.console-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
+.workflow-tabs { display: none; }
+
+body.workflow-focus { overflow: hidden; }
+body.workflow-focus #console {
+  position: fixed; inset: 0; z-index: 120; overflow: hidden;
+  padding: 12px 0; background: var(--bg);
+}
+body.workflow-focus #console > .wrap {
+  max-width: none; height: 100%; display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+}
+body.workflow-focus #console .section-heading { margin-bottom: 8px; }
+body.workflow-focus #console .section-heading h2 { font-size: 1.45rem; }
+body.workflow-focus #console .console-shell {
+  min-height: 0; height: 100%; padding: 10px;
+  display: grid; grid-template-rows: auto auto auto minmax(0, 1fr);
+}
+body.workflow-focus #console .console-intro { padding-bottom: 8px; }
+body.workflow-focus #console .clock { margin-bottom: 8px; padding: 7px 11px; }
+body.workflow-focus #console .console { min-height: 0; height: 100%; }
+body.workflow-focus #console .pane { min-height: 0; height: 100%; max-height: none; }
+body.workflow-focus .activity-pane .stream { height: calc(100% - 28px); max-height: none; }
+
+@media (min-width: 901px) {
+  header.site .bar {
+    display: grid; grid-template-columns: minmax(200px, 1fr) auto minmax(120px, 1fr);
+  }
+  header.site .brand { margin-right: 0; max-width: 100%; justify-self: start; }
+  header.site .theme-toggle { justify-self: end; }
+}
+@media (max-width: 1180px) {
+  header.site .brand span { display: none; }
+}
+
+@media (max-width: 900px) {
+  header.site .brand { width: auto; }
+  header.site nav { justify-content: flex-start; }
+}
+
+@media (max-width: 1199px) {
+  body.workflow-focus .workflow-tabs {
+    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px;
+    margin-bottom: 8px;
+  }
+  body.workflow-focus .workflow-tabs button {
+    min-height: 40px; padding: 6px 8px; font-size: .8rem;
+  }
+  body.workflow-focus .workflow-tabs button[aria-selected="true"] {
+    background: var(--accent); border-color: var(--accent); color: var(--accent-text);
+  }
+  body.workflow-focus #console .console { display: block; }
+  body.workflow-focus #console .pane { display: none; overflow: auto; }
+  body.workflow-focus[data-workflow-pane="controls"] .controls-pane,
+  body.workflow-focus[data-workflow-pane="activity"] .activity-pane,
+  body.workflow-focus[data-workflow-pane="antibiogram"] .antibiogram-pane { display: block; }
+}
+
+@media (max-width: 620px) {
+  body.workflow-focus #console { padding: 8px 0; }
+  body.workflow-focus #console .section-heading > p { display: none; }
+  body.workflow-focus #console .section-heading h2 { font-size: 1.2rem; }
+  body.workflow-focus #console .console-intro { align-items: stretch; gap: 8px; }
+  body.workflow-focus #console .console-intro > p { display: none; }
+  body.workflow-focus #console .console-actions { justify-content: stretch; }
+  body.workflow-focus #console .console-actions > * { flex: 1 1 auto; }
+  body.workflow-focus #console .clock .note { display: none; }
+}

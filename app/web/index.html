@@ -6,17 +6,17 @@
 <title>Day Three: the antibiotic review limited teams can miss</title>
 <meta name="description" content="An agent fleet that builds local susceptibility evidence, then wakes on its own at hour 48 to support an antibiotic review.">
 <meta name="theme-color" content="#f7f9fc">
-<link rel="stylesheet" href="/static/styles.css">
+<link rel="stylesheet" href="/static/styles.css?v=20260819-workspace">
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to main content</a>
 
 <header class="site">
   <div class="wrap bar">
-    <div class="brand">Day Three <span>- antibiotic stewardship for hospitals that cannot staff it</span></div>
+    <a class="brand" href="/" aria-label="Day Three home">Day Three <span>antibiotic stewardship for limited hospital teams</span></a>
     <nav aria-label="Primary">
       <a href="#problem">Overview</a>
-      <a href="#console">Live demo</a>
+      <a href="#console" data-workflow-focus>Live demo</a>
       <a href="/developer">Developer API</a>
       <a href="/docs">API docs</a>
       <a href="/judges">Judge evidence</a>
@@ -38,7 +38,7 @@
           have, sleeps while nothing is due, then wakes at hour 48 with a source-grounded review
           for a licensed pharmacist.</p>
         <div class="btn-row">
-          <a class="btn btn-primary" href="#console">Run the live workflow</a>
+          <a class="btn btn-primary" href="#console" data-workflow-focus>Run the live workflow</a>
           <a class="btn" href="/judges">Follow the judge path</a>
         </div>
         <p class="hero-tertiary">The public demo needs no key. Building an integration? <a href="/developer">Create an invited API key</a> or <a href="/docs">inspect the API docs</a>.</p>
@@ -192,7 +192,7 @@
     <div class="console-intro">
       <p><b>Recommended walkthrough:</b> follow steps 1 to 4. Disabled controls enforce that order,
         and every state change runs live.</p>
-      <a class="btn" href="/judges">Open judge evidence</a>
+      <div class="console-actions"><button class="btn-primary" id="workflow-focus" type="button" aria-pressed="false">Open full-screen workflow</button><a class="btn" href="/judges">Open judge evidence</a></div>
     </div>
     <div class="clock">
       <span>Clock:</span>
@@ -200,9 +200,14 @@
       <span class="note">Simulated<button class="info" data-info="simulated-clock" aria-label="What is the simulated clock?">i</button>. Production uses the same scheduler in real time.</span>
     </div>
 
+    <div class="workflow-tabs" role="tablist" aria-label="Workflow panels">
+      <button type="button" role="tab" id="workflow-tab-controls" aria-selected="true" aria-controls="workflow-controls" data-workflow-tab="controls">Controls</button>
+      <button type="button" role="tab" id="workflow-tab-activity" aria-selected="false" aria-controls="workflow-activity" data-workflow-tab="activity">Activity</button>
+      <button type="button" role="tab" id="workflow-tab-antibiogram" aria-selected="false" aria-controls="workflow-antibiogram" data-workflow-tab="antibiogram">Antibiogram</button>
+    </div>
     <div class="console">
       <!-- Inputs -->
-      <div class="pane controls-pane">
+      <div class="pane controls-pane" id="workflow-controls" role="tabpanel" aria-labelledby="workflow-tab-controls">
         <h3>Guided controls</h3>
         <div class="guided-controls">
           <div class="control-group">
@@ -232,16 +237,16 @@
       </div>
 
       <!-- Activity -->
-      <div class="pane activity-pane">
+      <div class="pane activity-pane" id="workflow-activity" role="tabpanel" aria-labelledby="workflow-tab-activity">
         <h3>Agent activity</h3>
         <div class="stream" id="stream" aria-live="polite" aria-relevant="additions">
           <div class="event"><span class="agent">system</span><div>Ready. Press
-            <b>Start from a clean slate</b> to begin.</div></div>
+            <b>Reset demo</b> to begin.</div></div>
         </div>
       </div>
 
       <!-- Output -->
-      <div class="pane antibiogram-pane">
+      <div class="pane antibiogram-pane" id="workflow-antibiogram" role="tabpanel" aria-labelledby="workflow-tab-antibiogram">
         <h3>The antibiogram
           <button class="info" data-info="antibiogram" aria-label="What is an antibiogram?">i</button>
         </h3>
@@ -466,6 +471,6 @@
 </footer>
 
 <div class="popover" id="popover" role="dialog" aria-modal="false" hidden></div>
-<script src="/static/app.js"></script>
+<script src="/static/app.js?v=20260819-workspace"></script>
 </body>
 </html>

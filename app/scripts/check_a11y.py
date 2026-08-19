@@ -152,6 +152,43 @@ def main() -> int:
         print("    FAIL  developer journey or credential-storage boundary is incomplete")
     print()
 
+    print("Canonical header and focused workflow\n")
+    judges = (WEB / "judges.html").read_text(encoding="utf-8")
+    service_main = (WEB.parent / "service" / "main.py").read_text(encoding="utf-8")
+    app_js = (WEB / "app.js").read_text(encoding="utf-8")
+    brand_ok = all(
+        '<a class="brand" href="/" aria-label="Day Three home">' in page
+        for page in (landing, developer, judges)
+    )
+    version_ok = all("?v=20260819-workspace" in page for page in (landing, developer, judges))
+    focus_html = (
+        'id="workflow-focus"',
+        'data-workflow-focus',
+        'role="tablist"',
+        'data-workflow-tab="controls"',
+        'data-workflow-tab="activity"',
+        'data-workflow-tab="antibiogram"',
+    )
+    focus_css = (
+        "body.workflow-focus #console",
+        "@media (max-width: 1199px)",
+        'body.workflow-focus[data-workflow-pane="controls"] .controls-pane',
+    )
+    cache_ok = 'response.headers["Cache-Control"] = "no-cache, max-age=0, must-revalidate"' in service_main
+    header_focus_ok = (
+        brand_ok
+        and version_ok
+        and all(token in landing for token in focus_html)
+        and all(token in css for token in focus_css)
+        and all(token in app_js for token in ("function setWorkflowFocus", "function selectWorkflowPane", "Escape"))
+        and cache_ok
+    )
+    if header_focus_ok:
+        print("    PASS  Day Three returns home, assets revalidate, and every viewport has a focused workflow")
+    else:
+        failures.append("canonical header, cache policy, or focused workflow is incomplete")
+        print("    FAIL  header home, fresh assets, or focused workflow behavior is incomplete")
+    print()
     print("Console workspace layout\n")
     app_js = (WEB / "app.js").read_text(encoding="utf-8")
     workspace_tokens = (
@@ -176,6 +213,7 @@ def main() -> int:
         all(token in landing for token in workspace_tokens)
         and all(token in css for token in layout_tokens)
         and all(token in app_js for token in renderer_tokens)
+        and "Start from a clean slate" not in landing
     )
     if workspace_ok:
         print("    PASS  controls fit the task workspace and the full grid needs no horizontal scroll")

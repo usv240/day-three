@@ -114,6 +114,17 @@ app.include_router(build_developer_router(
 ))
 _WEB = Path(__file__).resolve().parent.parent / "web"
 public_surface = "day-three"
+
+
+@app.middleware("http")
+async def prevent_stale_ui(request, call_next):
+    response = await call_next(request)
+    path = request.url.path
+    if path in {"/", "/judges", "/developer"} or path.endswith((".css", ".js", ".json")):
+        response.headers["Cache-Control"] = "no-cache, max-age=0, must-revalidate"
+    return response
+
+
 if _WEB.is_dir():
     app.mount("/static", StaticFiles(directory=_WEB), name="static")
 
