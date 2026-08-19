@@ -215,6 +215,13 @@ button[disabled] { opacity: .5; cursor: not-allowed; }
 .prove-facts > div { display: flex; flex-direction: column; gap: 2px; }
 .prove-facts dt { color: var(--text-muted); font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; }
 .prove-facts dd { margin: 0; font-variant-numeric: tabular-nums; }
+/* The precise version, for the reader who wants it. Plain English carries the meaning above;
+   this line carries the exact product names a technical reader is looking for. */
+.prove-tech {
+  margin: 0; padding: 10px 12px; border-left: 2px solid var(--border-strong);
+  background: var(--surface); border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  color: var(--text-muted); font-size: .8rem; line-height: 1.5;
+}
 .prove-boundary { margin: auto 0 0; padding-top: 12px; border-top: 1px solid var(--border); color: var(--text-muted); font-size: .8rem; }
 
 /* --- Info button -------------------------------------------------------- */

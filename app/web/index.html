@@ -6,7 +6,7 @@
 <title>Day Three: the antibiotic review limited teams can miss</title>
 <meta name="description" content="An agent fleet that builds local susceptibility evidence, then wakes on its own at hour 48 to support an antibiotic review.">
 <meta name="theme-color" content="#f7f9fc">
-<link rel="stylesheet" href="/static/styles.css?v=20260819-hero">
+<link rel="stylesheet" href="/static/styles.css?v=20260819-plain">
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to main content</a>
@@ -49,24 +49,23 @@
         </div>
       </div>
       <aside class="hero-proof" aria-label="Check it yourself">
-        <span class="proof-label">Do not take our word for it</span>
-        <p class="proof-intro">The guided demo replays a recorded model answer and runs a
-          simulated clock, and says so. These two controls remove both caveats.</p>
+        <span class="proof-label">Don't take our word for it</span>
+        <p class="proof-intro">The walkthrough below uses a saved AI answer and a fast-forwarded
+          clock, and says so as you go. These two checks do it for real.</p>
         <ul class="proof-checks">
           <li>
-            <a href="#prove"><b>Read a scan live</b></a>
-            <span>Calls Gemini 3.5 Flash on Vertex AI when you press it, then grades the fresh
-              answer against the same ground truth as our published score.</span>
+            <a href="#prove"><b>Watch the AI read a page</b></a>
+            <span>Hands a scanned lab report to Google's AI while you wait, then scores what it
+              read against the correct answers.</span>
           </li>
           <li>
-            <a href="#prove"><b>Fire a wake on the real clock</b></a>
-            <span>Registers work that no button can advance. Only the every-minute scheduled
-              worker can claim it.</span>
+            <a href="#prove"><b>Make it wake up on its own</b></a>
+            <span>Books a job for a few minutes from now. Nothing on this page can rush it. Only
+              real time passing will.</span>
           </li>
         </ul>
-        <p class="proof-footnote">Both run against the deployed service. The live call is
-          credential-free and capped by a shared daily budget, because it costs real money.
-          Full measured results are on the <a href="/judges">judge evidence page</a>.</p>
+        <p class="proof-footnote">Both run on the live service. No sign-up. Full measured results
+          are on the <a href="/judges">judge evidence page</a>.</p>
       </aside>
     </div>
     <div class="stat-strip" aria-label="Published context">
@@ -277,36 +276,41 @@
   <div class="wrap">
     <div class="section-heading">
       <div>
-        <p class="eyebrow">Check the two weakest claims</p>
-        <h2>Two things you should not take on trust.</h2>
+        <p class="eyebrow">Check it yourself</p>
+        <h2>Two things you shouldn't take on trust.</h2>
       </div>
-      <p>The guided demo replays recorded model output and advances a simulated clock, both stated
-        on screen. These two controls remove that caveat: one calls Gemini live right now, the
-        other registers a wake that only real time and a scheduled worker can fire.</p>
+      <p>The walkthrough uses a saved AI answer and a fast-forwarded clock, and says so on screen.
+        That is fair to be sceptical about. So here are both, for real, right now.</p>
     </div>
     <div class="prove-grid">
       <article class="prove-card">
-        <h3>1. Call Gemini live, right now</h3>
-        <p>Sends the same scan, with no source text, to Gemini 3.5 Flash on Vertex AI and grades
-          the fresh answer against the same ground truth as the published 29 of 29 figure.</p>
-        <button id="btn-live-call" type="button">Read a scan live</button>
-        <p class="small muted" id="live-call-budget">Checking today's live-call budget.</p>
-        <p class="small muted">Expect 20 to 30 seconds. It is transcribing a scanned page, not
+        <h3>1. Watch the AI read a page</h3>
+        <p>We hand Google's AI a photo of a lab report &mdash; just the picture, with no text to
+          copy from &mdash; and score what it reads against the correct answers. It is scored
+          exactly the way we scored the reading we published, which got 29 of 29 right.</p>
+        <p class="prove-tech">Gemini 3.5 Flash on Vertex AI. Image only, no source text, graded by
+          the same code as the published run.</p>
+        <button id="btn-live-call" type="button">Read a lab report now</button>
+        <p class="small muted" id="live-call-budget">Checking how many checks are left today.</p>
+        <p class="small muted">Takes 20 to 30 seconds, because it is reading a picture rather than
           answering from text.</p>
         <div class="prove-result" id="live-call-result" aria-live="polite" hidden></div>
-        <p class="prove-boundary">Runs on a shared daily budget because it costs real money. It
-          never writes to the antibiogram, so pressing it cannot alter the demo.</p>
+        <p class="prove-boundary">Free to use, with a daily limit shared by everyone, because each
+          reading costs us real money. It never changes the results table, so pressing it cannot
+          disturb anything else on this page.</p>
       </article>
       <article class="prove-card">
-        <h3>2. Watch a wake fire on the real clock</h3>
-        <p>Registers a wake on wall-clock time in a separate namespace. The simulated demo clock
-          cannot advance it. A scheduled worker running every minute is the only thing that can
-          claim it.</p>
-        <button id="btn-realtime-proof" type="button">Register a real-time wake</button>
-        <p class="small muted" id="realtime-proof-status">Nothing registered yet.</p>
+        <h3>2. Make it wake up on its own</h3>
+        <p>The walkthrough fast-forwards a two-week schedule into a few clicks. This does not. It
+          books a job for a couple of minutes from now, and nothing on this page can move it
+          &mdash; only real time passing, and a background service that checks once a minute.</p>
+        <p class="prove-tech">A real-clock wake in its own project space, claimed by the
+          every-minute Cloud Scheduler job, never by the demo clock.</p>
+        <button id="btn-realtime-proof" type="button">Start a real timer</button>
+        <p class="small muted" id="realtime-proof-status">Nothing booked yet.</p>
         <div class="prove-result" id="realtime-proof-result" aria-live="polite" hidden></div>
-        <p class="prove-boundary">You can close this page. The record keeps its own timestamps and
-          the worker that claimed it, so the wait is verifiable afterwards.</p>
+        <p class="prove-boundary">You can close this page and come back. It records when it was
+          booked, when it ran, and which machine ran it.</p>
       </article>
     </div>
   </div>
@@ -548,6 +552,6 @@
 
 <div class="popover" id="popover" role="dialog" aria-modal="false" hidden></div>
 <script src="/static/live-stack.js?v=20260819b"></script>
-<script src="/static/app.js?v=20260819-proof"></script>
+<script src="/static/app.js?v=20260819-plain"></script>
 </body>
 </html>
