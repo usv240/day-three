@@ -6,7 +6,7 @@
 <title>Day Three: the antibiotic review limited teams can miss</title>
 <meta name="description" content="An agent fleet that builds local susceptibility evidence, then wakes on its own at hour 48 to support an antibiotic review.">
 <meta name="theme-color" content="#f7f9fc">
-<link rel="stylesheet" href="/static/styles.css?v=20260819-shell">
+<link rel="stylesheet" href="/static/styles.css?v=20260819-proof">
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to main content</a>
@@ -263,6 +263,46 @@
   </div>
 </section>
 
+<!-- 5b. Independent proof: the two things a sceptical reader should not take on trust -->
+<section id="prove" class="prove-section">
+  <div class="wrap">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Check the two weakest claims</p>
+        <h2>Two things you should not take on trust.</h2>
+      </div>
+      <p>The guided demo replays recorded model output and advances a simulated clock, both stated
+        on screen. These two controls remove that caveat: one calls Gemini live right now, the
+        other registers a wake that only real time and a scheduled worker can fire.</p>
+    </div>
+    <div class="prove-grid">
+      <article class="prove-card">
+        <h3>1. Call Gemini live, right now</h3>
+        <p>Sends the same scan, with no source text, to Gemini 3.5 Flash on Vertex AI and grades
+          the fresh answer against the same ground truth as the published 29 of 29 figure.</p>
+        <button id="btn-live-call" type="button">Read a scan live</button>
+        <p class="small muted" id="live-call-budget">Checking today's live-call budget.</p>
+        <p class="small muted">Expect 20 to 30 seconds. It is transcribing a scanned page, not
+          answering from text.</p>
+        <div class="prove-result" id="live-call-result" aria-live="polite" hidden></div>
+        <p class="prove-boundary">Runs on a shared daily budget because it costs real money. It
+          never writes to the antibiogram, so pressing it cannot alter the demo.</p>
+      </article>
+      <article class="prove-card">
+        <h3>2. Watch a wake fire on the real clock</h3>
+        <p>Registers a wake on wall-clock time in a separate namespace. The simulated demo clock
+          cannot advance it. A scheduled worker running every minute is the only thing that can
+          claim it.</p>
+        <button id="btn-realtime-proof" type="button">Register a real-time wake</button>
+        <p class="small muted" id="realtime-proof-status">Nothing registered yet.</p>
+        <div class="prove-result" id="realtime-proof-result" aria-live="polite" hidden></div>
+        <p class="prove-boundary">You can close this page. The record keeps its own timestamps and
+          the worker that claimed it, so the wait is verifiable afterwards.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
 <!-- 6. Limits -->
 <section id="api" class="integration-section">
   <div class="wrap">
@@ -498,7 +538,7 @@
 </footer>
 
 <div class="popover" id="popover" role="dialog" aria-modal="false" hidden></div>
-<script src="/static/live-stack.js?v=20260819"></script>
-<script src="/static/app.js?v=20260819-shell"></script>
+<script src="/static/live-stack.js?v=20260819b"></script>
+<script src="/static/app.js?v=20260819-proof"></script>
 </body>
 </html>

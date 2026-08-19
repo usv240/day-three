@@ -37,7 +37,15 @@ from spine.state import Runner, RunStatus, StepDef
 from spine.untrusted import prepare
 from spine.verify import Claim, ClaimKind, SourceRef, Verifier
 from spine.wake import Wake, WakeScheduler, WakeStatus
+from day_three.grading import truth_susceptibilities  # noqa: F401  (shared grader, used by routes)
+from day_three.intake import IntakeAgent, VertexClient
+from day_three.live_budget import FirestoreCounterStore, LiveCallBudget
 from day_three.managed_memory import ManagedMemoryBank
+from day_three.realtime_proof import (
+    KIND as REALTIME_KIND,
+    PROJECT as REALTIME_PROJECT,
+    RealtimeProofStore,
+)
 from day_three.store import CourseStore, IsolateStore
 from day_three.wake_actions import CourseActionExecutor
 from day_three.shortages import OpenFdaClient, ShortageStore, ShortageWatch
@@ -69,6 +77,15 @@ app = FastAPI(
 
 def scheduler() -> WakeScheduler:
     return WakeScheduler(wake_store, clock, lease_seconds=settings.lease_seconds)
+
+
+# The demo clock is simulated so a fourteen-day ladder fits in a four-minute video, which
+# means `scheduler()` above answers "what is due?" against a clock a visitor can move. The
+# wall-clock proof needs the opposite guarantee, so it gets its own scheduler bound to real
+# time and its own project namespace. Neither can dispatch the other's wakes.
+realtime_clock = RealClock()
+
+
 
 
 def runner() -> Runner:
@@ -110,7 +127,34 @@ from spine.api_access import ApiKeyAuthenticator  # noqa: E402
 from spine.api_key_store import FirestoreApiKeyStore  # noqa: E402
 from spine.developer_access import KeyIssuer, build_developer_router  # noqa: E402
 
-app.include_router(build_router(client, clock, scheduler, runner, managed_memory))
+live_budget = LiveCallBudget.from_environment(FirestoreCounterStore(client))
+
+
+def live_intake_agent() -> IntakeAgent:
+    """The real Gemini path, constructed exactly as scripts/record_intake.py constructs it.
+
+    Deliberately no Gemma reviewer here. The recorder builds `IntakeAgent(client)` with the
+    deterministic redactor only, so adding a second model to this route would make the live call
+    a different job from the recorded one and the published comparison would not hold. It also
+    roughly halves the latency, which matters for a button a judge is watching.
+    """
+    return IntakeAgent(
+        VertexClient(settings.project_id, settings.model_location, settings.model_flash)
+    )
+
+
+live_intake_agent.model_name = settings.model_flash  # type: ignore[attr-defined]
+
+app.include_router(build_router(
+    client,
+    clock,
+    scheduler,
+    runner,
+    managed_memory,
+    live_intake_factory=live_intake_agent,
+    live_budget=live_budget,
+    realtime_clock=realtime_clock,
+))
 developer_key_store = FirestoreApiKeyStore(client, "day-three")
 beta_auth = ApiKeyAuthenticator.from_environment(dynamic_lookup=developer_key_store.get)
 key_issuer = KeyIssuer.from_environment(
@@ -174,7 +218,19 @@ def health() -> dict[str, Any]:
         "beta_api": "configured" if beta_auth.enabled else "not_provisioned",
         "developer_key_issuance": "invite_only" if key_issuer.enabled else "disabled",
         "worker": worker_id,
-        "now": clock.now().isoformat(),
+        # Two clocks, named for what they are. Reporting the simulated reading as plain "now"
+        # made /health show a date months in the future once rehearsals had advanced the demo,
+        # which reads as a broken service rather than a compressed timeline.
+        "wall_clock_now": realtime_clock.now().isoformat(),
+        "simulated_now": clock.now().isoformat() if settings.sim_mode else None,
+        "simulated_clock_offset_days": (
+            round((clock.now() - realtime_clock.now()).total_seconds() / 86400, 2)
+            if settings.sim_mode
+            else 0
+        ),
+        "live_model_calls_today": live_budget.check(
+            realtime_clock.now(), "health"
+        ).as_dict(),
     }
 
 
@@ -194,6 +250,30 @@ def scan_due(limit: int = 50) -> dict[str, Any]:
                 "Due actions were recorded idempotently and wakes completed. "
                 "No external contact or submission occurred."
             ),
+        }
+
+
+@app.post("/internal/scan-due-realtime")
+def scan_due_realtime(limit: int = 20) -> dict[str, Any]:
+    """Wall-clock counterpart to /internal/scan-due, called every minute by Cloud Scheduler.
+
+    Bounded to the wall-clock proof namespace on purpose. The demo namespace stays on the
+    simulated clock, so this job can never fire a judge's demo wake early.
+    """
+    with span("run", "scan-due-realtime", **{"scan.limit": limit}):
+        store = RealtimeProofStore(client)
+        now = realtime_clock.now()
+        claimed = []
+        for record in store.due(now, limit):
+            store.mark_fired(record.proof_id, now, worker_id)
+            claimed.append(record.proof_id)
+        return {
+            "now": now.isoformat(),
+            "clock": "wall",
+            "kind": REALTIME_KIND,
+            "project": REALTIME_PROJECT,
+            "executed": claimed,
+            "count": len(claimed),
         }
 
 

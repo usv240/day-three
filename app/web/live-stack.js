@@ -2,10 +2,28 @@
   const header = document.querySelector("header.site .bar");
   if (!header || header.querySelector("[data-live-stack]")) return;
 
+  // Tiers carry meaning: what runs in every request, what is provisioned and
+  // independently verifiable, and what is auxiliary. The panel styles them
+  // differently so visual weight matches evidentiary weight.
   const groups = [
-    ["Live request path", ["Gemini 3.5 Flash on Vertex AI", "Cloud Run", "Firestore", "Cloud Scheduler", "Cloud Trace and Logging", "Secret Manager"]],
-    ["Managed agent platform", ["Agent Registry", "Agent Runtime and Agent Identity", "Agent Gateway", "Model Armor", "Memory Bank"]],
-    ["Additional Google AI", ["Gemma 4 MaaS privacy review", "Gemini 3.1 Flash Image and Veo 3.1 Fast recorded media"]],
+    {
+      tier: "live",
+      title: "Live request path",
+      note: "Deployed and serving this build. Console model output is replayed from recorded Gemini calls; /v1 calls Gemini live.",
+      items: ["Gemini 3.5 Flash on Vertex AI", "Cloud Run", "Firestore", "Cloud Scheduler", "Cloud Trace and Logging", "Secret Manager"],
+    },
+    {
+      tier: "managed",
+      title: "Managed agent platform",
+      note: "Read live at /day-three/platform",
+      items: ["Agent Registry", "Agent Runtime and Agent Identity", "Agent Gateway", "Model Armor", "Memory Bank"],
+    },
+    {
+      tier: "extra",
+      title: "Additional Google AI",
+      note: "Privacy review and recorded onboarding media",
+      items: ["Gemma 4 MaaS", "Gemini 3.1 Flash Image", "Veo 3.1 Fast"],
+    },
   ];
 
   const widget = document.createElement("div");
@@ -15,11 +33,19 @@
     <button class="live-stack-trigger" type="button" aria-expanded="false" aria-controls="live-stack-panel">
       <span class="live-stack-dot" aria-hidden="true"></span><span>Live stack</span>
     </button>
-    <section class="live-stack-panel" id="live-stack-panel" aria-label="Technology used by Day Three">
-      <div class="live-stack-heading"><span class="live-stack-dot" aria-hidden="true"></span><div><strong>Running on Google Cloud</strong><small>Verified services in this build</small></div></div>
-      ${groups.map(([title, items]) => `<div class="live-stack-group"><b>${title}</b><ul>${items.map((item) => `<li>${item}</li>`).join("")}</ul></div>`).join("")}
+    <div class="live-stack-panel" id="live-stack-panel" role="group" aria-label="Technology used by Day Three">
+      <div class="live-stack-heading">
+        <span class="live-stack-dot" aria-hidden="true"></span>
+        <div><strong>Running on Google Cloud</strong><small>Verified services in this build</small></div>
+      </div>
+      ${groups.map((group) => `
+      <div class="live-stack-group" data-tier="${group.tier}">
+        <b>${group.title}</b>
+        <span class="live-stack-groupnote">${group.note}</span>
+        <ul>${group.items.map((item) => `<li>${item}</li>`).join("")}</ul>
+      </div>`).join("")}
       <p class="live-stack-note">Technology used; no endorsement implied.</p>
-    </section>`;
+    </div>`;
 
   const theme = header.querySelector(".theme-toggle");
   const actions = document.createElement("div");

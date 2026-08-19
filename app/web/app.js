@@ -438,3 +438,121 @@ refreshGrid();
 updateWorkflowGuide();
 updateActivityDisclosure();
 setInterval(refreshClock, 15000);
+
+/* --- Independent proof ---------------------------------------------------
+   Two controls that exist because the guided demo, honestly labelled, still leaves two claims
+   resting on things a visitor cannot check: the model output is replayed, and the clock is
+   simulated. These remove both caveats. Neither touches demo state. */
+
+const liveCallButton = $("#btn-live-call");
+const liveCallBudget = $("#live-call-budget");
+const liveCallResult = $("#live-call-result");
+
+function renderBudget(data) {
+  if (!data || data.available === false) {
+    liveCallBudget.textContent = "Live model calls are not enabled on this deployment.";
+    if (liveCallButton) liveCallButton.disabled = true;
+    return;
+  }
+  const left = data.live_calls_allowed_today - data.live_calls_used_today;
+  const yours = data.your_calls_allowed_today - data.your_calls_used_today;
+  liveCallBudget.textContent =
+    `${left} of ${data.live_calls_allowed_today} live calls left today across all visitors; ${yours} left for you.`;
+  if (liveCallButton) liveCallButton.disabled = left <= 0 || yours <= 0;
+}
+
+async function refreshLiveBudget() {
+  if (!liveCallBudget) return;
+  const { ok, data } = await api("/day-three/live-intake");
+  if (ok) renderBudget(data);
+}
+
+if (liveCallButton) {
+  liveCallButton.addEventListener("click", async () => {
+    liveCallButton.disabled = true;
+    liveCallBudget.textContent = "Calling Gemini 3.5 Flash on Vertex AI…";
+    log("intake", "Live model call started. This is not a recording.");
+    const { ok, data } = await api("/day-three/live-intake", { fixture: "ecoli_urine" });
+    liveCallResult.hidden = false;
+    if (!ok) {
+      liveCallResult.innerHTML = `<p class="prove-fail">${data.detail || "The live call did not complete."}</p>`;
+      liveCallBudget.textContent = "";
+      log("intake", "Live model call refused or failed.", data.detail || "", "warn");
+      await refreshLiveBudget();
+      return;
+    }
+    const invented = Object.keys(data.invented || {}).length;
+    liveCallResult.innerHTML = `
+      <p class="prove-headline">${data.correct} of ${data.of} susceptibility results correct, ${invented} invented.</p>
+      <dl class="prove-facts">
+        <div><dt>Model</dt><dd>${data.model}</dd></div>
+        <div><dt>Organism read</dt><dd>${data.organism}</dd></div>
+        <div><dt>Answered in</dt><dd>${data.latency_ms} ms</dd></div>
+        <div><dt>Published recorded run</dt><dd>${data.recorded_run.correct} of ${data.recorded_run.of}</dd></div>
+      </dl>
+      <p class="small muted">Called at ${new Date(data.called_at).toLocaleTimeString()}. Graded against the same ground truth file as the published accuracy report.</p>`;
+    renderBudget(data.budget ? { available: true, ...data.budget } : null);
+    log("intake", `Live Gemini call graded ${data.correct} of ${data.of}.`,
+      "Same scan, same prompt, and same grader as the recorded run.");
+  });
+  refreshLiveBudget();
+}
+
+const realtimeButton = $("#btn-realtime-proof");
+const realtimeStatus = $("#realtime-proof-status");
+const realtimeResult = $("#realtime-proof-result");
+let realtimePoll = null;
+
+function renderProof(data) {
+  realtimeResult.hidden = false;
+  if (data.fired) {
+    realtimeResult.innerHTML = `
+      <p class="prove-headline">Fired after ${Math.round(data.real_seconds_waited)} seconds of real time.</p>
+      <dl class="prove-facts">
+        <div><dt>Registered</dt><dd>${new Date(data.registered_at).toLocaleTimeString()}</dd></div>
+        <div><dt>Due</dt><dd>${new Date(data.due_at).toLocaleTimeString()}</dd></div>
+        <div><dt>Claimed</dt><dd>${new Date(data.fired_at).toLocaleTimeString()}</dd></div>
+        <div><dt>Claimed by</dt><dd>${data.fired_by_worker || "scheduled worker"}</dd></div>
+      </dl>
+      <p class="small muted">Nobody pressed anything to make this happen.</p>`;
+    return;
+  }
+  const left = Math.max(0, Math.round(data.seconds_until_due));
+  realtimeResult.innerHTML = `
+    <p class="prove-headline">${data.status === "due" ? "Due. Waiting for the next worker scan." : `Sleeping. Due in ${left} seconds.`}</p>
+    <p class="small muted">Proof ${data.proof_id}. You can close this page and check
+      <code>/day-three/realtime-proof/${data.proof_id}</code> later.</p>`;
+}
+
+if (realtimeButton) {
+  realtimeButton.addEventListener("click", async () => {
+    realtimeButton.disabled = true;
+    realtimeStatus.textContent = "Registering a wake on wall-clock time…";
+    const { ok, data } = await api("/day-three/realtime-proof", { delay_seconds: 120 });
+    if (!ok) {
+      realtimeStatus.textContent = data.detail || "Could not register the wall-clock wake.";
+      realtimeButton.disabled = false;
+      return;
+    }
+    realtimeStatus.textContent = `Registered. Due at ${new Date(data.due_at).toLocaleTimeString()}.`;
+    log("course-watch", "Wall-clock wake registered.",
+      "The simulated demo clock cannot advance this one.");
+
+    if (realtimePoll) clearInterval(realtimePoll);
+    const poll = async () => {
+      const { ok: pollOk, data: view } = await api(`/day-three/realtime-proof/${data.proof_id}`);
+      if (!pollOk) return;
+      renderProof(view);
+      if (view.fired) {
+        clearInterval(realtimePoll);
+        realtimePoll = null;
+        realtimeButton.disabled = false;
+        realtimeStatus.textContent = "Fired by the scheduled worker.";
+        log("course-watch", `Wall-clock wake fired after ${Math.round(view.real_seconds_waited)} real seconds.`,
+          `Claimed by ${view.fired_by_worker || "the scheduled worker"}.`);
+      }
+    };
+    await poll();
+    realtimePoll = setInterval(poll, 10000);
+  });
+}

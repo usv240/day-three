@@ -15,17 +15,19 @@ These are the endpoints the demo drives, in the order the video uses them:
 from __future__ import annotations
 
 import json
+import time
 import uuid
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
 from day_three.antibiogram import Antibiogram, Curator, Interpretation, Isolate
 from day_three.course import LADDER, Course, CourseWatch, WakeKind
+from day_three.grading import grade, truth_susceptibilities
 from day_three.intake import ExtractionError, IntakeAgent, ReplayClient
 from day_three.managed_registry import ManagedAgentRegistry, ManagedRegistryError
 from day_three.managed_memory import ManagedMemoryError
@@ -36,6 +38,15 @@ from day_three.reconcile import (
     Reconciler,
     claim_for_rendering,
     headline_for_rendering,
+)
+from day_three.realtime_proof import (
+    KIND as PROOF_KIND,
+    PROJECT as PROOF_PROJECT,
+    ProofRecord,
+    RealtimeProofStore,
+    clamp_delay,
+    due_at_for,
+    new_proof_id,
 )
 from day_three.registry import Department, ScopeDenied, day_three_catalog
 from day_three.store import AntibiogramStore, CourseStore, IsolateStore
@@ -52,6 +63,21 @@ PERIOD_END = datetime(2026, 12, 31, tzinfo=timezone.utc)
 # resolves those against module globals. A Pydantic model defined inside build_router() is
 # invisible to that lookup, so FastAPI silently degrades it to a query parameter and every
 # request 422s. Cost an hour once; keeping the note.
+class LiveIntakeRequest(BaseModel):
+    """Only a committed synthetic fixture may be sent to the live model.
+
+    The public cannot post free text here. That keeps a credential-free, paid route from becoming
+    a general-purpose model proxy, and it guarantees the live answer is graded against a truth
+    file that shipped with the repository.
+    """
+
+    fixture: str = Field(default="ecoli_urine", max_length=60)
+
+
+class RealtimeProofRequest(BaseModel):
+    delay_seconds: float | None = Field(default=None, ge=0, le=3600)
+
+
 class IntakeRequest(BaseModel):
     artifact_id: str
     patient_id: str
@@ -92,6 +118,40 @@ class ConsumeRequest(BaseModel):
 FIXTURES = Path(__file__).resolve().parent.parent / "fixtures"
 
 
+def _caller_key(request: Request) -> str:
+    """A coarse per-visitor key for budget purposes only.
+
+    Cloud Run puts the client address first in X-Forwarded-For. This is a spend guard, not an
+    authentication boundary, and it is never persisted against demo state or model input.
+    """
+    forwarded = request.headers.get("x-forwarded-for", "")
+    address = forwarded.split(",")[0].strip() if forwarded else ""
+    if not address and request.client is not None:
+        address = request.client.host or ""
+    import hashlib
+
+    return hashlib.sha256((address or "unknown").encode("utf-8")).hexdigest()[:16]
+
+
+def _safe_fixture(name: str) -> str:
+    safe = Path(name).name
+    if safe not in set(available_fixture_names()):
+        raise HTTPException(status_code=404, detail=f"unknown fixture {safe}")
+    return safe
+
+
+def _recorded_grade(name: str) -> dict[str, Any]:
+    """The published score for the same fixture, so live and recorded sit side by side."""
+    report = FIXTURES / "recordings" / "_accuracy_report.json"
+    if not report.exists():
+        return {}
+    for row in json.loads(report.read_text(encoding="utf-8")):
+        if row.get("fixture") == name:
+            return {"correct": row.get("correct"), "of": row.get("truth_count")}
+    return {}
+
+
+
 def available_fixture_names() -> list[str]:
     """Only publish recordings that have the scan and truth needed to run intake."""
     return sorted(
@@ -103,7 +163,17 @@ def available_fixture_names() -> list[str]:
     )
 
 
-def build_router(client, clock, scheduler, runner, memory_bank=None) -> APIRouter:
+def build_router(
+    client,
+    clock,
+    scheduler,
+    runner,
+    memory_bank=None,
+    *,
+    live_intake_factory=None,
+    live_budget=None,
+    realtime_clock=None,
+) -> APIRouter:
     router = APIRouter(prefix="", tags=["day-three"])
     antibiograms = AntibiogramStore(client)
     courses = CourseStore(client)
@@ -565,5 +635,148 @@ def build_router(client, clock, scheduler, runner, memory_bank=None) -> APIRoute
                 "Scope is organism-to-drug appropriateness only, which is checkable against a result.",
             ],
         }
+
+    # --- Prove the model is really there -----------------------------------------
+    #
+    # Everything above replays a recorded Gemini response so that rehearsing the demo is free.
+    # That is disclosed, but it means a visitor never sees a live model call, and `/health`
+    # publicly reports `replay_mode: true`. This route closes that gap: it runs the *same*
+    # extraction path against the *same* scan, live, right now, and grades the fresh answer
+    # against the same ground truth used for the published 29/29 figure.
+    #
+    # It deliberately does not write to the antibiogram. A judge can press it repeatedly without
+    # disturbing the demo state, and a live model call can never corrupt the recorded evidence.
+
+    @router.get("/day-three/live-intake")
+    def live_intake_status(request: Request) -> dict[str, Any]:
+        if live_budget is None or live_intake_factory is None:
+            return {"available": False, "reason": "live model calls are not configured here"}
+        decision = live_budget.check(datetime.now(timezone.utc), _caller_key(request))
+        return {"available": True, "fixtures": available_fixture_names(), **decision.as_dict()}
+
+    @router.post("/day-three/live-intake")
+    def live_intake(request: Request, body: LiveIntakeRequest) -> dict[str, Any]:
+        if live_budget is None or live_intake_factory is None:
+            raise HTTPException(
+                status_code=503,
+                detail="live model calls are not configured in this deployment",
+            )
+        safe = _safe_fixture(body.fixture)
+        scan = FIXTURES / "scans" / f"{safe}.jpg"
+        truth_file = FIXTURES / "scans" / f"{safe}.txt"
+        if not scan.exists() or not truth_file.exists():
+            raise HTTPException(status_code=404, detail=f"no scan for {safe}")
+
+        now = datetime.now(timezone.utc)
+        caller = _caller_key(request)
+        decision = live_budget.check(now, caller)
+        if not decision.allowed:
+            raise HTTPException(status_code=429, detail=decision.reason)
+
+        truth_text = truth_file.read_text(encoding="utf-8")
+        started = time.monotonic()
+        try:
+            # Identical task to the recording: the image only, no source text. Handing the
+            # model the truth file would make this an easier problem than the published run
+            # and the comparison would be worthless.
+            result = live_intake_factory().parse(
+                artifact_id=f"live_{uuid.uuid4().hex[:10]}",
+                document="",
+                patient_id=f"LIVE-{safe}",
+                image=scan.read_bytes(),
+            )
+        except ExtractionError as exc:
+            live_budget.consume(now, caller)
+            raise HTTPException(status_code=502, detail=f"live model call failed: {exc}") from exc
+        elapsed_ms = round((time.monotonic() - started) * 1000)
+        spent = live_budget.consume(now, caller)
+
+        truth = truth_susceptibilities(truth_text)
+        scored = grade(safe, result, truth)
+        recorded = _recorded_grade(safe)
+
+        return {
+            "live": True,
+            "replayed": False,
+            "fixture": safe,
+            "model": getattr(live_intake_factory, "model_name", "gemini-3.5-flash"),
+            "called_at": now.isoformat(),
+            "latency_ms": elapsed_ms,
+            "organism": scored["organism"],
+            "correct": scored["correct"],
+            "of": scored["truth_count"],
+            "invented": scored["invented"],
+            "missed": scored["missed"],
+            "quarantined": scored["quarantined"],
+            "recorded_run": recorded,
+            "matches_recorded_run": bool(recorded)
+            and recorded.get("correct") == scored["correct"],
+            "budget": spent.as_dict(),
+            "note": (
+                "A live Gemini call made when you pressed the button, graded against the same "
+                "ground truth as the published accuracy report. This route does not write to "
+                "the antibiogram, so pressing it never alters the demo state."
+            ),
+        }
+
+    # --- Prove the wake is really unattended --------------------------------------
+    #
+    # The console advances a simulated clock, which is stated on screen but leaves the async
+    # claim resting on a clock the visitor just moved. This registers a wake on the wall clock,
+    # in its own project namespace, that only the every-minute scheduled worker can dispatch.
+
+    @router.post("/day-three/realtime-proof")
+    def start_realtime_proof(request: Request, body: RealtimeProofRequest) -> dict[str, Any]:
+        if realtime_clock is None:
+            raise HTTPException(
+                status_code=503, detail="wall-clock proof is not configured in this deployment"
+            )
+        now = realtime_clock.now()
+        if live_budget is not None:
+            decision = live_budget.check(now, f"rt_{_caller_key(request)}")
+            if not decision.allowed:
+                raise HTTPException(status_code=429, detail=decision.reason)
+            live_budget.consume(now, f"rt_{_caller_key(request)}")
+
+        delay = clamp_delay(body.delay_seconds)
+        proof_id = new_proof_id()
+        # A run is still created so the record is traceable like any other durable work, but the
+        # due-work row deliberately does not go on the shared wake table: another deployment's
+        # unfiltered worker scans that table and would consume this with its own handler.
+        run_id = runner().start(PROOF_PROJECT, PROOF_KIND, {"proof_id": proof_id})
+        due_at = due_at_for(now, delay)
+        RealtimeProofStore(client).save(
+            ProofRecord(
+                proof_id=proof_id,
+                run_id=run_id,
+                wake_id=f"rtwk_{proof_id}",
+                registered_at=now,
+                due_at=due_at,
+                fired_at=None,
+                fired_by=None,
+            )
+        )
+        return {
+            "proof_id": proof_id,
+            "delay_seconds": delay,
+            "registered_at": now.isoformat(),
+            "due_at": due_at.isoformat(),
+            "poll": f"/day-three/realtime-proof/{proof_id}",
+            "note": (
+                "Close this page. A scheduled worker running every minute on wall-clock time "
+                "will claim it. Nothing here can be advanced by hand."
+            ),
+        }
+
+    @router.get("/day-three/realtime-proof/{proof_id}")
+    def read_realtime_proof(proof_id: str) -> dict[str, Any]:
+        if realtime_clock is None:
+            raise HTTPException(
+                status_code=503, detail="wall-clock proof is not configured in this deployment"
+            )
+        record = RealtimeProofStore(client).get(proof_id)
+        if record is None:
+            raise HTTPException(status_code=404, detail=f"no proof {proof_id}")
+        return record.view(realtime_clock.now())
 
     return router

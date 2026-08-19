@@ -57,13 +57,43 @@ cumulative context, wake status, and human-approval boundary together from intak
 | **1. Read** | Transcribes a synthetic microbiology report and removes direct identifiers before model review. | No real patient report enters this project. |
 | **2. Curate** | Normalizes organism and susceptibility fields, preserves provenance, and rejects unsupported values. | Ambiguous or unsupported facts are not silently filled in. |
 | **3. Aggregate** | Builds a deliberately small cumulative antibiogram with first-isolate handling and low-count suppression. | It is a demonstration view, not a certified laboratory report. |
-| **4. Wait** | Registers five inpatient wakes through day 14 in durable state, then sleeps until work is due. At hour 48, a claimed wake invokes reconciliation against the latest persisted isolate. | A discharge transition cancels remaining inpatient wakes and arms a separate 30-day readmission check. The production clock remains wall-clock driven. Missing culture data triggers one bounded recheck, never a guess or infinite loop. |
+| **4. Wait** | Registers five inpatient wakes through day 14 in durable state, then sleeps until work is due. At hour 48, a claimed wake invokes reconciliation against the latest persisted isolate. | A discharge transition cancels remaining inpatient wakes and arms a separate 30-day readmission check. The console clock is simulated and labelled; the separate wall-clock scanner and its public proof route are described under **Prove it yourself**. Missing culture data triggers one bounded recheck, never a guess or infinite loop. |
 | **5. Reconcile** | Compares the final result with the synthetic course, local grid, and latest source-dated national shortage signal, then verifies and stores a cited draft automatically. | A pharmacist verifies local inventory and decides whether any clinical action is appropriate. |
 | **6. Verify** | Rejects fabricated percentages, missing support, and claims outside the narrow task. | The service cannot prescribe, dose, order, page, or edit a chart. |
 
 The public 18-step flow exercises stages 1 through 6, the first hour-48 wake, managed discovery,
 and live capability invocation. Later inpatient wakes and the discharge/readmission transition are
 implemented and tested, but intentionally omitted from the four-minute browser walkthrough.
+
+## Prove it yourself
+
+Two claims in the guided demo rest on something you cannot check from outside: the console
+replays recorded model output, and the clock is simulated. Both are stated on screen, and both
+now have a control that removes the caveat.
+
+| Claim | Control | What it does |
+|---|---|---|
+| "Gemini really reads the scan" | **Read a scan live** | Calls Gemini 3.5 Flash on Vertex AI when you press it, with the image and no source text, then grades the fresh answer against the same ground-truth file behind the published 29/29. |
+| "The agent wakes itself" | **Register a real-time wake** | Registers a wake on wall-clock time in the `day-three-realtime` namespace. Only `day-three-realtime-wake-scan`, running every minute, can claim it. |
+
+```bash
+BASE=https://day-three-109051079423.us-central1.run.app
+
+# A live model call, graded against committed truth.
+curl -X POST -H "Content-Type: application/json"   -d '{"fixture":"ecoli_urine"}' "$BASE/day-three/live-intake"
+
+# Register a wall-clock wake, then come back once it is due.
+curl -X POST -H "Content-Type: application/json"   -d '{"delay_seconds":120}' "$BASE/day-three/realtime-proof"
+curl "$BASE/day-three/realtime-proof/<proof_id>"
+```
+
+The live route accepts only a committed fixture name, never free text, so a credential-free paid
+route cannot become a general model proxy. It runs under a durable daily budget shared across all
+visitors, and it never writes to the antibiogram, so pressing it cannot alter the demo. Remaining
+budget is public at `GET /day-three/live-intake` and on `/health`.
+
+The wall-clock proof cannot be advanced by the simulated clock. Its record stores only observable
+facts: registration time, due time, claim time, and the worker that claimed it.
 
 ## Architecture
 
@@ -108,13 +138,38 @@ identifiers nor raw reports are stored there. Firestore remains the authoritativ
 ledger. The live [`/day-three/platform`](https://day-three-109051079423.us-central1.run.app/day-three/platform)
 route reads Runtime, Identity, Gateway, Model Armor, and Memory Bank evidence from managed APIs.
 
-Simulation clocks are namespaced per public evaluation. Simulated wake claims are filtered by the
-owning project; the production worker remains unfiltered and wall-clock based.
+Simulation clocks are namespaced per public evaluation, and simulated wake claims are filtered by
+the owning project.
+
+The shared spine worker also runs with simulation enabled, so it is not by itself proof that
+anything fires on real time. Rather than describe it as one, Day Three ships a dedicated
+wall-clock path: `day-three-realtime-wake-scan` runs every minute against
+`/internal/scan-due-realtime`, bound to the separate `day-three-realtime` namespace and to
+`RealClock`. Any visitor can register a wake there and watch real time, not a button press, fire
+it.
 
 - [Diffable Mermaid source](docs/architecture.mmd)
 - [Rendered SVG for submission pages](docs/architecture.svg)
 - [Recorded media provenance: prompts, model IDs, sizes, and SHA-256 hashes](app/web/media/bonus-media-provenance.json)
 - [Bonus evidence map](BONUS_EVIDENCE.md)
+
+### Why the Agent Runtimes are fail-closed
+
+The four Agent Runtimes are real, each with its own Agent Identity, each bound to the gateway,
+all verifiable at `/day-three/platform`. Direct invocation of them is refused, and that refusal
+is deliberate.
+
+Google protects Agent Runtime with a default agent-token policy. Invoking a Runtime directly from
+this service requires a token-sharing exception that must pass an explicit security review. That
+review has not been granted here, and the honest options were to disable a Google security default
+so a demo looked better, or to leave it enforced and say so. This project leaves it enforced.
+
+What that costs: the four Runtime resources are provisioned and governed, not exercised in the
+request path. What it buys: nothing here depends on having weakened a default that exists to stop
+exactly the kind of confused-deputy call an agent platform makes easy. The four cross-department
+capabilities that *are* exercised live run as standard REST agents through Agent Registry, which
+needs no such exception, and the console demonstrates a real scope denial and a real invocation
+against them.
 
 ### Known conformance deviation
 

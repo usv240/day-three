@@ -161,7 +161,17 @@ def main() -> int:
         '<a class="brand" href="/" aria-label="Day Three home">' in page
         for page in (landing, developer, judges, docs)
     )
-    version_ok = all("?v=20260819-shell" in page for page in (landing, developer, judges, docs))
+    # Assert every page ships the SAME stylesheet build, not one hardcoded value.
+    # Pinning the literal string made routine cache-buster bumps fail this gate.
+    stylesheet_versions = {
+        match.group(1)
+        for page in (landing, developer, judges, docs)
+        for match in [re.search(r'/static/styles\.css\?v=([\w.-]+)', page)]
+        if match
+    }
+    version_ok = len(stylesheet_versions) == 1 and len(
+        [page for page in (landing, developer, judges, docs) if "/static/styles.css?v=" in page]
+    ) == 4
     shared_nav = (
         'href="/"',
         'href="/#console"',
