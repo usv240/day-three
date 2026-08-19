@@ -34,12 +34,25 @@ from selected critical-access hospitals is not generalized to all rural hospital
 ## Product evidence, separate from literature
 
 - Four recorded Gemini 3.5 Flash calls are graded 29/29 against adjacent synthetic truth.
-- The standalone repository passes 253 tests.
+- Anyone can trigger a fresh, unrecorded Gemini call on the deployed service and see it graded by
+  the same grader against the same truth file, so the published figure is checkable rather than
+  asserted.
+- A wall-clock wake can be registered by any visitor and fires only when a scheduled worker
+  claims it, which removes the simulated clock from the durability claim.
+- The standalone repository passes 281 tests.
 - The deployed public acceptance flow passes 18/18.
 - The shared resilience exit test passes 10/10.
 
 These measurements establish behavior on committed synthetic fixtures. They do not establish
 clinical effectiveness, external validity, or institutional validation.
+
+**What the standards substitution does and does not buy.** Mapping CLSI M39 rules to executable
+tests replaces an unverifiable practitioner testimonial with something a judge can run, and that
+is the right trade for correctness: a reader can check whether first-isolate handling and
+low-count suppression behave as the standard describes. It does not establish fit to practice.
+No pharmacist has used this, so nothing here shows that the modelled friction matches lived
+workflow or that the output would be adopted. Those are different questions, and only the first
+is answered.
 
 ## Claims deliberately rejected
 
