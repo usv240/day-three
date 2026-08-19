@@ -10,7 +10,7 @@ human connected until the review is due.
 
 Day Three is a deployed antimicrobial-stewardship agent workflow for small and critical-access
 hospital teams. It reads synthetic scanned microbiology reports with measured Gemini 3.5 Flash
-output, builds a cumulative local antibiogram, registers a five-week wake ladder, and returns at the
+output, builds a cumulative local antibiogram, registers five inpatient wakes through day 14, and returns at the
 48-hour review point. It prepares a quote-grounded draft for pharmacist review and stops. It cannot
 prescribe, dose, change an order, or contact a clinician.
 

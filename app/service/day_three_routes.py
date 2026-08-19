@@ -5,7 +5,7 @@ These are the endpoints the demo drives, in the order the video uses them:
 1. `POST /day-three/reset`        clean slate before recording
 2. `POST /day-three/intake`       drop a scanned report, watch the grid change
 3. `GET  /day-three/antibiogram`  the grid this hospital has never had
-4. `POST /day-three/course`       admit a patient, register the five week ladder
+4. `POST /day-three/course`       admit a patient, register five wakes through day 14
 5. `POST /sim/advance`            time passes, the agent wakes on its own
 6. `POST /day-three/reconcile`    the recommendation, grounded in cited results
 7. `GET  /day-three/registry`     another department discovers the Curator

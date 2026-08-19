@@ -88,7 +88,7 @@ Layer two: it sleeps, per patient, and wakes at hour 48 to ask the question nobo
 |---|---|
 | Innovation and Operational Utility, 40 percent (line 480) | Supports timely review with local susceptibility evidence in settings with constrained stewardship resources. Published reviews report an average 732-dollar saving in their US studies and a mean 4.6-day stay reduction after de-escalation; neither figure is promised as this product's outcome. |
 | **Track mandate: agents cataloged for cross-department use (line 378)** | Four standard REST agents in Google Cloud Agent Registry, plus local versions, owners, contracts, enforced scopes, durable access audits, and supported capability invocation. |
-| **Track mandate: context across weeks of asynchronous operations (line 378)** | Course Watch spans roughly five weeks per patient across five wake points; the antibiogram accumulates over months |
+| **Track mandate: context across weeks of asynchronous operations (line 378)** | Course Watch registers five inpatient wake points through day 14; a discharge transition can arm a separate 30-day readmission check |
 | **Track mandate: production data, compliance, data sovereignty, security (line 378)** | Region-pinned storage and compute, an enforced redaction boundary, managed registry viewer IAM, durable scope audits, and current public openFDA data with provenance and explicit clinical limits. |
 | Multi-Agent Nexus: is the task complex enough (line 488) | Nine implemented logical roles with distinct jobs, multiple triggers, an evidence data plane, managed discovery, and a bounded official-data watcher. |
 | Multi-Agent Nexus: Unlikely Hero (line 488) | Marta, a clearly labelled synthetic composite of a part-time contract pharmacist |
@@ -118,20 +118,22 @@ Layer two: it sleeps, per patient, and wakes at hour 48 to ask the question nobo
 ### 6a. Why the horizon is weeks, not 48 hours
 
 Rules.md line 378 requires this track to demonstrate context maintained "across weeks of
-asynchronous operations". An antibiotic course is genuinely weeks long, and stewardship has four
-more decision points after hour 48. Course Watch wakes at every one of them.
+asynchronous operations". The implemented inpatient review schedule runs from hour 48
+through day 14. Course Watch registers five decision points at admission and wakes at each one.
+A separate readmission check can be armed 30 days after discharge.
 
 | Wake | Clinical question | Why it matters |
 |---|---|---|
 | Hour 48 to 72 | Is the drug still right now the organism is known | De-escalation, the CDC named intervention |
 | Day 5 to 7 | Can this patient move from IV to oral | High value, removes line days and shortens stay |
 | Day 7, 10, 14 | Has the stop date passed | Prolonged therapy beyond 15 days is a documented stewardship target |
-| Discharge | Does the outpatient prescription match the inpatient rationale | The most common place a narrow decision silently reverts to broad |
-| Day 30 | Did this patient return with a resistant organism | Closes the loop back into the antibiogram, which mutates as a result |
+| Discharge transition | Cancel remaining inpatient wakes and arm a 30-day readmission check | Prevents inpatient tasks from firing after the patient leaves |
+| 30 days after discharge | Did this patient return with a resistant organism | Prepares a pharmacist-review learning task; it does not mutate the antibiogram automatically |
 
-A single patient's Course Watch therefore lives for roughly five weeks, sleeping between wakes,
-resuming after crashes, and carrying context the whole way. The antibiogram itself accumulates over
-months. That is what "weeks of asynchronous operations" means and we now demonstrate it literally.
+Course Watch persists structured context across five inpatient wakes through day 14. If discharge
+occurs, it cancels the remaining inpatient wakes and arms a separate check 30 days later, producing
+a modeled horizon of up to 44 days. The public demo proves the hour-48 action; later branches are
+implemented and tested without being presented as browser-demo steps.
 
 ### 6b. Cross department catalog
 

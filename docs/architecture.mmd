@@ -13,7 +13,7 @@ flowchart LR
     C <--> F[(Firestore: tenant grids and structured demo state)]
     I --> V[Vertex AI: Gemini 3.5 Flash and Gemma 4 MaaS]
     S[Shared Cloud Scheduler worker] --> F
-    B <--> G[Google Cloud Agent Registry: 4 managed entries]
+    B <--> G[Google Cloud Agent Registry: 8 managed agents]
     B --> T[Cloud Trace and Logging]
     R --> H[Pharmacist-reviewed output]
     M[Gemini 3.1 Flash Image and Veo 3.1 Fast] -. recorded at build time .-> O[Static onboarding media]

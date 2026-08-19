@@ -1,7 +1,7 @@
 """Course Watch tests.
 
 The property that matters here is the one Rules.md line 378 asks about: context maintained across
-weeks of asynchronous operations. These tests compress five weeks and assert that the right agent
+weeks of asynchronous operations. These tests compress the two-week inpatient ladder and separate 30-day readmission window, and assert that the right agent
 wakes at the right time, on its own, with nobody touching anything in between.
 """
 
@@ -71,7 +71,7 @@ def test_the_two_stop_date_checks_are_distinct_wakes(watch, scheduler, course):
     assert len({w.wake_id for w in stop_checks}) == 3
 
 
-def test_the_ladder_fires_in_clinical_order_over_five_weeks(watch, scheduler, clock, course):
+def test_the_ladder_fires_in_clinical_order_through_day_fourteen(watch, scheduler, clock, course):
     watch.open_course(course)
 
     fired: list[str] = []
@@ -103,9 +103,9 @@ def test_the_agent_wakes_itself_at_hour_forty_eight(watch, scheduler, clock, cou
     assert [w.kind for w in fired] == [WakeKind.DEESCALATION_REVIEW.value]
 
 
-def test_the_course_horizon_is_about_five_weeks(watch, course):
+def test_the_course_horizon_reserves_forty_four_days(watch, course):
     horizon = watch.horizon(course)
-    assert timedelta(days=40) <= horizon <= timedelta(days=50)
+    assert horizon == timedelta(days=44)
 
 
 # --- Discharge -------------------------------------------------------------------

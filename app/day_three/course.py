@@ -1,17 +1,13 @@
-"""Course Watch: one agent that owns an antibiotic course for about five weeks.
+"""Course Watch: one agent that owns an antibiotic course across a multi-week horizon.
 
 Rules.md line 378 requires the Fortified Enterprise Fleet track to demonstrate context maintained
 "across weeks of asynchronous operations". An earlier version of this design woke once, at hour
 48. That was both a rules gap and a clinical one: hour 48 is the first of five real stewardship
 decision points, not the only one.
 
-So one Course Watch owns the whole course. It registers the entire wake ladder at the start, so
-the schedule survives a crash, then sleeps between decisions.
-
-The last wake matters most architecturally. `readmission_check` feeds its outcome back into the
-Curator, so a course that ends in a resistant readmission changes what the hospital believes about
-its own resistance patterns. That turns the system from a pipeline into a loop: the consequence of
-a decision becomes evidence for the next one.
+Course Watch registers five inpatient reviews through day 14 at the start, so the schedule survives
+a crash, then sleeps between decisions. A separate readmission wake can be armed 30 days after
+discharge. It materializes a pharmacist-review task and does not update the Curator automatically.
 """
 
 from __future__ import annotations
@@ -75,7 +71,7 @@ READMISSION_WINDOW = timedelta(days=30)
 
 @dataclass
 class Course:
-    """The durable context carried across five weeks.
+    """The durable context carried across a multi-week course.
 
     Deliberately small and structured. What we send to a model at week five is no larger than at
     hour 48, which is the property the context meter asserts.

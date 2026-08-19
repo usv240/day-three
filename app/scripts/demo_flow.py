@@ -159,8 +159,8 @@ def main() -> int:
         {"patient_id": "pt_1", "regimen": ["piperacillin-tazobactam", "vancomycin"]},
     )
     step(
-        "five week wake ladder registered at admission",
-        len(course["ladder"]) == 5 and course["horizon_days"] >= 40,
+        "five inpatient wakes registered through day 14",
+        len(course["ladder"]) == 5 and course["horizon_days"] == 44,
         f"{len(course['ladder'])} wakes, horizon {course['horizon_days']} days",
     )
 

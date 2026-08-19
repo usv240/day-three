@@ -135,7 +135,7 @@
         <h3>Register, then sleep</h3>
         <p>When a patient starts a guessed antibiotic, Course Watch registers its
           <b>wake ladder<button class="info" data-info="wake-ladder" aria-label="What is the wake ladder?">i</button></b>
-          for five weeks, then does nothing until an action is due.</p>
+          through day 14, then does nothing until an action is due.</p>
       </div>
       <div class="journey-step">
         <span class="step-index">Step 03 · Review</span>
@@ -403,7 +403,7 @@
         <tbody>
           <tr><td>Intake</td><td>Reads scanned culture reports into structured records. Anything it cannot quote exactly is dropped, never guessed.</td></tr>
           <tr><td>Curator</td><td>Maintains the antibiogram to CLSI M39. Applies each report as a delta so you can see exactly which cells moved.</td></tr>
-          <tr><td>Course Watch</td><td>Owns one antibiotic course for about five weeks, sleeping between five decision points.</td></tr>
+          <tr><td>Course Watch</td><td>Owns one course across five scheduled inpatient decisions through day 14. A discharge transition can arm a separate 30-day readmission check.</td></tr>
           <tr><td>Shortage Watch</td><td>Refreshes official openFDA data at most once per day and filters it to the demo formulary. A pharmacist still verifies local inventory.</td></tr>
           <tr><td>Reconciler</td><td>Compares the regimen against the identified organism, the local antibiogram, allergies and shortages.</td></tr>
           <tr><td>Drafter</td><td>Writes the recommendation. Every sentence must carry a claim.</td></tr>
@@ -437,7 +437,7 @@
       is shown to you rather than dropped silently. Even if a model were talked into a conclusion, it
       could not be displayed, because there would be no supporting quote.</p></details>
     <details><summary>Why does the clock jump?</summary>
-      <p>Because a five week course does not fit in a four minute demonstration. The agents genuinely
+      <p>Because a multi-week course does not fit in a four minute demonstration. The agents genuinely
       react to the time they are given, and the same scheduler code runs against real time in
       production. The clock is labelled as simulated everywhere it appears.</p></details>
     <details><summary>Did a real pharmacist review this?</summary>

@@ -52,7 +52,7 @@
   },
   "simulated-clock": {
     "title": "Simulated clock",
-    "plain": "A control that moves this demo's clock forward so you can watch five weeks happen in a minute.",
+    "plain": "A control that moves this demo's clock forward so you can watch a multi-week schedule happen in a minute.",
     "why": "The agents genuinely react to the time they are given. The same scheduler code runs against real wall clock time in production. Nothing here is pre-recorded.",
     "source": "Design note in spine/TECHNICAL_DESIGN.md",
     "url": "#architecture"

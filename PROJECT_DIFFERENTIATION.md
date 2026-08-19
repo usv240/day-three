@@ -36,7 +36,7 @@ infrastructure reduces duplicated security and resilience logic.
 | Operational friction | Antibiotic review can be missed after final microbiology evidence arrives | Appeal evidence and third-party records must be coordinated inside a short window |
 | Input | Synthetic microbiology report scans and an antibiotic course | Synthetic decision letters and evidence images |
 | Domain modules | Intake, isolate curator, antibiogram, Course Watch, reconciler, router, registry | Letter reader, deadline keeper, requirement router, evidence screen, request preparation, packet builder |
-| Durable horizon | Five-week antibiotic-course ladder | Day-3 through day-58 appeal ladder and no-reply wakes |
+| Durable horizon | Five inpatient wakes through day 14, plus an optional 30-day post-discharge check | Day-3 through day-58 appeal ladder and no-reply wakes |
 | Data model | Isolates, susceptibility cells, courses, clinical review claims | Cases, deficiencies, requirements, requests, evidence status, packet metadata |
 | Human authority | Licensed pharmacist reviews any recommendation | Applicant reviews and sends every request and decides what to submit |
 | Forbidden actions | Prescribing, dosing, ordering, paging, chart mutation | Legal advice, eligibility prediction, third-party contact, appeal submission |

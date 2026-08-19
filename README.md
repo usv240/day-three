@@ -3,7 +3,7 @@
 **An agentic antimicrobial-stewardship console for small and critical-access hospital teams.**
 
 Day Three turns synthetic microbiology reports into a privacy-protected local antibiogram, keeps a
-five-week antibiotic-course review ladder alive, and prepares a source-grounded reconciliation for
+multi-week antibiotic-course review ladder alive, and prepares a source-grounded reconciliation for
 a pharmacist. Its background worker also filters official openFDA shortage data to the demo
 formulary. The agent carries the context and the clock; the pharmacist keeps the decision.
 
@@ -57,13 +57,15 @@ cumulative context, wake status, and human-approval boundary together from intak
 | **1. Read** | Transcribes a synthetic microbiology report and removes direct identifiers before model review. | No real patient report enters this project. |
 | **2. Curate** | Normalizes organism and susceptibility fields, preserves provenance, and rejects unsupported values. | Ambiguous or unsupported facts are not silently filled in. |
 | **3. Aggregate** | Builds a deliberately small cumulative antibiogram with first-isolate handling and low-count suppression. | It is a demonstration view, not a certified laboratory report. |
-| **4. Wait** | Registers the complete five-week wake ladder in durable state, then sleeps until work is due. At hour 48, a claimed wake invokes reconciliation against the latest persisted isolate. | The production clock remains wall-clock driven. Missing culture data triggers one bounded recheck, never a guess or infinite loop. |
+| **4. Wait** | Registers five inpatient wakes through day 14 in durable state, then sleeps until work is due. At hour 48, a claimed wake invokes reconciliation against the latest persisted isolate. | A discharge transition cancels remaining inpatient wakes and arms a separate 30-day readmission check. The production clock remains wall-clock driven. Missing culture data triggers one bounded recheck, never a guess or infinite loop. |
 | **5. Reconcile** | Compares the final result with the synthetic course, local grid, and latest source-dated national shortage signal, then verifies and stores a cited draft automatically. | A pharmacist verifies local inventory and decides whether any clinical action is appropriate. |
 | **6. Verify** | Rejects fabricated percentages, missing support, and claims outside the narrow task. | The service cannot prescribe, dose, order, page, or edit a chart. |
 
-## Architecture
+The public 18-step flow exercises stages 1 through 6, the first hour-48 wake, managed discovery,
+and live capability invocation. Later inpatient wakes and the discharge/readmission transition are
+implemented and tested, but intentionally omitted from the four-minute browser walkthrough.
 
-![Day Three as-built architecture](docs/architecture.svg)
+## Architecture
 
 The solid path below is the live stewardship workflow. The dotted path is optional onboarding
 media generated at build time. It never sees reports and never participates in a clinical output.
@@ -84,7 +86,7 @@ flowchart LR
     C <--> F[(Firestore: tenant grids and structured demo state)]
     I --> V[Vertex AI: Gemini 3.5 Flash and Gemma 4 MaaS]
     S[Shared Cloud Scheduler worker] --> F
-    B <--> G[Google Cloud Agent Registry: 4 managed entries]
+    B <--> G[Google Cloud Agent Registry: 8 managed agents]
     B --> T[Cloud Trace and Logging]
     R --> H[Pharmacist-reviewed output]
     M[Gemini 3.1 Flash Image and Veo 3.1 Fast] -. recorded at build time .-> O[Static onboarding media]
@@ -94,7 +96,7 @@ flowchart LR
 The nine logical roles are Python modules and route stages inside one `day-three` Cloud Run
 service. They are not nine services. Four cross-department capabilities are also registered as
 standard REST agents in Google Cloud Agent Registry and can be queried through the public
-[`/day-three/registry/managed`](https://day-three-109051079423.us-central1.run.app/day-three/registry/managed) proof route. There is no Pub/Sub hop. The deployed service runs as `sa-reason`,
+[`/day-three/registry/managed`](https://day-three-109051079423.us-central1.run.app/day-three/registry/managed) proof route. Together with four Runtime-projected agents, the live registry contains eight managed entries. There is no Pub/Sub hop. The deployed service runs as `sa-reason`,
 while the separately provisioned identities document intended privilege boundaries rather than
 pretending there is per-agent runtime isolation.
 
@@ -103,6 +105,7 @@ simulation clocks are separate. Simulated wake claims are filtered by owning pro
 production worker remains unfiltered and wall-clock based.
 
 - [Diffable Mermaid source](docs/architecture.mmd)
+- [Rendered SVG for submission pages](docs/architecture.svg)
 - [Recorded media provenance: prompts, model IDs, sizes, and SHA-256 hashes](app/web/media/bonus-media-provenance.json)
 - [Bonus evidence map](BONUS_EVIDENCE.md)
 

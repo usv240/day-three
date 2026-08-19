@@ -26,7 +26,7 @@ acceptance checks, and explicit limitations.
 | [CDC hospital Core Elements](https://www.cdc.gov/antibiotic-use/hcp/core-elements/hospital.html) | Schedule review, track work, and preserve an audit trail | tests/test_course.py; tests/test_wake.py |
 | [CDC critical-access case example](https://www.cdc.gov/nhsn/au-case-examples/reducing-carbapenem-use.html) | Connect local susceptibility context to prospective pharmacist review | Guided antibiogram-to-review flow |
 | [Selected 21-program evaluation](https://pmc.ncbi.nlm.nih.gov/articles/PMC10594270/) | Design for constrained time, personnel, expertise, and electronic-record support | Durable wakes and resumable state |
-| [19-CAH process evaluation](https://pmc.ncbi.nlm.nih.gov/articles/PMC11574594/) | Register long-lived work up front instead of relying on memory | Five-week wake ladder |
+| [19-CAH process evaluation](https://pmc.ncbi.nlm.nih.gov/articles/PMC11574594/) | Register long-lived work up front instead of relying on memory | Five inpatient wakes through day 14, with a separately armed 30-day post-discharge check |
 | [Low-isolate reliability analysis](https://pmc.ncbi.nlm.nih.gov/articles/PMC9927543/) | Suppress percentages below the selected threshold | test_a_cell_below_thirty_isolates_is_suppressed |
 | [De-escalation timing review](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11776815/) | Put the first review near 48 hours and re-arm if evidence is incomplete | test_the_agent_wakes_itself_at_hour_forty_eight |
 

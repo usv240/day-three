@@ -43,7 +43,7 @@ def test_sixty_days_compresses_into_one_call():
     assert (clock.now() - start).days == 60
 
 
-def test_five_week_course_advances_in_steps():
+def test_multi_week_course_advances_in_steps():
     """Day Three's wake ladder: hour 48, day 6, day 14, day 30."""
     clock = SimulatedClock(MemoryClockStateStore())
     start = clock.now()

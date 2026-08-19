@@ -29,7 +29,7 @@ Day Three builds a cumulative local antibiogram from synthetic scanned microbiol
 stands watch over a synthetic antibiotic course. It is not a prescriber. It prepares a
 source-grounded review for a pharmacist and stops.
 
-## Five weeks in four minutes, honestly
+## A multi-week schedule in four minutes, honestly
 
 The production architecture uses durable Firestore wakes claimed by a Cloud Scheduler worker. For
 judging, an injectable clock compresses weeks into minutes. The interface labels every simulated
@@ -109,7 +109,7 @@ Day Three and Sixty Days reuse the same small durable spine: runs, wakes, claims
 verification, tracing, and Firestore adapters. That reuse is disclosed in both repositories.
 
 The submitted products are otherwise different. Day Three has microbiology ingestion, cumulative
-susceptibility logic, a five-week course ladder, a pharmacist boundary, CLSI-oriented conformance,
+susceptibility logic, five inpatient wakes through day 14, a pharmacist boundary, CLSI-oriented conformance,
 clinical fixtures, and its own Cloud Run service, repository, interface, and acceptance flow.
 Sixty Days has none of those domain modules.
 

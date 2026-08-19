@@ -4,7 +4,7 @@ Endpoints fall into three groups:
 
 * **Operational.** `/health`, `/internal/scan-due`. The scan endpoint is what Cloud Scheduler
   calls once a minute; it is the only thing that makes a sleeping agent wake up.
-* **Simulation.** `/sim/*`. Present only when SIM_MODE is on. This is what compresses five weeks
+* **Simulation.** `/sim/*`. Present only when SIM_MODE is on. This is what compresses a multi-week schedule
   into a four minute video, and the UI labels it as simulated because Rules.md line 1111 warns
   against overstating what is running.
 * **Proof.** `/exit-test` runs the spine's day 4 acceptance test end to end and returns a
