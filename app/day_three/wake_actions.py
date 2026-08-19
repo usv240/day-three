@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import timedelta
 from typing import Any
 
+from day_three.managed_memory import ManagedMemoryError
 from day_three.course import WakeKind
 from day_three.reconcile import PatientContext, Reconciler, claim_for_rendering
 from spine.verify import Verifier
@@ -34,11 +35,12 @@ REVIEW_BY_KIND = {
 class CourseActionExecutor:
     """Turn a claimed wake into a bounded, idempotent stewardship action."""
 
-    def __init__(self, courses, isolates, scheduler, shortages=None) -> None:
+    def __init__(self, courses, isolates, scheduler, shortages=None, memory_bank=None) -> None:
         self._courses = courses
         self._isolates = isolates
         self._scheduler = scheduler
         self._shortages = shortages
+        self._memory_bank = memory_bank
 
     def execute(self, wake: Wake) -> dict[str, Any]:
         course_id = str(wake.payload.get("course_id", ""))
@@ -72,6 +74,15 @@ class CourseActionExecutor:
             "external_side_effect": False,
             **result,
         }
+        if self._memory_bank is not None:
+            try:
+                recorded["managed_memory"] = self._memory_bank.recall_course(course_id)
+            except ManagedMemoryError as exc:
+                recorded["managed_memory"] = {
+                    "recalled": False,
+                    "reason": str(exc),
+                    "authoritative_store": "Firestore",
+                }
         self._courses.record_due_action(course_id, recorded)
         return recorded
 

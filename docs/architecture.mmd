@@ -11,6 +11,8 @@ flowchart LR
     SW --> R
     DS[Daily wall-clock shortage refresh] --> SW
     C <--> F[(Firestore: tenant grids and structured demo state)]
+    W --> MB[Agent Platform Memory Bank: deidentified handoff context]
+    MB --> R
     I --> V[Vertex AI: Gemini 3.5 Flash and Gemma 4 MaaS]
     S[Shared Cloud Scheduler worker] --> F
     B <--> G[Google Cloud Agent Registry: 8 managed agents]

@@ -33,8 +33,23 @@ Client-to-Agent Gateway. `deploy_runtimes.py` creates one Agent Runtime resource
 four published roles with `identity_type=AGENT_IDENTITY`, zero idle instances, and the same ingress
 gateway binding. `/day-three/platform` reads these resources from their managed APIs live.
 
+`provision_memory_bank.ps1` creates a least-privilege custom role for Memory Bank create, get,
+list, and retrieve operations, binds it to the deployed service account, and runs the idempotent
+`seed_memory_bank.py` proof seeder:
+
+```powershell
+$env:GOOGLE_CLOUD_PROJECT = "agentic-fleet-2026"
+powershell -File infra/provision_memory_bank.ps1
+```
+
+The application stores only a small deidentified course summary. Its scope contains a SHA-256
+derivative of the internal course ID, never the ID itself. It excludes patient identifiers and raw
+reports. Wake execution retrieves only that exact scope. Firestore remains authoritative, so a
+Memory Bank failure cannot replace or corrupt the operational course ledger.
+
 Security status: Google documents disabling agent-token-sharing prevention when a gateway-bound
 Agent Identity calls other Google Cloud services. That exception is not persisted here and is not
 active on the deployed resources. Direct Runtime calls therefore fail closed at Model Armor until
 that specific security tradeoff is explicitly approved. Registry, Runtime, Identity, Gateway, and
-the two Model Armor resources are real; full governed invocation is not claimed in this state.
+the two Model Armor resources are real. Memory Bank is also live through the Cloud Run application
+identity. Full governed invocation from the custom Runtime is not claimed in this state.

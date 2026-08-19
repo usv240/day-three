@@ -126,7 +126,7 @@ Those limits are visible on the landing and judge pages rather than hidden in a 
 ## Reproduce and inspect it
 
 The public repository contains the as-built architecture SVG, Mermaid source, local and cloud
-spin-up instructions, recordings, adjacent truth, 244 standalone tests, an 18-step live acceptance
+spin-up instructions, recordings, adjacent truth, 250 standalone tests, an 18-step live acceptance
 flow, accessibility checks, and the 10-clause shared-substrate exit test.
 
 Live product: https://day-three-109051079423.us-central1.run.app
@@ -135,7 +135,7 @@ Judge evidence: https://day-three-109051079423.us-central1.run.app/judges
 
 Public repository: https://github.com/usv240/day-three
 
-Demo video: ADD PUBLIC YOUTUBE OR VIMEO URL BEFORE PUBLISHING
+Live interactive proof: https://day-three-109051079423.us-central1.run.app/#console
 
 This project was built during the contest period with AI coding assistants, synthetic data, and no
 institutional endorsement.

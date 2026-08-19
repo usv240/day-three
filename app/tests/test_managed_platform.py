@@ -58,6 +58,24 @@ class Session:
             )
         raise AssertionError(url)
 
+    def post(self, url, json, timeout):
+        if self.break_component and self.break_component in url:
+            return Response({}, 503)
+        if url.endswith("memories:retrieve"):
+            return Response(
+                {
+                    "retrievedMemories": [
+                        {
+                            "memory": {
+                                "fact": "Deidentified synthetic course handoff.",
+                                "scope": json["scope"],
+                            }
+                        }
+                    ]
+                }
+            )
+        raise AssertionError(url)
+
 
 def test_live_platform_evidence_requires_four_unique_identities_and_one_gateway():
     evidence = ManagedPlatformEvidence("p", session_factory=Session).read()
@@ -67,6 +85,9 @@ def test_live_platform_evidence_requires_four_unique_identities_and_one_gateway(
     assert evidence["all_runtimes_gateway_bound"] is True
     assert evidence["gateway"]["governed_access_path"] == "CLIENT_TO_AGENT"
     assert evidence["model_armor_template_count"] == 2
+    assert evidence["memory_bank"]["cross_session_context_present"] is True
+    assert evidence["memory_bank"]["memory_count"] == 1
+    assert evidence["memory_bank"]["authoritative_store"] == "Firestore"
 
 
 def test_platform_evidence_never_substitutes_local_claims_on_managed_failure():

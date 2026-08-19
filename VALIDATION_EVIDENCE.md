@@ -38,7 +38,7 @@ The full source hierarchy and rejected claims are in
 | Measurement | Current result | Reproduce |
 |---|---:|---|
 | Recorded Gemini extraction | 29 of 29 fields across 4 fixtures | python scripts/record_intake.py --rescore |
-| Standalone test suite | 244 passed | python -m pytest -q |
+| Standalone test suite | 250 passed | python -m pytest -q |
 | Public acceptance flow | 18 of 18 | python scripts/demo_flow.py with the public URL |
 | Shared-substrate exit test | 10 of 10 | POST /exit-test with an empty JSON body |
 | Accessibility gate | Pass in light and dark themes | python scripts/check_a11y.py |
@@ -73,6 +73,8 @@ clinical-effectiveness measurements.
 | Completed wake scanned again | Do not fire again | test_completed_wakes_do_not_fire_again |
 | Discharge or discontinuation | Cancel remaining work without deleting audit state | tests/test_course.py |
 | Concurrent project demos | Keep clocks and simulated wake claims isolated | Public acceptance flows run concurrently |
+| Managed-memory outage | Keep Firestore authoritative and report a bounded memory failure | test_course_creation_survives_a_managed_memory_failure |
+| Cross-course memory lookup | Use an exact hash-derived scope with no patient identifier | test_course_scope_is_stable_and_does_not_expose_the_course_id; test_due_wake_recalls_managed_context |
 
 ## Standards boundary and known deviation
 

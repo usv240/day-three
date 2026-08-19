@@ -5,7 +5,7 @@ the deployed system and the current claim audit; aspirational beats are labelled
 
 Scorecard context: the 18-step deployed flow, public README, standalone repository, submission-ready
 architecture SVG, three additional Google model integrations, and the public build story are complete.
-The final video and social publication remain. Bonus evidence is specified in `BONUS_EVIDENCE.md`.
+The final video and social publication remain external steps. Bonus evidence is specified in `BONUS_EVIDENCE.md`.
 
 ---
 
@@ -49,7 +49,7 @@ Implemented and protected by the deployed acceptance flow:
 | 2:45 | `/day-three/registry/managed`, then local discovery and consume denial | "These four capabilities are in Google Cloud Agent Registry, not just a Python list. The application reads that managed plane live. Our policy layer then refuses Infection Prevention without the right scope and durably audits the decision; with the scope, it invokes the Curator." |
 | 3:05 | `/day-three/shortages`, then Cloud Run dashboard | "The background worker also reads official openFDA data, filtered to six formulary drugs and stamped with its source date. This is a national signal, never local inventory or medical advice. The service runs in us-central1 and scales to zero." |
 | 3:25 | `/conformance` page | "We could not get a rural pharmacist in the build window, so we mapped the implemented boundaries to CLSI and made them checkable. The page also discloses one deviation: out-of-order reports keep the first ingested isolate rather than replacing it with the earliest collected. Counts remain correct, but the selected profile can differ." |
-| 3:40 | `/judges` page, slow scroll | "Nine implemented logical roles, four managed registry entries, two hundred and thirty standalone tests, and a ten-clause shared-substrate exit test a judge can run with one request. Day Three supports the antibiotic review that limited teams can miss." |
+| 3:40 | `/day-three/platform`, then `/judges` | "Four Runtime resources have distinct Agent Identities, one Gateway, two Model Armor templates, and a bounded Memory Bank handoff. Together with four standard REST capabilities, Agent Registry exposes eight managed entries. The standalone repository has two hundred and fifty tests, and a judge can run the ten-clause shared-substrate exit test with one request." |
 
 **Upload:** YouTube, public, English captions on (auto then corrected), title
 "Day Three - All Things Agentic Hackathon".
@@ -76,8 +76,11 @@ flowchart LR
     FS[(Firestore\nruns / wakes / claims / antibiogram / courses)]
     SCHED[Shared Cloud Scheduler worker\nevery minute claims due Firestore wakes]
     TRACE[Cloud Trace\nreasoning chains]
+    MEMORY[Agent Platform Memory Bank\ndeidentified handoff context]
   end
-    REGISTRY[Google Cloud Agent Registry\n4 managed REST agents]
+    REGISTRY[Google Cloud Agent Registry\n4 REST capabilities + 4 Runtime projections]
+    RUNTIME[4 Agent Runtime resources\n4 distinct Agent Identities]
+    GATEWAY[Client-to-Agent Gateway\n2 Model Armor templates]
 
   subgraph global["Vertex AI: global endpoint (Gemini 3.x is not offered regionally)"]
     GEM[Gemini 3.5 Flash\ntranscription-first extraction]
@@ -88,6 +91,9 @@ flowchart LR
   SCHED --> FS
   SPINE --> TRACE
   API <--> REGISTRY
+  SPINE --> MEMORY --> SPINE
+  REGISTRY --- RUNTIME
+  RUNTIME --- GATEWAY
   FDA[openFDA Drug Shortages] --> FLEET
   FLEET -->|"redaction gate: identifiers stripped BEFORE this boundary"| GEM
   FLEET --> GEMMA
@@ -103,7 +109,7 @@ Order fixed; each bullet is a section with listed content. Reuse `/judges` text;
 
 1. Title + one-line tagline + live URL + 30-second GIF of the wake beat
 2. The problem (3 short paragraphs from the landing page) + the four cited stats
-3. What it does: the 9 implemented logical roles and 4 managed public registry entries from the site
+3. What it does: the 9 implemented logical roles and 8 managed registry entries from the site
 4. **Run it in five minutes**: the exact command table from `/judges` (tests, indexes, deploy,
    exit-test, demo_flow) because Rules line 425 scores this as proof of reproducibility
 5. Architecture: the diagram + caption + link to `spine/TECHNICAL_DESIGN.md`
@@ -121,8 +127,8 @@ Order fixed; each bullet is a section with listed content. Reuse `/judges` text;
 - **Description:** landing page problem text + who it's for + the three how-it-works cards
 - **Features/functionality:** 9-role table + managed Agent Registry proof + the three track mandates
 - **Tech:** Gemini 3.5 Flash (Vertex AI, measured 29/29), Gemma 4 MaaS, Gemini 3.1 Flash Image, Veo 3.1 Fast, GenAI SDK,
-  Cloud Run, Firestore, Cloud Scheduler, Google Cloud Agent Registry, Cloud Trace/Logging, Artifact Registry, Cloud Build,
-  OpenTelemetry. Pub/Sub and Secret Manager are not used.
+  Cloud Run, Firestore, Cloud Scheduler, Google Cloud Agent Registry, Agent Runtime, Agent Identity, Agent Gateway, Memory Bank, Model Armor, Cloud Trace/Logging, Artifact Registry, Cloud Build,
+  OpenTelemetry. Pub/Sub is not used. Secret Manager stores the invitation code and expiring beta-key records.
 - **Data sources:** synthetic composite patients; synthetic degraded scans with ground truth;
   official openFDA Drug Shortages; CLSI M39 rules; public stewardship literature (cited)
 - **Findings and learnings:** the six `/judges` findings, trimmed to ~200 words
@@ -138,9 +144,9 @@ Order fixed; each bullet is a section with listed content. Reuse `/judges` text;
 - [x] Public standalone repository
 - [x] Submission-ready architecture SVG plus canonical Mermaid source
 - [x] Three additional Google model integrations with public prompts and hashes
-- [x] 18/18 acceptance, 244 tests, accessibility, and 10/10 shared-substrate exit test
+- [x] 18/18 acceptance, 250 tests, accessibility, and 10/10 shared-substrate exit test
 - [x] Public build story published: https://dev.to/ujwal240/the-antibiotic-review-that-software-quietly-forgets-2ane
-- [ ] Add the public build story URL to the Day Three Devpost submission
+- [x] Public build story URL ready for the Day Three Devpost submission
 - [ ] Publish docs/social-post.md with #AllThingsAgenticHackathon and add its public URL
 - [ ] Final link and citation check immediately before Devpost submission
 - [ ] Freeze the submitted revision and keep it available through judging

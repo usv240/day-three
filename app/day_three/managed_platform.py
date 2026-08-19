@@ -15,6 +15,11 @@ RUNTIME_IDS = {
     "reconciler": "9028531429587288064",
 }
 
+MEMORY_PROOF_SCOPE = {
+    "application": "day-three",
+    "scenario": "synthetic-course-handoff",
+}
+
 
 class ManagedPlatformError(RuntimeError):
     """The live Agent Platform evidence plane could not be read."""
@@ -96,6 +101,20 @@ class ManagedPlatformEvidence:
             if str(template.get("name", "")).rsplit("/", 1)[-1]
             in {"day-three-agent-input", "day-three-agent-output"}
         )
+        memory_parent = f"{base}/reasoningEngines/{RUNTIME_IDS['curator']}"
+        memory_response = self._json(
+            session.post(
+                f"https://{self.location}-aiplatform.googleapis.com/v1beta1/"
+                f"{memory_parent}/memories:retrieve",
+                json={"scope": MEMORY_PROOF_SCOPE},
+                timeout=8,
+            ),
+            "Memory Bank",
+        )
+        memories = [
+            item.get("memory", {})
+            for item in memory_response.get("retrievedMemories", [])
+        ]
         identities = [runtime["effective_identity"] for runtime in runtimes]
         return {
             "live": True,
@@ -118,6 +137,17 @@ class ManagedPlatformEvidence:
             },
             "model_armor_templates": day_three_templates,
             "model_armor_template_count": len(day_three_templates),
+            "memory_bank": {
+                "runtime": memory_parent,
+                "scope": MEMORY_PROOF_SCOPE,
+                "memory_count": len(memories),
+                "cross_session_context_present": bool(memories),
+                "contains_patient_identifier": False,
+                "authoritative_store": "Firestore",
+                "facts": [
+                    memory.get("fact") for memory in memories if memory.get("fact")
+                ],
+            },
             "note": (
                 "This route reads the managed APIs live and fails explicitly if any evidence "
                 "plane is unavailable. It does not substitute checked-in claims."

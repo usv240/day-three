@@ -27,9 +27,10 @@ URL to the Day Three Devpost submission. Judges determine whether the contributi
 
 ## Social publication: 0.2 after publication
 
-The publication-ready copy is docs/social-post.md. It contains the exact hashtag
-#AllThingsAgenticHackathon. Add the public demo-video URL, publish from an eligible social account,
-and paste the final public post URL into Devpost.
+The publication-ready X copy is docs/social-post.md. It contains the exact hashtag
+#AllThingsAgenticHackathon, the live product, public judge evidence, repository, and published build
+story. It has no video dependency. Publish it from an eligible public account and paste the final
+post URL into Devpost.
 
 ## Maximum score path
 

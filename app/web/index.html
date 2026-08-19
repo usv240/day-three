@@ -372,7 +372,10 @@
       <p>Nine logical roles, each with one job, orchestrated inside one Cloud Run service through
         typed routes and durable Firestore state. Wakes, claims, checkpoints, and audit records are
         persisted; the roles are modular, not falsely presented as nine isolated services. Four
-        public capabilities also live in Google Cloud's managed Agent Registry.</p>
+        public capabilities and four Runtime projections produce eight entries in Google Cloud
+        Agent Registry. Four Runtime resources use distinct Agent Identities and one Gateway. A
+        bounded Memory Bank handoff preserves deidentified context between sessions while
+        Firestore remains authoritative.</p>
     </div>
     <div class="architecture-map" aria-label="Day Three system architecture">
       <div class="arch-node"><small>Inputs</small><strong>Recorded synthetic scans</strong>
@@ -382,14 +385,24 @@
         <strong>Nine bounded roles on the shared spine</strong>
         <span>Redaction, intake, curation, shortage watch, wakes, reconciliation, verification, routing, registry</span></div>
       <div class="arch-arrow" aria-hidden="true">&rarr;</div>
-      <div class="arch-node"><small>Durable proof</small><strong>Firestore and Cloud Trace</strong>
-        <span>Runs, wakes, claims, scopes, audit records, and trace identifiers</span></div>
+      <div class="arch-node"><small>Durable proof</small><strong>Firestore, Memory Bank, and Cloud Trace</strong>
+        <span>Authoritative state, deidentified handoffs, audit records, and trace identifiers</span></div>
     </div>
     <div class="journey" aria-label="Live enterprise integration proof">
       <div class="journey-step">
         <span class="step-index">Managed discovery plane</span>
-        <h3>Four agents in Google Cloud Agent Registry</h3>
-        <p>The public proof route queries the managed API using the Cloud Run identity. <a class="text-link" href="/day-three/registry/managed">Inspect managed agents</a>.</p>
+        <h3>Eight entries in Agent Registry</h3>
+        <p>Four REST capabilities plus four Runtime projections are read from the managed API. <a class="text-link" href="/day-three/registry/managed">Inspect managed agents</a>.</p>
+      </div>
+      <div class="journey-step">
+        <span class="step-index">Managed execution controls</span>
+        <h3>Runtime, Identity, Gateway, and Armor</h3>
+        <p>Four distinct runtime identities share one governed ingress, with two regional Model Armor templates. <a class="text-link" href="/day-three/platform">Inspect live platform proof</a>.</p>
+      </div>
+      <div class="journey-step">
+        <span class="step-index">Cross-session context</span>
+        <h3>Bounded Memory Bank handoff</h3>
+        <p>Exact-scope memory carries no patient identifier or raw report. Firestore remains authoritative. <a class="text-link" href="/day-three/platform">Inspect managed memory</a>.</p>
       </div>
       <div class="journey-step">
         <span class="step-index">Official operational data</span>

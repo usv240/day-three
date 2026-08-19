@@ -37,6 +37,7 @@ from spine.state import Runner, RunStatus, StepDef
 from spine.untrusted import prepare
 from spine.verify import Claim, ClaimKind, SourceRef, Verifier
 from spine.wake import Wake, WakeScheduler, WakeStatus
+from day_three.managed_memory import ManagedMemoryBank
 from day_three.store import CourseStore, IsolateStore
 from day_three.wake_actions import CourseActionExecutor
 from day_three.shortages import OpenFdaClient, ShortageStore, ShortageWatch
@@ -55,6 +56,7 @@ wake_store = FirestoreWakeStore(client)
 worker_id = f"worker_{os.environ.get('K_REVISION', 'local')}_{uuid.uuid4().hex[:6]}"
 
 tracing_active = setup_tracing(settings.project_id, "spine")
+managed_memory = ManagedMemoryBank(settings.project_id, settings.region)
 
 app = FastAPI(
     title="Agentic Fleet spine",
@@ -82,7 +84,11 @@ def record_due_action(wake: Wake) -> None:
     """
     with span("wake", "dispatch", **{"wake.id": wake.wake_id, "wake.kind": wake.kind}):
         domain = CourseActionExecutor(
-            CourseStore(client), IsolateStore(client), scheduler(), ShortageStore(client)
+            CourseStore(client),
+            IsolateStore(client),
+            scheduler(),
+            ShortageStore(client),
+            managed_memory,
         ).execute(wake)
         client.collection("wake_actions").document(wake.wake_id).set({
             "wake_id": wake.wake_id,
@@ -104,7 +110,7 @@ from spine.api_access import ApiKeyAuthenticator  # noqa: E402
 from spine.api_key_store import FirestoreApiKeyStore  # noqa: E402
 from spine.developer_access import KeyIssuer, build_developer_router  # noqa: E402
 
-app.include_router(build_router(client, clock, scheduler, runner))
+app.include_router(build_router(client, clock, scheduler, runner, managed_memory))
 developer_key_store = FirestoreApiKeyStore(client, "day-three")
 beta_auth = ApiKeyAuthenticator.from_environment(dynamic_lookup=developer_key_store.get)
 key_issuer = KeyIssuer.from_environment(

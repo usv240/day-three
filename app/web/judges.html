@@ -42,7 +42,7 @@
     </div>
     <div class="judge-metrics" aria-label="Verified Day Three evidence">
       <div class="judge-metric"><b>18/18</b><span>deployed demo-flow checks</span></div>
-      <div class="judge-metric"><b>244</b><span>standalone repository tests</span></div>
+      <div class="judge-metric"><b>250</b><span>standalone repository tests</span></div>
       <div class="judge-metric"><b>29/29</b><span>recorded extraction fields</span></div>
       <div class="judge-metric"><b>10/10</b><span>shared-substrate exit-test clauses</span></div>
     </div>
@@ -54,6 +54,7 @@
       <div class="evaluator-actions">
         <a href="/#console">Run the live workflow</a>
         <a href="/conformance">Open conformance</a>
+        <a href="/day-three/platform">Inspect managed platform</a>
         <a href="https://github.com/usv240/day-three">Inspect the repository</a>
       </div>
     </div>
@@ -75,13 +76,13 @@
           </tr>
           <tr>
             <td><b>Track mandate: cataloged for cross-department use</b></td>
-            <td>Four standard REST agents are registered in Google Cloud Agent Registry. The public proof route reads the managed API. A local policy layer adds versions, declared consumers, required scopes, durable audit entries, and real invocation for Curator and Shortage Watch.</td>
+            <td>Four standard REST capabilities and four Runtime projections produce eight live entries in Google Cloud Agent Registry. The public proof route reads the managed API. A local policy layer adds versions, declared consumers, required scopes, durable audit entries, and real invocation for Curator and Shortage Watch.</td>
             <td><code>day_three/managed_registry.py</code><br><code>GET /day-three/registry/managed</code><br><code>POST /day-three/registry/consume</code></td>
           </tr>
           <tr>
             <td><b>Track mandate: context across weeks of asynchronous operations</b></td>
-            <td>Course Watch registers five inpatient decisions through day 14 and persists structured context between them. At hour 48, the due wake loads the persisted isolate, executes reconciliation, verifies every claim, and stores a pharmacist-review draft. A discharge transition can arm a separate 30-day readmission check. Missing culture data creates one bounded recheck instead of a guess or loop.</td>
-            <td><code>day_three/course.py</code><br><code>tests/test_course.py</code></td>
+            <td>Course Watch registers five inpatient decisions through day 14 and persists structured context between them. Firestore is the authoritative ledger. Agent Platform Memory Bank carries a smaller deidentified handoff under an exact hash-derived course scope, with no patient identifier or raw report. At hour 48, the due wake recalls that context, loads the persisted isolate, executes reconciliation, verifies every claim, and stores a pharmacist-review draft. A discharge transition can arm a separate 30-day readmission check. Missing culture data creates one bounded recheck instead of a guess or loop.</td>
+            <td><code>day_three/course.py</code><br><code>day_three/managed_memory.py</code><br><code>tests/test_memory_wake.py</code></td>
           </tr>
           <tr>
             <td><b>Track mandate: production data, compliance, data sovereignty, security</b></td>
@@ -202,9 +203,16 @@
           shared spine worker every minute. It transactionally claims due wakes from the same
           Firestore substrate used by Day Three; the demo's simulated-clock route exercises the
           identical claim-and-dispatch path without waiting days.</li>
-        <li><b>Agent Registry:</b> four manually registered standard REST agents in
-          <code>us-central1</code>. The runtime has viewer-only IAM, and
-          <code>GET /day-three/registry/managed</code> reads the managed discovery plane live.</li>
+        <li><b>Agent Registry:</b> four manually registered standard REST capabilities plus four
+          Runtime-projected agents produce eight live managed entries in <code>us-central1</code>.
+          The service has viewer-only registry IAM, and <code>GET /day-three/registry/managed</code>
+          reads the managed discovery plane live.</li>
+        <li><b>Agent Platform:</b> four Runtime resources have distinct Agent Identities, one
+          Client-to-Agent Gateway binding, and two regional Model Armor templates. Memory Bank
+          holds only a deidentified cross-session handoff under an exact scope; Firestore remains
+          authoritative. <code>GET /day-three/platform</code> reads every resource live. Direct
+          Runtime invocation remains fail-closed rather than disabling Google's agent-token
+          protection.</li>
         <li><b>Official data:</b> the dedicated <code>day-three-shortage-refresh</code> wall-clock job calls an isolated route daily. openFDA results are stored with source date, errors, and the medical-care disclaimer boundary; the job never scans simulated wakes.</li>
         <li><b>Firestore:</b> native mode in <code>us-central1</code>, with three composite indexes
           created from <code>infra/firestore.indexes.json</code>.</li>
@@ -233,10 +241,11 @@
         <tbody>
           <tr><td>Enter the app</td><td><code>cd app</code></td></tr>
           <tr><td>Install</td><td><code>python -m venv .venv &amp;&amp; .venv/bin/pip install -e ".[dev]"</code></td></tr>
-          <tr><td>Run the tests</td><td><code>python -m pytest -q</code> - 244 tests, no cloud needed</td></tr>
+          <tr><td>Run the tests</td><td><code>python -m pytest -q</code> - 250 tests, no cloud needed</td></tr>
           <tr><td>Create the indexes</td><td><code>PROJECT_ID=... bash infra/apply_indexes.sh</code></td></tr>
           <tr><td>Deploy</td><td><code>SIM_MODE=true bash deploy.sh</code></td></tr>
           <tr><td>Register managed agents</td><td><code>python infra/register_agents.py</code> after granting the documented editor and runtime viewer roles</td></tr>
+          <tr><td>Provision bounded memory</td><td><code>powershell -File infra/provision_memory_bank.ps1</code> creates least-privilege IAM and one deidentified proof memory</td></tr>
           <tr><td>Prove the guarantee</td><td><code>curl -X POST -H "Content-Type: application/json" -d '{}' $URL/exit-test</code></td></tr>
           <tr><td>Run the whole demo</td><td><code>python scripts/demo_flow.py --url $URL</code></td></tr>
         </tbody>
@@ -357,6 +366,7 @@
       <a href="/">Live workflow</a>
       <a href="/developer">Developer API</a>
        <a href="/docs">API docs</a>
+       <a href="/day-three/platform">Managed platform proof</a>
        <a href="/conformance">Conformance report</a>
     </nav>
     <p>Built for the All Things Agentic Hackathon. Synthetic data only. Not medical advice and not a

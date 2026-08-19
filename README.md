@@ -31,7 +31,7 @@ terminal, credentials, or prior clinical knowledge.
 | Gate | Reproducible result |
 |---|---:|
 | Deployed public acceptance flow | **18/18** |
-| Standalone automated tests | **244 passed** |
+| Standalone automated tests | **250 passed** |
 | Recorded extraction fields | **29/29** |
 | Shared-substrate exit test | **10/10** |
 | Accessibility gate | **Pass: light and dark themes** |
@@ -84,6 +84,8 @@ flowchart LR
     SW --> R
     DS[Daily wall-clock shortage refresh] --> SW
     C <--> F[(Firestore: tenant grids and structured demo state)]
+    W --> MB[Agent Platform Memory Bank: deidentified handoff context]
+    MB --> R
     I --> V[Vertex AI: Gemini 3.5 Flash and Gemma 4 MaaS]
     S[Shared Cloud Scheduler worker] --> F
     B <--> G[Google Cloud Agent Registry: 8 managed agents]
@@ -99,6 +101,12 @@ standard REST agents in Google Cloud Agent Registry and can be queried through t
 [`/day-three/registry/managed`](https://day-three-109051079423.us-central1.run.app/day-three/registry/managed) proof route. Together with four Runtime-projected agents, the live registry contains eight managed entries. There is no Pub/Sub hop. The deployed service runs as `sa-reason`,
 while the separately provisioned identities document intended privilege boundaries rather than
 pretending there is per-agent runtime isolation.
+
+A real Agent Platform Memory Bank carries a deliberately small, deidentified course handoff
+between sessions. Every lookup uses an exact hash-derived course scope, and neither patient
+identifiers nor raw reports are stored there. Firestore remains the authoritative operational
+ledger. The live [`/day-three/platform`](https://day-three-109051079423.us-central1.run.app/day-three/platform)
+route reads Runtime, Identity, Gateway, Model Armor, and Memory Bank evidence from managed APIs.
 
 Day Three and Sixty Days share a durable substrate, but their public services, repositories, and
 simulation clocks are separate. Simulated wake claims are filtered by owning project; the shared
@@ -164,8 +172,9 @@ motivated durable handoffs. Low-isolate evidence led to suppression rather than 
 13. [Agent Runtime](https://docs.cloud.google.com/gemini-enterprise-agent-platform/build/runtime) documents the managed execution layer used by the four published roles.
 14. [Agent Gateway overview](https://docs.cloud.google.com/gemini-enterprise-agent-platform/govern/gateways/agent-gateway-overview) documents the Client-to-Agent gateway bound to every Runtime here.
 15. [Model Armor prompt and response sanitization](https://docs.cloud.google.com/model-armor/sanitize-prompts-responses) documents the two live regional templates. Direct Runtime invocation currently remains fail-closed under Google's default agent-token protection while the required token-sharing exception receives explicit security approval.
-16. [Google Cloud manual agent registration](https://docs.cloud.google.com/agent-registry/register-agents) documents standard REST registration through a Service resource and discovery through the projected Agent resource.
-17. [openFDA Drug Shortages](https://open.fda.gov/apis/drug/drugshortages/) documents the daily public feed and warns against medical-care decisions; the watcher preserves that warning and requires pharmacist review.
+16. [Agent Platform Memory Bank](https://docs.cloud.google.com/gemini-enterprise-agent-platform/scale) documents long-term memory attached to Agent Runtime. Day Three uses exact-scope, deidentified course handoffs only; Firestore remains authoritative.
+17. [Google Cloud manual agent registration](https://docs.cloud.google.com/agent-registry/register-agents) documents standard REST registration through a Service resource and discovery through the projected Agent resource.
+18. [openFDA Drug Shortages](https://open.fda.gov/apis/drug/drugshortages/) documents the daily public feed and warns against medical-care decisions; the watcher preserves that warning and requires pharmacist review.
 
 For the source hierarchy, exact source-to-decision mapping, and rejected claims, read the
 [research traceability ledger](docs/research-traceability.md).

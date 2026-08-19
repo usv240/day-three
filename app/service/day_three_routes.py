@@ -28,6 +28,7 @@ from day_three.antibiogram import Antibiogram, Curator, Interpretation, Isolate
 from day_three.course import LADDER, Course, CourseWatch, WakeKind
 from day_three.intake import ExtractionError, IntakeAgent, ReplayClient
 from day_three.managed_registry import ManagedAgentRegistry, ManagedRegistryError
+from day_three.managed_memory import ManagedMemoryError
 from day_three.managed_platform import ManagedPlatformError, ManagedPlatformEvidence
 from day_three.reconcile import (
     Kind,
@@ -102,7 +103,7 @@ def available_fixture_names() -> list[str]:
     )
 
 
-def build_router(client, clock, scheduler, runner) -> APIRouter:
+def build_router(client, clock, scheduler, runner, memory_bank=None) -> APIRouter:
     router = APIRouter(prefix="", tags=["day-three"])
     antibiograms = AntibiogramStore(client)
     courses = CourseStore(client)
@@ -241,6 +242,26 @@ def build_router(client, clock, scheduler, runner) -> APIRouter:
         registered = watch.open_course(course)
         courses.save(course)
 
+        managed_memory = {
+            "stored": False,
+            "reason": "managed Memory Bank is not configured in this environment",
+            "authoritative_store": "Firestore",
+        }
+        if memory_bank is not None:
+            try:
+                managed_memory = memory_bank.remember_course(
+                    course_id=course.course_id,
+                    regimen=course.regimen,
+                    indication=course.indication,
+                    first_review_at=registered[0].due_at,
+                )
+            except ManagedMemoryError as exc:
+                managed_memory = {
+                    "stored": False,
+                    "reason": str(exc),
+                    "authoritative_store": "Firestore",
+                }
+
         return {
             "course_id": course.course_id,
             "run_id": run_id,
@@ -255,6 +276,7 @@ def build_router(client, clock, scheduler, runner) -> APIRouter:
                 }
                 for w in registered
             ],
+            "managed_memory": managed_memory,
         }
 
     @router.get("/day-three/courses")
