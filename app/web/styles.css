@@ -754,6 +754,13 @@ footer.site {
 }
 #console .console-intro > p { max-width: 72ch; margin: 0; }
 .console-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
+.console-evidence-link {
+  color: var(--text-muted);
+  font-size: .9rem;
+  font-weight: 700;
+  text-underline-offset: 3px;
+}
+.console-evidence-link:hover { color: var(--accent); }
 #console .clock { margin-bottom: 14px; }
 #console .console {
   display: grid;
@@ -883,8 +890,8 @@ header.site nav { justify-content: center; }
 }
 @media (max-width: 620px) {
   #console .console-intro { align-items: stretch; }
-  #console .console-actions { justify-content: stretch; }
-  #console .console-actions > * { width: 100%; text-align: center; }
+  #console .console-actions { justify-content: flex-start; }
+  #console .console-actions > * { width: auto; text-align: left; }
   .guided-controls { grid-template-columns: 1fr; }
   .guide-tools { width: 100%; justify-content: space-between; }
   .control-kicker { min-height: 0; }
