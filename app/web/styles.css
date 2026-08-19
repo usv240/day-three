@@ -265,10 +265,14 @@ button[disabled] { opacity: .5; cursor: not-allowed; }
   border-radius: 22px; box-shadow: var(--shadow); padding: 26px;
 }
 .proof-label { color: var(--text-muted); font-size: .76rem; font-weight: 750; letter-spacing: .1em; text-transform: uppercase; }
-.proof-value { display: block; margin: 8px 0 2px; font-size: 2.15rem; line-height: 1; letter-spacing: -.04em; color: var(--accent-strong); }
-.proof-list { display: grid; gap: 0; margin: 18px 0 0; padding: 0; list-style: none; }
-.proof-list li { padding: 11px 0; border-top: 1px solid var(--border); font-size: .9rem; color: var(--text-muted); }
-.proof-list b { color: var(--text); }
+.proof-intro { margin: 10px 0 0; color: var(--text-muted); font-size: .92rem; }
+.proof-checks { display: grid; gap: 0; margin: 16px 0 0; padding: 0; list-style: none; }
+.proof-checks li { display: grid; gap: 3px; padding: 13px 0; border-top: 1px solid var(--border); }
+.proof-checks a { font-size: .95rem; text-decoration: none; }
+.proof-checks a b { color: var(--accent); }
+.proof-checks a:hover b { color: var(--accent-strong); text-decoration: underline; }
+.proof-checks span { color: var(--text-muted); font-size: .84rem; line-height: 1.45; }
+.proof-footnote { margin: 14px 0 0; padding-top: 12px; border-top: 1px solid var(--border); color: var(--text-muted); font-size: .78rem; line-height: 1.5; }
 .stat-strip { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
 .stat {
   background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
@@ -829,8 +833,8 @@ footer.site {
   .hero-layout { gap: 36px; }
   h1 { font-size: clamp(2.35rem, 5vw, 3.9rem); }
   .hero-proof { padding: 20px; }
-  .proof-list { margin-top: 12px; }
-  .proof-list li { padding: 8px 0; }
+  .proof-checks { margin-top: 12px; }
+  .proof-checks li { padding: 10px 0; }
   .stat-strip { margin-top: 18px; }
   .stat { padding: 14px 16px; }
   .section-heading { margin-bottom: 20px; }
