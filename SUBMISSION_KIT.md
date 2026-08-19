@@ -32,7 +32,7 @@ believes.
 
 ### Before you record
 
-1. Press **Start from a clean slate**, or `curl -X POST -d '{}' $BASE/sim/reset` and
+1. Press **Reset demo**, or `curl -X POST -d '{}' $BASE/sim/reset` and
    `$BASE/day-three/reset`. Every `demo_flow.py` run leaves 52 hours of clock drift.
 2. Fresh browser profile, 1440x900, no bookmarks bar, no extensions, DevTools closed.
 3. Light theme. Second tab already open on the Cloud Run console page for `day-three`.
@@ -48,7 +48,7 @@ Narration is verbatim. Times are targets with about ten seconds of total slack.
 |---|---|---|
 | 0:00 | Landing hero | "If you go into hospital with a serious infection, treatment starts before anyone knows which bacteria it is. Two days later the lab result arrives, and it often means a narrower, safer antibiotic would work. Someone has to notice. In a small hospital with no infectious-disease specialist, that review quietly gets missed." |
 | 0:20 | Scroll to the second card, press **Start a real timer** | "Before I show you anything, I'm starting a timer on the real clock. I can't speed it up. Nothing on this page can. We'll come back to it." |
-| 0:35 | Press **Start from a clean slate**, then **Load report** three times | "This hospital has never had a resistance picture of its own. Three cultures come back. Watch the grid build. Every value had to be quoted word for word off the page; anything the AI couldn't point to is thrown away, not guessed. And where there are too few samples, it prints no percentage at all. That's the CLSI standard, and it matters in a moment." |
+| 0:35 | Press **Reset demo**, then **Load report** three times | "This hospital has never had a resistance picture of its own. Three cultures come back. Watch the grid build. Every value had to be quoted word for word off the page; anything the AI couldn't point to is thrown away, not guessed. And where there are too few samples, it prints no percentage at all. That's the CLSI standard, and it matters in a moment." |
 | 1:15 | Press **Admit patient**, then **Advance 47 hours** | "A patient starts a broad antibiotic. One agent books five check-ins across the next fourteen days and goes to sleep. Forty-seven hours pass. Nothing is due, so nothing happens, and sleeping costs nothing." |
 | 1:30 | Press **Advance 5 hours** | "Five more hours. Now it wakes itself. Nobody clicked it awake and nobody was watching. It found its own work was due." |
 | 1:45 | Press **Ask day-three question** | "It asks the question nobody was there to ask: is this still the right drug? It says narrow to nitrofurantoin, and every sentence is pinned to a quoted line of the lab report. Then it stops and waits for a pharmacist. It cannot prescribe, cannot change an order, cannot page anyone." |

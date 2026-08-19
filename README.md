@@ -7,7 +7,7 @@ multi-week antibiotic-course review ladder alive, and prepares a source-grounded
 a pharmacist. Its background worker also filters official openFDA shortage data to the demo
 formulary. The agent carries the context and the clock; the pharmacist keeps the decision.
 
-> **New here?** Open the live app, press **Start from a clean slate**, and follow the numbered
+> **New here?** Open the live app, press **Reset demo**, and follow the numbered
 > controls. Nothing in the demo uses real patient data.
 
 - [Open the live application](https://day-three-109051079423.us-central1.run.app)
@@ -16,12 +16,12 @@ formulary. The agent carries the context and the clock; the pharmacist keeps the
 
 ## Judge it in 90 seconds
 
-1. Press **Start from a clean slate**.
+1. Press **Reset demo**.
 2. Press **Load report** three times: watch a local cumulative antibiogram appear.
-3. Run **Test a report with hidden instructions**: the prompt-injection text is quarantined.
+3. Run **Test hidden instructions**: the prompt-injection text is quarantined.
 4. Admit the synthetic course, advance **47 hours**, then **5 more hours**: the durable wake fires.
-5. Press **Ask the day three question**: inspect the cited, pharmacist-reviewable draft.
-6. Press **Test an unsupported number**: the verifier rejects the fabricated claim.
+5. Press **Ask day-three question**: inspect the cited, pharmacist-reviewable draft.
+6. Press **Challenge unsupported number**: the verifier rejects the fabricated claim.
 
 The interface explains each action before and after it runs. A first-time judge never needs a
 terminal, credentials, or prior clinical knowledge.
