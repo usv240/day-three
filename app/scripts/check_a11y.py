@@ -160,7 +160,7 @@ def main() -> int:
         '<a class="brand" href="/" aria-label="Day Three home">' in page
         for page in (landing, developer, judges)
     )
-    version_ok = all("?v=20260819-flow" in page for page in (landing, developer, judges))
+    version_ok = all("?v=20260819-progressive" in page for page in (landing, developer, judges))
     cache_ok = 'response.headers["Cache-Control"] = "no-cache, max-age=0, must-revalidate"' in service_main
     removed_focus_ui = not any(
         token in source
@@ -181,8 +181,11 @@ def main() -> int:
         'class="pane antibiogram-pane"',
         'class="pane-heading"',
         'class="guided-controls"',
-        "Step 1: Prepare",
-        "Step 4: Review and challenge",
+        "1. Prepare",
+        "4. Review and challenge",
+        'id="activity-toggle"',
+        'id="grid-summary"',
+        'class="matrix-disclosure"',
     )
     layout_tokens = (
         'grid-template-areas:\n    "controls controls"\n    "activity antibiogram";',
@@ -192,6 +195,9 @@ def main() -> int:
         "#console .stream { max-height: none; height: auto; overflow: visible; }",
         ".antibiogram-pane .table-scroll { overflow: visible; }",
         ".antibiogram-pane table.grid { min-width: 0; width: 100%; table-layout: fixed;",
+        '#console .stream:not(.is-expanded) .event:nth-child(n+5) { display: none; }',
+        '.guided-controls .control-group:not([data-state="current"]) > :not(.step-summary) { display: none; }',
+        '.antibiogram-summary { display: grid;',
     )
     renderer_tokens = (
         '<th scope="col">Drug</th>',

@@ -782,23 +782,67 @@ footer.site {
   font-size: .74rem; font-weight: 740;
 }
 .guided-controls {
-  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px;
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; align-items: start;
 }
+.guide-tools { display: flex; align-items: center; gap: 8px; }
+.guide-tools #btn-reset { min-height: 34px; padding: 5px 10px; font-size: .76rem; }
 .guided-controls .control-group {
-  min-width: 0; margin: 0; padding: 13px;
+  min-width: 0; margin: 0; padding: 11px;
   border: 1px solid var(--border); border-radius: var(--radius-sm);
   background: color-mix(in srgb, var(--surface-2) 72%, var(--surface));
 }
-.guided-controls .control-group:has(button:not(:disabled)) {
-  border-color: color-mix(in srgb, var(--accent) 48%, var(--border));
+.guided-controls .control-group[data-state="current"] {
+  border-color: var(--accent); background: var(--accent-soft);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 30%, transparent);
 }
-.control-kicker { display: block; min-height: 2.4em; margin-bottom: 9px; line-height: 1.25; }
-.guided-controls button { width: 100%; min-height: 40px; margin: 0 0 7px; padding: 8px 10px; }
-.guided-controls button:last-child { margin-bottom: 0; }
+.guided-controls .control-group[data-state="complete"] { background: var(--surface); }
+.guided-controls .control-group:not([data-state="current"]) > :not(.step-summary) { display: none; }
+.step-summary { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.step-state {
+  flex: 0 0 auto; padding: 3px 7px; border-radius: 999px;
+  background: var(--surface); color: var(--text-muted); font-size: .66rem; font-weight: 720;
+}
+.control-group[data-state="current"] .step-state { background: var(--accent); color: var(--accent-text); }
+.control-group[data-state="complete"] .step-state { background: var(--ok-soft); color: var(--ok); }
+.control-kicker { display: block; min-height: 0; margin: 2px 0 9px; line-height: 1.25; }
+.guided-controls button:not(.info) { width: 100%; min-height: 38px; margin: 0 0 7px; padding: 7px 9px; }
+.guided-controls button:not(.info):last-child { margin-bottom: 0; }
 .control-help { margin: 1px 0 8px; font-size: .76rem; line-height: 1.35; }
+.control-help .info { vertical-align: middle; }
 .controls-note, .antibiogram-note { margin: 10px 0 0; color: var(--text-muted); font-size: .78rem; line-height: 1.45; }
 #console .stream { max-height: none; height: auto; overflow: visible; }
+#console .stream:not(.is-expanded) .event:nth-child(n+5) { display: none; }
+.activity-toggle {
+  width: 100%; min-height: 38px; margin-top: 10px; padding: 7px 10px;
+  background: var(--surface-2); color: var(--text); font-size: .78rem;
+}
+.activity-toggle[hidden] { display: none; }
 .activity-pane .event:last-child { margin-bottom: 0; }
+.antibiogram-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.organism-card {
+  min-width: 0; padding: 10px; border: 1px solid var(--border);
+  border-radius: var(--radius-sm); background: var(--surface-2);
+}
+.organism-card h4 {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 6px;
+  margin: 0 0 7px; font-size: .78rem;
+}
+.organism-card h4 span { color: var(--text-muted); font-size: .64rem; font-weight: 650; white-space: nowrap; }
+.organism-card ul { margin: 0; padding: 0; list-style: none; }
+.organism-card li {
+  display: flex; justify-content: space-between; gap: 7px; padding: 4px 0;
+  border-top: 1px solid var(--border); font-size: .68rem; line-height: 1.25;
+}
+.organism-card li b { min-width: 0; overflow-wrap: anywhere; }
+.organism-card li span { flex: 0 0 auto; color: var(--text-muted); white-space: nowrap; }
+.matrix-disclosure { margin-top: 10px; }
+.matrix-disclosure[hidden] { display: none; }
+.matrix-disclosure > summary {
+  cursor: pointer; padding: 8px 10px; border: 1px solid var(--border);
+  border-radius: var(--radius-sm); background: var(--surface-2);
+  color: var(--text); font-size: .76rem; font-weight: 700;
+}
+.matrix-disclosure[open] > summary { margin-bottom: 10px; }
 .antibiogram-pane .table-scroll { overflow: visible; }
 .antibiogram-pane table.grid { min-width: 0; width: 100%; table-layout: fixed; font-size: .75rem; }
 .antibiogram-pane table.grid th, .antibiogram-pane table.grid td {
@@ -831,6 +875,7 @@ header.site nav { justify-content: center; }
     grid-template-areas: "controls" "activity" "antibiogram";
   }
   .guided-controls { grid-template-columns: 1fr 1fr; }
+  .antibiogram-summary { grid-template-columns: 1fr; }
 }
 @media (max-width: 900px) {
   header.site .brand { width: auto; }
@@ -841,6 +886,7 @@ header.site nav { justify-content: center; }
   #console .console-actions { justify-content: stretch; }
   #console .console-actions > * { width: 100%; text-align: center; }
   .guided-controls { grid-template-columns: 1fr; }
+  .guide-tools { width: 100%; justify-content: space-between; }
   .control-kicker { min-height: 0; }
   .pane-heading { align-items: center; }
   .antibiogram-pane table.grid { font-size: .68rem; }

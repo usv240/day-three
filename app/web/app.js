@@ -37,7 +37,7 @@ let glossary = {};
 const popover = $("#popover");
 let openTrigger = null;
 
-fetch("/static/glossary.json?v=20260819-flow").then((r) => r.json()).then((g) => { glossary = g; });
+fetch("/static/glossary.json?v=20260819-progressive").then((r) => r.json()).then((g) => { glossary = g; });
 
 function closePopover() {
   popover.hidden = true;
@@ -79,6 +79,22 @@ document.addEventListener("keydown", (event) => {
 /* --- Activity stream ---------------------------------------------------- */
 
 const stream = $("#stream");
+const activityToggle = $("#activity-toggle");
+const ACTIVITY_PREVIEW_COUNT = 4;
+
+function updateActivityDisclosure() {
+  const count = stream.children.length;
+  activityToggle.hidden = count <= ACTIVITY_PREVIEW_COUNT;
+  activityToggle.textContent = stream.classList.contains("is-expanded")
+    ? "Show latest activity only"
+    : `View full activity history (${count})`;
+}
+
+activityToggle.addEventListener("click", () => {
+  const expanded = stream.classList.toggle("is-expanded");
+  activityToggle.setAttribute("aria-expanded", String(expanded));
+  updateActivityDisclosure();
+});
 
 function log(agent, message, why = "", tone = "") {
   const event = document.createElement("div");
@@ -87,6 +103,7 @@ function log(agent, message, why = "", tone = "") {
     why ? `<div class="why">${why}</div>` : ""}</div>`;
   stream.prepend(event);
   while (stream.children.length > 40) stream.lastChild.remove();
+  updateActivityDisclosure();
 }
 
 /* --- Fixtures -----------------------------------------------------------
@@ -102,6 +119,45 @@ let fixtureIndex = 0;
 let patientCounter = 0;
 let courseRunId = null;
 let latestPatientId = null;
+let demoStarted = false;
+let hostileTested = false;
+let reviewCompleted = false;
+let fabricationTested = false;
+
+const workflowSteps = [...document.querySelectorAll("[data-workflow-step]")];
+const guidedActionIds = ["btn-reset", "btn-report", "btn-hostile", "btn-admit", "btn-advance-47", "btn-advance-5", "btn-reconcile", "btn-fabricate"];
+
+function updateWorkflowGuide() {
+  let currentStep = 1;
+  if (demoStarted) {
+    if (fabricationTested) currentStep = 5;
+    else if (fixtureIndex < FIXTURE_ROTATION.length || !hostileTested) currentStep = 2;
+    else if ($("#btn-reconcile").disabled && !reviewCompleted) currentStep = 3;
+    else currentStep = 4;
+  }
+
+  workflowSteps.forEach((step) => {
+    const number = Number(step.dataset.workflowStep);
+    const state = number < currentStep ? "complete" : number === currentStep ? "current" : "upcoming";
+    step.dataset.state = state;
+    const label = step.querySelector(".step-state");
+    label.textContent = state === "complete" ? "Complete" : state === "current" ? "Current" : "Upcoming";
+    if (state === "current") step.setAttribute("aria-current", "step");
+    else step.removeAttribute("aria-current");
+  });
+
+  guidedActionIds.forEach((id) => $("#" + id).classList.remove("btn-primary"));
+  let nextId = null;
+  if (!demoStarted) nextId = "btn-reset";
+  else if (fixtureIndex < FIXTURE_ROTATION.length) nextId = "btn-report";
+  else if (!hostileTested) nextId = "btn-hostile";
+  else if (!courseRunId) nextId = "btn-admit";
+  else if (!$("#btn-advance-47").disabled) nextId = "btn-advance-47";
+  else if (!$("#btn-advance-5").disabled) nextId = "btn-advance-5";
+  else if (!reviewCompleted) nextId = "btn-reconcile";
+  else if (!fabricationTested) nextId = "btn-fabricate";
+  if (nextId) $("#" + nextId).classList.add("btn-primary");
+}
 
 async function loadFixture(name) {
   const { ok, data } = await api(`/day-three/fixtures/${name}`);
@@ -133,6 +189,8 @@ async function refreshGrid(changed = []) {
 
   if (!data.cells || data.cells.length === 0) {
     table.innerHTML = "";
+    $("#grid-summary").innerHTML = "";
+    $("#grid-disclosure").hidden = true;
     meta.textContent = "No reports ingested yet.";
     return;
   }
@@ -161,6 +219,19 @@ async function refreshGrid(changed = []) {
     return `<tr><th scope="row">${drug}</th>${cells}</tr>`;
   }).join("");
 
+const summary = data.organisms.map((organism) => {
+    const observed = data.cells.filter((cell) => cell.organism === organism);
+    const items = observed.map((cell) => {
+      const label = cell.percent_susceptible === null
+        ? `n=${cell.tested}, too few`
+        : `${cell.percent_susceptible}% susceptible`;
+      return `<li><b>${cell.drug}</b><span>${label}</span></li>`;
+    }).join("");
+    return `<section class="organism-card"><h4>${shortOrganism(organism)} <span>${observed.length} tested</span></h4><ul>${items}</ul></section>`;
+  }).join("");
+  $("#grid-summary").innerHTML = summary;
+  $("#grid-disclosure").hidden = false;
+  $("#grid-disclosure-label").textContent = `Inspect full ${data.drugs.length}-drug matrix`;
   table.innerHTML = head + `<tbody>${body}</tbody>`;
 }
 
@@ -210,6 +281,11 @@ async function ingestFixture(name, label) {
   log("curator", `Antibiogram updated to revision ${data.revision}. ${data.cells_changed.length} cell(s) changed.`,
       "Applied as a delta, so only what moved is highlighted.", "accept");
   await refreshGrid(data.cells_changed);
+  if (name === HOSTILE_FIXTURE && data.quarantined.length) {
+    hostileTested = true;
+    $("#btn-hostile").disabled = true;
+    if (fixtureIndex >= FIXTURE_ROTATION.length) $("#btn-admit").disabled = false;
+  }
   if (FIXTURE_ROTATION.includes(name)) {
     const loaded = Math.min(fixtureIndex, FIXTURE_ROTATION.length);
     $("#btn-report").textContent = loaded < FIXTURE_ROTATION.length
@@ -217,16 +293,17 @@ async function ingestFixture(name, label) {
       : "Three reports loaded";
     if (loaded >= FIXTURE_ROTATION.length) {
       $("#btn-report").disabled = true;
-      $("#btn-admit").disabled = false;
-      $("#btn-fabricate").disabled = false;
+      $("#btn-admit").disabled = !hostileTested;
     }
   }
+  updateWorkflowGuide();
 }
 
 $("#btn-reset").addEventListener("click", async () => {
   await api("/sim/reset", {});
   await api("/day-three/reset", {});
   patientCounter = 0; courseRunId = null; latestPatientId = null; fixtureIndex = 0;
+  demoStarted = true; hostileTested = false; reviewCompleted = false; fabricationTested = false;
   $("#btn-report").disabled = false;
   $("#btn-report").textContent = "Load report 1 of 3";
   $("#btn-hostile").disabled = false;
@@ -238,6 +315,9 @@ $("#btn-reset").addEventListener("click", async () => {
   stream.innerHTML = "";
   log("system", "Clean slate. Clock reset to real time, antibiogram cleared.");
   await refreshClock(); await refreshGrid();
+  stream.classList.remove("is-expanded");
+  activityToggle.setAttribute("aria-expanded", "false");
+  updateWorkflowGuide();
 });
 
 $("#btn-report").addEventListener("click", () => {
@@ -263,6 +343,7 @@ $("#btn-admit").addEventListener("click", async () => {
       data.ladder.map((w) => `${w.kind} at +${w.in_hours}h`).join(" &middot; "), "accept");
   log("course watch", "Agent is now asleep. It costs nothing while sleeping.");
   await refreshClock();
+  updateWorkflowGuide();
 });
 
 async function advance(hours, label) {
@@ -292,6 +373,7 @@ async function advance(hours, label) {
     $("#btn-advance-5").disabled = true;
     $("#btn-reconcile").disabled = false;
   }
+  updateWorkflowGuide();
 }
 
 $("#btn-advance-47").addEventListener("click", () => advance(47, "Advanced 47 hours"));
@@ -331,6 +413,10 @@ $("#btn-reconcile").addEventListener("click", async () => {
 
   log("router", "Pharmacist-review escalation prepared. Waiting for sign off.",
       "Nothing was sent. The agent stops here and cannot change an order.");
+  reviewCompleted = true;
+  $("#btn-reconcile").disabled = true;
+  $("#btn-fabricate").disabled = false;
+  updateWorkflowGuide();
 });
 
 $("#btn-fabricate").addEventListener("click", async () => {
@@ -340,10 +426,15 @@ $("#btn-fabricate").addEventListener("click", async () => {
   log("verifier",
       `<span class="chip bad">rejected</span> ${data.reason}`,
       data.teaching_note, "reject");
+  fabricationTested = true;
+  $("#btn-fabricate").disabled = true;
+  updateWorkflowGuide();
 });
 
 /* --- Boot --------------------------------------------------------------- */
 
 refreshClock();
 refreshGrid();
+updateWorkflowGuide();
+updateActivityDisclosure();
 setInterval(refreshClock, 15000);
