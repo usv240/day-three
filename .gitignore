@@ -11,3 +11,6 @@ tmp/
 .gcloud/
 dev.to/
 .beta-keys/
+
+# Personal recording aid. Not part of the submission.
+RECORDING_SCRIPT.md
