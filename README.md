@@ -31,7 +31,7 @@ terminal, credentials, or prior clinical knowledge.
 | Gate | Reproducible result |
 |---|---:|
 | Deployed public acceptance flow | **18/18** |
-| Standalone automated tests | **250 passed** |
+| Standalone automated tests | **253 passed** |
 | Recorded extraction fields | **29/29** |
 | Shared-substrate exit test | **10/10** |
 | Accessibility gate | **Pass: light and dark themes** |
@@ -108,9 +108,8 @@ identifiers nor raw reports are stored there. Firestore remains the authoritativ
 ledger. The live [`/day-three/platform`](https://day-three-109051079423.us-central1.run.app/day-three/platform)
 route reads Runtime, Identity, Gateway, Model Armor, and Memory Bank evidence from managed APIs.
 
-Day Three and Sixty Days share a durable substrate, but their public services, repositories, and
-simulation clocks are separate. Simulated wake claims are filtered by owning project; the shared
-production worker remains unfiltered and wall-clock based.
+Simulation clocks are namespaced per public evaluation. Simulated wake claims are filtered by the
+owning project; the production worker remains unfiltered and wall-clock based.
 
 - [Diffable Mermaid source](docs/architecture.mmd)
 - [Rendered SVG for submission pages](docs/architecture.svg)

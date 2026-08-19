@@ -2,7 +2,7 @@
 
 This folder is a self-contained candidate root for the independent Day Three Git repository.
 The original combined implementation remains in ../app/. This copy can be tested, built, and
-deployed from app/ without Sixty Days code.
+deployed from app/ without code from another submission.
 
 ## Repository boundary
 

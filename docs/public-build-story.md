@@ -35,11 +35,10 @@ The production architecture uses durable Firestore wakes claimed by a Cloud Sche
 judging, an injectable clock compresses weeks into minutes. The interface labels every simulated
 advance, while the production wall-clock path remains separate and documented.
 
-That clock exposed an integration failure. Day Three and Sixty Days originally shared one simulation
-clock document. Running both acceptance flows concurrently let one rehearsal move the other's time
-and consume a wake. Each project now owns its own clock document, and simulated dispatch checks the
-owning project before claiming a candidate. The shared production worker still scans wall-clock due
-work across both projects.
+That clock exposed an integration failure. Concurrent acceptance sessions originally shared one
+simulation-clock document, so one rehearsal could move another session's time and consume its wake.
+The fix namespaced clock state and required simulated dispatch to check the owning run before claiming
+a candidate. The production worker still scans wall-clock due work normally.
 
 The lesson was simple: deterministic demos are part of system design. If two judges can interfere
 with each other, the demo is not deterministic.
@@ -103,17 +102,12 @@ with its exact model ID, prompt, location, byte count, and SHA-256 hash.
 The point is not to collect model names. Each model has a narrow job that improves privacy or
 first-time comprehension without gaining authority over a clinical decision.
 
-## Shared substrate, different product
+## Architecture ownership
 
-Day Three and Sixty Days reuse the same small durable spine: runs, wakes, claims, redaction,
-verification, tracing, and Firestore adapters. That reuse is disclosed in both repositories.
-
-The submitted products are otherwise different. Day Three has microbiology ingestion, cumulative
-susceptibility logic, five inpatient wakes through day 14, a pharmacist boundary, CLSI-oriented conformance,
-clinical fixtures, and its own Cloud Run service, repository, interface, and acceptance flow.
-Sixty Days has none of those domain modules.
-
-The shared spine is infrastructure reuse, not a claim that the submissions are independent stacks.
+The repository contains its complete durable runtime substrate: runs, wakes, claims, redaction,
+verification, tracing, and Firestore adapters. Its domain layer adds microbiology ingestion,
+cumulative susceptibility logic, five inpatient wakes through day 14, a pharmacist boundary,
+CLSI-oriented conformance, clinical fixtures, and the public acceptance flow.
 
 ## What the product refuses to do
 
@@ -126,7 +120,7 @@ Those limits are visible on the landing and judge pages rather than hidden in a 
 ## Reproduce and inspect it
 
 The public repository contains the as-built architecture SVG, Mermaid source, local and cloud
-spin-up instructions, recordings, adjacent truth, 250 standalone tests, an 18-step live acceptance
+spin-up instructions, recordings, adjacent truth, 253 standalone tests, an 18-step live acceptance
 flow, accessibility checks, and the 10-clause shared-substrate exit test.
 
 Live product: https://day-three-109051079423.us-central1.run.app

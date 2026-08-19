@@ -38,7 +38,7 @@ The full source hierarchy and rejected claims are in
 | Measurement | Current result | Reproduce |
 |---|---:|---|
 | Recorded Gemini extraction | 29 of 29 fields across 4 fixtures | python scripts/record_intake.py --rescore |
-| Standalone test suite | 250 passed | python -m pytest -q |
+| Standalone test suite | 253 passed | python -m pytest -q |
 | Public acceptance flow | 18 of 18 | python scripts/demo_flow.py with the public URL |
 | Shared-substrate exit test | 10 of 10 | POST /exit-test with an empty JSON body |
 | Accessibility gate | Pass in light and dark themes | python scripts/check_a11y.py |
@@ -113,6 +113,3 @@ A practitioner usability study remains future work.
 - Hospital integration and governance approval
 - Complete CLSI conformance
 - Cost savings, length-of-stay reduction, or mortality benefit
-
-See [PROJECT_DIFFERENTIATION.md](PROJECT_DIFFERENTIATION.md) for the evidence that this submission
-is substantially different from Sixty Days despite shared infrastructure primitives.

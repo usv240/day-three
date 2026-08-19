@@ -29,7 +29,7 @@ def test_public_copy_preserves_evidence_scope_and_build_honesty():
     assert "selected 21-program evaluation" in public_copy
     assert "cumulative" in public_copy
     assert "synthetic composite" in public_copy
-    assert "250 tests" in public_copy
+    assert "253 tests" in public_copy
     assert "google cloud agent registry" in public_copy
     assert "openfda" in public_copy
     assert "15 tests in" in public_copy
@@ -46,5 +46,5 @@ def test_public_copy_preserves_evidence_scope_and_build_honesty():
     assert "pmc11574594" in public_copy
     assert "reducing-carbapenem-use" in public_copy
     assert "disabled controls enforce that order" in public_copy
-    assert "parallel rehearsal found cross-project clock interference" in public_copy
+    assert "parallel rehearsal found simulation-clock interference" in public_copy
     assert "if you have sixty seconds" in public_copy
