@@ -159,6 +159,15 @@ Order fixed; each bullet is a section with listed content. Reuse `/judges` text;
   OpenTelemetry. Pub/Sub is not used. Secret Manager stores the invitation code and expiring beta-key records.
 - **Data sources:** synthetic composite patients; synthetic degraded scans with ground truth;
   official openFDA Drug Shortages; CLSI M39 rules; public stewardship literature (cited)
+- **Beyond the demo (paste as its own paragraph):** The console is the evaluation surface, not
+  the product boundary. The same intake, quoting, redaction and suppression path is exposed as a
+  tenant-scoped `/v1` API. An approved integration sends de-identified microbiology text with an
+  `X-API-Key` and gets back its own private cumulative antibiogram; a different key is a different
+  hospital with entirely separate data, verified live. Keys are stored as hashes only, issued
+  behind an invitation code, expire after seven days, and are revocable from the Developer page.
+  Raw report text is never persisted, low-count cells stay suppressed, and no endpoint can
+  prescribe, dose, order, page, or change a chart. That is the path from a hackathon console to a
+  small hospital pointing its own lab feed at it, without the demo pretending to be a deployment.
 - **Findings and learnings:** the six `/judges` findings, trimmed to ~200 words
 - **Hosted URL:** `https://day-three-109051079423.us-central1.run.app`
 - **Video URL:** filled after the public upload
