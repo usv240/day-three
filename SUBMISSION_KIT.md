@@ -144,7 +144,7 @@ Order fixed; each bullet is a section with listed content. Reuse `/judges` text;
 - [x] Public standalone repository
 - [x] Submission-ready architecture SVG plus canonical Mermaid source
 - [x] Three additional Google model integrations with public prompts and hashes
-- [x] 18/18 acceptance, 280 tests, accessibility, and 10/10 shared-substrate exit test
+- [x] 18/18 acceptance, 283 tests, accessibility, and 10/10 shared-substrate exit test
 - [x] Credential-free live Gemini call on the public page, budget-capped and graded
 - [x] Wall-clock wake proof a visitor can register and verify afterwards
 - [x] LICENSE committed

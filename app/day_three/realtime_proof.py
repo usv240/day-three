@@ -105,20 +105,6 @@ class RealtimeProofStore:
             fired_by=data.get("fired_by"),
         )
 
-    def by_wake(self, wake_id: str) -> ProofRecord | None:
-        for snapshot in self._collection.where("wake_id", "==", wake_id).limit(1).stream():
-            data = snapshot.to_dict() or {}
-            return ProofRecord(
-                proof_id=data["proof_id"],
-                run_id=data["run_id"],
-                wake_id=data["wake_id"],
-                registered_at=_as_datetime(data.get("registered_at")),
-                due_at=_as_datetime(data.get("due_at")),
-                fired_at=_as_datetime(data.get("fired_at")),
-                fired_by=data.get("fired_by"),
-            )
-        return None
-
     def mark_fired(self, proof_id: str, fired_at: datetime, worker: str) -> None:
         """Idempotent by proof_id: a second claim overwrites with the same observable facts."""
         self._collection.document(proof_id).set(
@@ -130,10 +116,19 @@ class RealtimeProofStore:
 
         Ordering is by due time on a single field so this needs no composite index; the
         unclaimed filter is applied in memory, which is safe at this collection's size.
+
+        Uses the keyword `FieldFilter` form like the rest of the codebase. The positional form
+        still works but emits a UserWarning on every call, and this runs once a minute forever,
+        so it filled Cloud Logging with deprecation noise a judge would scroll through.
         """
+        from google.cloud import firestore
+
         found: list[ProofRecord] = []
         for snapshot in (
-            self._collection.where("due_at", "<=", now).order_by("due_at").limit(limit).stream()
+            self._collection.where(filter=firestore.FieldFilter("due_at", "<=", now))
+            .order_by("due_at")
+            .limit(limit)
+            .stream()
         ):
             data = snapshot.to_dict() or {}
             if data.get("fired_at") is not None:

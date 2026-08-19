@@ -31,7 +31,7 @@ terminal, credentials, or prior clinical knowledge.
 | Gate | Reproducible result |
 |---|---:|
 | Deployed public acceptance flow | **18/18** |
-| Standalone automated tests | **253 passed** |
+| Standalone automated tests | **283 passed** |
 | Recorded extraction fields | **29/29** |
 | Shared-substrate exit test | **10/10** |
 | Accessibility gate | **Pass: light and dark themes** |

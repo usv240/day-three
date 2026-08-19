@@ -41,8 +41,16 @@ class Collection:
     def document(self, doc_id):
         return self.documents.setdefault(doc_id, Document())
 
-    def where(self, field, _op, value):
-        self._filters = [(field, value)]
+    def where(self, field=None, _op=None, value=None, filter=None):
+        # Mirrors the real client: production uses the keyword FieldFilter form, so the double
+        # must accept it, otherwise a test can pass against an API production never calls.
+        if filter is not None:
+            self._filters = [(filter.field_path, filter.value)]
+        else:
+            self._filters = [(field, value)]
+        return self
+
+    def order_by(self, _field):
         return self
 
     def limit(self, _n):

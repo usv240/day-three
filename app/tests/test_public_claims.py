@@ -1,5 +1,6 @@
 """Regression guard for claims that the August 8 evidence audit narrowed or removed."""
 
+import re
 from pathlib import Path
 
 
@@ -30,7 +31,11 @@ def test_public_copy_preserves_evidence_scope_and_build_honesty():
     assert "selected 21-program evaluation" in public_copy
     assert "cumulative" in public_copy
     assert "synthetic composite" in public_copy
-    assert "253 tests" in public_copy
+    # The page must quote *a* test total; whether that total is the true one is checked
+    # dynamically in test_published_test_count_is_true.py. Pinning the literal here is what let
+    # the published figure sit at 253 while the suite had grown well past it -- the guard was
+    # enforcing the stale number rather than the real one.
+    assert re.search(r"\d+ tests", public_copy)
     assert "google cloud agent registry" in public_copy
     assert "openfda" in public_copy
     assert "15 tests in" in public_copy
