@@ -37,7 +37,7 @@ let glossary = {};
 const popover = $("#popover");
 let openTrigger = null;
 
-fetch("/static/glossary.json?v=20260819-progressive").then((r) => r.json()).then((g) => { glossary = g; });
+fetch("/static/glossary.json?v=20260819-shell").then((r) => r.json()).then((g) => { glossary = g; });
 
 function closePopover() {
   popover.hidden = true;

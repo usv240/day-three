@@ -60,6 +60,8 @@ app = FastAPI(
     title="Agentic Fleet spine",
     description="Shared substrate: injectable clock, durable runs, wakes, Verifier.",
     version="0.1.0",
+    docs_url=None,
+    redoc_url=None,
 )
 
 
@@ -120,7 +122,7 @@ public_surface = "day-three"
 async def prevent_stale_ui(request, call_next):
     response = await call_next(request)
     path = request.url.path
-    if path in {"/", "/judges", "/developer"} or path.endswith((".css", ".js", ".json")):
+    if path in {"/", "/judges", "/developer", "/docs"} or path.endswith((".css", ".js", ".json")):
         response.headers["Cache-Control"] = "no-cache, max-age=0, must-revalidate"
     return response
 
@@ -139,6 +141,10 @@ if _WEB.is_dir():
     @app.get("/developer", include_in_schema=False)
     def developer() -> FileResponse:
         return FileResponse(_WEB / "developer.html")
+
+    @app.get("/docs", include_in_schema=False)
+    def docs() -> FileResponse:
+        return FileResponse(_WEB / "docs.html")
 
 # Operational -----------------------------------------------------------------
 

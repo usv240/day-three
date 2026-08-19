@@ -22,7 +22,7 @@ collected. Counts remain correct, but the selected susceptibility profile can di
 
 Current proof:
 
-- 230 standalone tests
+- 244 standalone tests
 - 18 of 18 public acceptance checks
 - 29 of 29 recorded extraction fields
 - 10 of 10 shared-substrate exit-test clauses

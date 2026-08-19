@@ -893,3 +893,29 @@ header.site nav { justify-content: center; }
   .antibiogram-pane table.grid th, .antibiogram-pane table.grid td { padding: 6px 3px; }
   .antibiogram-pane table.grid th:first-child { width: 34%; }
 }
+/* Shared public-page scale and navigation. */
+header.site nav a[aria-current="page"] {
+  background: var(--accent-soft); color: var(--accent-strong); font-weight: 700;
+}
+.page-hero {
+  padding: clamp(56px, 7vw, 76px) 0 clamp(46px, 6vw, 64px);
+  background:
+    radial-gradient(circle at 86% 8%, color-mix(in srgb, var(--accent-soft) 82%, transparent), transparent 32%),
+    linear-gradient(180deg, var(--surface), var(--bg));
+}
+.page-hero h1 {
+  max-width: 20ch; font-size: clamp(2.35rem, 4.5vw, 3.85rem); letter-spacing: -.04em;
+}
+.page-hero .lede { max-width: 64ch; font-size: clamp(1.03rem, 1.6vw, 1.2rem); color: var(--text-muted); }
+.developer-page section:not(.page-hero) { padding: clamp(48px, 6vw, 64px) 0; }
+.developer-page .developer-orientation { padding: clamp(42px, 5vw, 54px) 0; }
+.developer-page .path-card { min-height: 205px; padding: 20px; }
+.developer-page .dev-panel { padding: clamp(20px, 2.4vw, 30px); }
+.developer-page .dev-section-heading { margin-bottom: 22px; }
+.api-reference-hero h1 { max-width: 18ch; }
+.api-reference-shell { padding: 34px 0 54px; background: var(--bg); }
+
+@media (max-width: 900px) {
+  .page-hero { padding: 52px 0 44px; }
+  .page-hero h1 { font-size: clamp(2.2rem, 9vw, 3.25rem); }
+}

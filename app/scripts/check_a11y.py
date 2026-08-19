@@ -154,24 +154,37 @@ def main() -> int:
 
     print("Canonical header and single-scroll workflow\n")
     judges = (WEB / "judges.html").read_text(encoding="utf-8")
+    docs = (WEB / "docs.html").read_text(encoding="utf-8")
     service_main = (WEB.parent / "service" / "main.py").read_text(encoding="utf-8")
     app_js = (WEB / "app.js").read_text(encoding="utf-8")
     brand_ok = all(
         '<a class="brand" href="/" aria-label="Day Three home">' in page
-        for page in (landing, developer, judges)
+        for page in (landing, developer, judges, docs)
     )
-    version_ok = all("?v=20260819-progressive" in page for page in (landing, developer, judges))
+    version_ok = all("?v=20260819-shell" in page for page in (landing, developer, judges, docs))
+    shared_nav = (
+        'href="/"',
+        'href="/#console"',
+        'href="/developer"',
+        'href="/docs"',
+        'href="/judges"',
+    )
+    nav_ok = all(
+        all(token in page for token in shared_nav) and 'aria-current="page"' in page
+        for page in (landing, developer, judges, docs)
+    )
+    docs_shell_ok = all(token in docs for token in ('class="page-hero api-reference-hero"', 'id="swagger-ui"', '/static/docs.css', '/static/docs.js')) and 'docs_url=None' in service_main
     cache_ok = 'response.headers["Cache-Control"] = "no-cache, max-age=0, must-revalidate"' in service_main
     removed_focus_ui = not any(
         token in source
         for source in (landing, css, app_js)
         for token in ("workflow-focus", "workflow-tabs", "data-workflow-tab", "role=\"tabpanel\"")
     )
-    if brand_ok and version_ok and cache_ok and removed_focus_ui:
-        print("    PASS  Day Three returns home, assets revalidate, and the workflow uses one page scroll")
+    if brand_ok and version_ok and nav_ok and docs_shell_ok and cache_ok and removed_focus_ui:
+        print("    PASS  all public pages share one navigation, scale, asset policy, and product shell")
     else:
-        failures.append("canonical header, cache policy, or single-scroll workflow is incomplete")
-        print("    FAIL  header home, fresh assets, or single-scroll workflow behavior is incomplete")
+        failures.append("shared page shell, cache policy, or single-scroll workflow is incomplete")
+        print("    FAIL  navigation, page scale, API docs shell, fresh assets, or workflow behavior is incomplete")
     print()
 
     print("Progressive workflow layout\n")
