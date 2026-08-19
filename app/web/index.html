@@ -6,7 +6,7 @@
 <title>Day Three: the antibiotic review limited teams can miss</title>
 <meta name="description" content="An agent fleet that builds local susceptibility evidence, then wakes on its own at hour 48 to support an antibiotic review.">
 <meta name="theme-color" content="#f7f9fc">
-<link rel="stylesheet" href="/static/styles.css?v=20260819-workspace">
+<link rel="stylesheet" href="/static/styles.css?v=20260819-flow">
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to main content</a>
@@ -16,7 +16,7 @@
     <a class="brand" href="/" aria-label="Day Three home">Day Three <span>antibiotic stewardship for limited hospital teams</span></a>
     <nav aria-label="Primary">
       <a href="#problem">Overview</a>
-      <a href="#console" data-workflow-focus>Live demo</a>
+      <a href="#console">Live demo</a>
       <a href="/developer">Developer API</a>
       <a href="/docs">API docs</a>
       <a href="/judges">Judge evidence</a>
@@ -38,7 +38,7 @@
           have, sleeps while nothing is due, then wakes at hour 48 with a source-grounded review
           for a licensed pharmacist.</p>
         <div class="btn-row">
-          <a class="btn btn-primary" href="#console" data-workflow-focus>Run the live workflow</a>
+          <a class="btn btn-primary" href="#console">Run the live workflow</a>
           <a class="btn" href="/judges">Follow the judge path</a>
         </div>
         <p class="hero-tertiary">The public demo needs no key. Building an integration? <a href="/developer">Create an invited API key</a> or <a href="/docs">inspect the API docs</a>.</p>
@@ -192,43 +192,37 @@
     <div class="console-intro">
       <p><b>Recommended walkthrough:</b> follow steps 1 to 4. Disabled controls enforce that order,
         and every state change runs live.</p>
-      <div class="console-actions"><button class="btn-primary" id="workflow-focus" type="button" aria-pressed="false">Open full-screen workflow</button><a class="btn" href="/judges">Open judge evidence</a></div>
+      <div class="console-actions"><a class="btn" href="/judges">Open judge evidence</a></div>
     </div>
     <div class="clock">
       <span>Clock:</span>
       <b id="clock-now">loading</b>
       <span class="note">Simulated<button class="info" data-info="simulated-clock" aria-label="What is the simulated clock?">i</button>. Production uses the same scheduler in real time.</span>
     </div>
-
-    <div class="workflow-tabs" role="tablist" aria-label="Workflow panels">
-      <button type="button" role="tab" id="workflow-tab-controls" aria-selected="true" aria-controls="workflow-controls" data-workflow-tab="controls">Controls</button>
-      <button type="button" role="tab" id="workflow-tab-activity" aria-selected="false" aria-controls="workflow-activity" data-workflow-tab="activity">Activity</button>
-      <button type="button" role="tab" id="workflow-tab-antibiogram" aria-selected="false" aria-controls="workflow-antibiogram" data-workflow-tab="antibiogram">Antibiogram</button>
-    </div>
     <div class="console">
       <!-- Inputs -->
-      <div class="pane controls-pane" id="workflow-controls" role="tabpanel" aria-labelledby="workflow-tab-controls">
-        <h3>Guided controls</h3>
+      <div class="pane controls-pane" id="workflow-controls">
+        <div class="pane-heading"><div><h3>Guided run</h3><p>Complete the four steps from left to right. The next valid action unlocks automatically.</p></div><span class="sequence-hint">4 steps</span></div>
         <div class="guided-controls">
           <div class="control-group">
-            <span class="control-kicker">1 · Prepare</span>
+            <span class="control-kicker">Step 1: Prepare</span>
             <button class="btn-primary" id="btn-reset">Reset demo</button>
           </div>
           <div class="control-group">
-            <span class="control-kicker">2 · Build local evidence</span>
+            <span class="control-kicker">Step 2: Build local evidence</span>
             <button id="btn-report" disabled>Load report 1 of 3</button>
             <p class="control-help">Repeat until all three organisms are loaded.</p>
             <button id="btn-hostile" disabled>Test hidden instructions</button>
             <p class="control-help">Instruction-shaped lines are quarantined<button class="info" data-info="quarantine" aria-label="What does quarantined mean?">i</button> before AI.</p>
           </div>
           <div class="control-group">
-            <span class="control-kicker">3 · Start and wake the course</span>
+            <span class="control-kicker">Step 3: Start and wake the course</span>
             <button id="btn-admit" disabled>Admit patient</button>
             <button id="btn-advance-47" disabled>Advance 47 hours</button>
             <button id="btn-advance-5" disabled>Advance 5 hours</button>
           </div>
           <div class="control-group">
-            <span class="control-kicker">4 · Review and challenge</span>
+            <span class="control-kicker">Step 4: Review and challenge</span>
             <button id="btn-reconcile" disabled>Ask day-three question</button>
             <button id="btn-fabricate" disabled>Challenge unsupported number</button>
           </div>
@@ -237,7 +231,7 @@
       </div>
 
       <!-- Activity -->
-      <div class="pane activity-pane" id="workflow-activity" role="tabpanel" aria-labelledby="workflow-tab-activity">
+      <div class="pane activity-pane" id="workflow-activity">
         <h3>Agent activity</h3>
         <div class="stream" id="stream" aria-live="polite" aria-relevant="additions">
           <div class="event"><span class="agent">system</span><div>Ready. Press
@@ -246,7 +240,7 @@
       </div>
 
       <!-- Output -->
-      <div class="pane antibiogram-pane" id="workflow-antibiogram" role="tabpanel" aria-labelledby="workflow-tab-antibiogram">
+      <div class="pane antibiogram-pane" id="workflow-antibiogram">
         <h3>The antibiogram
           <button class="info" data-info="antibiogram" aria-label="What is an antibiogram?">i</button>
         </h3>
@@ -471,6 +465,6 @@
 </footer>
 
 <div class="popover" id="popover" role="dialog" aria-modal="false" hidden></div>
-<script src="/static/app.js?v=20260819-workspace"></script>
+<script src="/static/app.js?v=20260819-flow"></script>
 </body>
 </html>

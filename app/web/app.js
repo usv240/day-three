@@ -37,7 +37,7 @@ let glossary = {};
 const popover = $("#popover");
 let openTrigger = null;
 
-fetch("/static/glossary.json?v=20260819-workspace").then((r) => r.json()).then((g) => { glossary = g; });
+fetch("/static/glossary.json?v=20260819-flow").then((r) => r.json()).then((g) => { glossary = g; });
 
 function closePopover() {
   popover.hidden = true;
@@ -342,65 +342,6 @@ $("#btn-fabricate").addEventListener("click", async () => {
       data.teaching_note, "reject");
 });
 
-/* --- Focused workflow --------------------------------------------------- */
-
-const workflowFocusButton = $("#workflow-focus");
-const workflowTabs = [...document.querySelectorAll("[data-workflow-tab]")];
-let workflowPane = "controls";
-
-function selectWorkflowPane(name) {
-  workflowPane = name;
-  document.body.dataset.workflowPane = name;
-  workflowTabs.forEach((tab) => {
-    const selected = tab.dataset.workflowTab === name;
-    tab.setAttribute("aria-selected", String(selected));
-    tab.tabIndex = selected ? 0 : -1;
-  });
-}
-
-function setWorkflowFocus(active) {
-  document.body.classList.toggle("workflow-focus", active);
-  workflowFocusButton.setAttribute("aria-pressed", String(active));
-  workflowFocusButton.textContent = active ? "Exit full-screen workflow" : "Open full-screen workflow";
-  if (active) {
-    selectWorkflowPane(workflowPane);
-    history.replaceState(null, "", "#console");
-    workflowFocusButton.focus();
-  } else {
-    delete document.body.dataset.workflowPane;
-    $("#console").scrollIntoView({ block: "start" });
-  }
-}
-
-workflowFocusButton.addEventListener("click", () => {
-  setWorkflowFocus(!document.body.classList.contains("workflow-focus"));
-});
-
-document.querySelectorAll("[data-workflow-focus]").forEach((link) => {
-  link.addEventListener("click", (event) => {
-    event.preventDefault();
-    setWorkflowFocus(true);
-  });
-});
-
-workflowTabs.forEach((tab, index) => {
-  tab.addEventListener("click", () => selectWorkflowPane(tab.dataset.workflowTab));
-  tab.addEventListener("keydown", (event) => {
-    if (!['ArrowLeft', 'ArrowRight'].includes(event.key)) return;
-    event.preventDefault();
-    const offset = event.key === 'ArrowRight' ? 1 : -1;
-    const next = workflowTabs[(index + offset + workflowTabs.length) % workflowTabs.length];
-    selectWorkflowPane(next.dataset.workflowTab);
-    next.focus();
-  });
-});
-
-document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape" && document.body.classList.contains("workflow-focus")) {
-    setWorkflowFocus(false);
-  }
-});
-selectWorkflowPane("controls");
 /* --- Boot --------------------------------------------------------------- */
 
 refreshClock();

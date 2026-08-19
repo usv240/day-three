@@ -152,7 +152,7 @@ def main() -> int:
         print("    FAIL  developer journey or credential-storage boundary is incomplete")
     print()
 
-    print("Canonical header and focused workflow\n")
+    print("Canonical header and single-scroll workflow\n")
     judges = (WEB / "judges.html").read_text(encoding="utf-8")
     service_main = (WEB.parent / "service" / "main.py").read_text(encoding="utf-8")
     app_js = (WEB / "app.js").read_text(encoding="utf-8")
@@ -160,48 +160,38 @@ def main() -> int:
         '<a class="brand" href="/" aria-label="Day Three home">' in page
         for page in (landing, developer, judges)
     )
-    version_ok = all("?v=20260819-workspace" in page for page in (landing, developer, judges))
-    focus_html = (
-        'id="workflow-focus"',
-        'data-workflow-focus',
-        'role="tablist"',
-        'data-workflow-tab="controls"',
-        'data-workflow-tab="activity"',
-        'data-workflow-tab="antibiogram"',
-    )
-    focus_css = (
-        "body.workflow-focus #console",
-        "@media (max-width: 1199px)",
-        'body.workflow-focus[data-workflow-pane="controls"] .controls-pane',
-    )
+    version_ok = all("?v=20260819-flow" in page for page in (landing, developer, judges))
     cache_ok = 'response.headers["Cache-Control"] = "no-cache, max-age=0, must-revalidate"' in service_main
-    header_focus_ok = (
-        brand_ok
-        and version_ok
-        and all(token in landing for token in focus_html)
-        and all(token in css for token in focus_css)
-        and all(token in app_js for token in ("function setWorkflowFocus", "function selectWorkflowPane", "Escape"))
-        and cache_ok
+    removed_focus_ui = not any(
+        token in source
+        for source in (landing, css, app_js)
+        for token in ("workflow-focus", "workflow-tabs", "data-workflow-tab", "role=\"tabpanel\"")
     )
-    if header_focus_ok:
-        print("    PASS  Day Three returns home, assets revalidate, and every viewport has a focused workflow")
+    if brand_ok and version_ok and cache_ok and removed_focus_ui:
+        print("    PASS  Day Three returns home, assets revalidate, and the workflow uses one page scroll")
     else:
-        failures.append("canonical header, cache policy, or focused workflow is incomplete")
-        print("    FAIL  header home, fresh assets, or focused workflow behavior is incomplete")
+        failures.append("canonical header, cache policy, or single-scroll workflow is incomplete")
+        print("    FAIL  header home, fresh assets, or single-scroll workflow behavior is incomplete")
     print()
-    print("Console workspace layout\n")
-    app_js = (WEB / "app.js").read_text(encoding="utf-8")
+
+    print("Progressive workflow layout\n")
     workspace_tokens = (
         'class="pane controls-pane"',
         'class="pane activity-pane"',
         'class="pane antibiogram-pane"',
+        'class="pane-heading"',
         'class="guided-controls"',
+        "Step 1: Prepare",
+        "Step 4: Review and challenge",
     )
     layout_tokens = (
-        ".antibiogram-pane .table-scroll { overflow-x: visible; }",
-        ".antibiogram-pane table.grid { min-width: 0; table-layout: fixed;",
-        "grid-template-columns: minmax(340px, .85fr) minmax(340px, 1fr) minmax(420px, 1fr);",
-        "height: clamp(430px, calc(100vh - 250px), 520px);",
+        'grid-template-areas:\n    "controls controls"\n    "activity antibiogram";',
+        "grid-template-columns: repeat(4, minmax(0, 1fr));",
+        "#console .pane {",
+        "height: auto; max-height: none; overflow: visible;",
+        "#console .stream { max-height: none; height: auto; overflow: visible; }",
+        ".antibiogram-pane .table-scroll { overflow: visible; }",
+        ".antibiogram-pane table.grid { min-width: 0; width: 100%; table-layout: fixed;",
     )
     renderer_tokens = (
         '<th scope="col">Drug</th>',
@@ -209,18 +199,27 @@ def main() -> int:
         "const cells = data.organisms.map((organism) =>",
         '<th scope="row">${drug}</th>',
     )
+    no_nested_scroll = not any(
+        token in css
+        for token in (
+            "height: clamp(430px",
+            ".activity-pane, .antibiogram-pane { height: 430px",
+            "body.workflow-focus",
+        )
+    )
     workspace_ok = (
         all(token in landing for token in workspace_tokens)
         and all(token in css for token in layout_tokens)
         and all(token in app_js for token in renderer_tokens)
-        and "Start from a clean slate" not in landing
+        and no_nested_scroll
     )
     if workspace_ok:
-        print("    PASS  controls fit the task workspace and the full grid needs no horizontal scroll")
+        print("    PASS  four visible steps reflow into one reading direction with no nested vertical scroll")
     else:
-        failures.append("console workspace or transposed antibiogram layout is incomplete")
-        print("    FAIL  console remains document-shaped or the antibiogram remains horizontally wide")
+        failures.append("progressive workflow layout or compact antibiogram is incomplete")
+        print("    FAIL  workflow navigation, reflow, or antibiogram layout is incomplete")
     print()
+
     print("Compact laptop layout\n")
     compact_query = "@media (min-width: 700px) and (max-height: 900px)"
     compact_start = css.find(compact_query)
