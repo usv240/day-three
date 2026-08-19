@@ -545,7 +545,9 @@ if (realtimeButton) {
   realtimeButton.addEventListener("click", async () => {
     realtimeButton.disabled = true;
     realtimeStatus.textContent = "Booking a job on the real clock…";
-    const { ok, data } = await api("/day-three/realtime-proof", { delay_seconds: 120 });
+    // 60s is the floor the server allows. Long enough that only real time can satisfy it,
+    // short enough that a visitor -- or a four-minute demo -- reliably sees it fire.
+    const { ok, data } = await api("/day-three/realtime-proof", { delay_seconds: 60 });
     if (!ok) {
       realtimeStatus.textContent = data.detail || "Could not book the timer.";
       realtimeButton.disabled = false;
