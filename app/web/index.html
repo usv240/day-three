@@ -6,7 +6,7 @@
 <title>Day Three: the antibiotic review limited teams can miss</title>
 <meta name="description" content="An agent fleet that builds local susceptibility evidence, then wakes on its own at hour 48 to support an antibiotic review.">
 <meta name="theme-color" content="#f7f9fc">
-<link rel="stylesheet" href="/static/styles.css?v=20260819-plain">
+<link rel="stylesheet" href="/static/styles.css?v=20260819-a11y">
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to main content</a>
@@ -479,7 +479,7 @@
         <p>A bounded refresh filters the national feed to six formulary drugs. It never substitutes for local inventory. <a class="text-link" href="/day-three/shortages">Inspect source-dated snapshot</a>.</p>
       </div>
     </div>
-    <div class="table-scroll">
+    <div class="table-scroll" tabindex="0" role="region" aria-label="Agent roles and jobs table">
       <table class="plain">
         <thead><tr><th>Agent</th><th>Job</th></tr></thead>
         <tbody>
@@ -552,6 +552,6 @@
 
 <div class="popover" id="popover" role="dialog" aria-modal="false" hidden></div>
 <script src="/static/live-stack.js?v=20260819b"></script>
-<script src="/static/app.js?v=20260819-plain"></script>
+<script src="/static/app.js?v=20260819-a11y"></script>
 </body>
 </html>

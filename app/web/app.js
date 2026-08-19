@@ -183,19 +183,35 @@ function classFor(cell) {
 }
 
 async function refreshGrid(changed = []) {
-  const { data } = await api("/day-three/antibiogram");
   const table = $("#grid");
   const meta = $("#grid-meta");
+
+  // The demo state lives on the server and is shared by everyone, so a visitor who arrives after
+  // someone else has run the walkthrough would otherwise land on a finished antibiogram before
+  // pressing anything. That destroys the one thing this panel is meant to show -- a grid being
+  // built from nothing -- and makes a live workflow look pre-baked. Until this visitor starts a
+  // run, show the empty state and say why, rather than someone else's leftovers. Reset clears the
+  // server state for real, so nothing is being hidden.
+  if (!demoStarted) {
+    table.innerHTML = "";
+    $("#grid-summary").innerHTML = "";
+    $("#grid-disclosure").hidden = true;
+    meta.textContent = "Nothing loaded yet. Press Reset demo to start from a clean slate.";
+    return;
+  }
+
+  const { data } = await api("/day-three/antibiogram");
 
   if (!data.cells || data.cells.length === 0) {
     table.innerHTML = "";
     $("#grid-summary").innerHTML = "";
     $("#grid-disclosure").hidden = true;
-    meta.textContent = "No reports ingested yet.";
+    meta.textContent = "No reports loaded yet. Press Load report to add the first one.";
     return;
   }
 
-  meta.textContent = `Revision ${data.revision}. ${data.organisms.length} organisms. ${data.cells.length} drug pairs.`;
+  const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
+  meta.textContent = `Revision ${data.revision}. ${plural(data.organisms.length, "organism")}, ${plural(data.cells.length, "drug result")}.`;
   const changedKeys = new Set(changed.map((c) => `${c.organism}|${c.drug}`));
 
   const shortOrganism = (organism) => {

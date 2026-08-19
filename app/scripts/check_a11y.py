@@ -268,6 +268,32 @@ def main() -> int:
         failures.append("compact laptop layout is missing, incomplete, or hides content")
         print("    FAIL  short laptop viewports retain desktop spacing or hide content")
     print()
+    print()
+    print("Keyboard access to scrollable regions")
+    print()
+    # WCAG 2.2 SC 2.1.1. The body sets overflow-x: hidden, so anything wider than the viewport is
+    # clipped rather than scrolled by the page. Wide tables are meant to scroll inside their own
+    # container instead, which only works with a mouse or touch unless that container is focusable.
+    # Four of these shipped without tabindex, silently hiding their right-hand columns from anyone
+    # using a keyboard.
+    unreachable: list[str] = []
+    focusable = 0
+    for page in sorted(WEB.glob("*.html")):
+        html = page.read_text(encoding="utf-8")
+        for match in re.finditer(
+            r'<div class="table-scroll"([^>]*)>\s*<table class="plain"', html
+        ):
+            if "tabindex" in match.group(1):
+                focusable += 1
+            else:
+                unreachable.append(page.name)
+    for name in sorted(set(unreachable)):
+        count = unreachable.count(name)
+        failures.append(f"{name}: {count} scrollable table(s) not keyboard reachable")
+        print(f"    FAIL  {name}: {count} wide table(s) scroll but cannot be focused")
+    if not unreachable:
+        print(f"    PASS  all {focusable} scrollable tables are focusable and labelled")
+
     print("Glossary coverage\n")
     glossary = json.loads((WEB / "glossary.json").read_text(encoding="utf-8"))
     defined = {k for k in glossary if not k.startswith("_")}

@@ -351,6 +351,10 @@ textarea.control { resize: vertical; }
 /* --- Antibiogram grid --------------------------------------------------- */
 
 .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+/* A scrollable region has to be reachable by keyboard, or the columns past the right edge
+   are simply unavailable without a mouse. These carry tabindex="0", so they also need a
+   visible focus ring like any other focusable control. */
+.table-scroll[tabindex]:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 table.grid { border-collapse: collapse; width: 100%; font-size: .875rem; min-width: 480px; }
 table.grid th, table.grid td {
   /* border-strong, not border: these rules are how you tell which drug a number belongs to. */
