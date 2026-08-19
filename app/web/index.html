@@ -300,8 +300,22 @@
 <!-- 7. Evidence -->
 <section id="evidence">
   <div class="wrap">
-    <h2>Evidence</h2>
-    <p class="muted narrow">Every number on this page is cited. We had no access to a practising rural
+    <h2 class="sr-only">Evidence</h2>
+    <details class="evidence-disclosure">
+      <summary>
+        <span class="evidence-summary-copy">
+          <span class="eyebrow">Auditable research</span>
+          <strong>Evidence</strong>
+          <small>11 cited sources and the product decisions they shaped</small>
+        </span>
+        <span class="evidence-summary-action">
+          <span class="evidence-open-label">View evidence</span>
+          <span class="evidence-close-label">Hide evidence</span>
+          <span class="evidence-chevron" aria-hidden="true"></span>
+        </span>
+      </summary>
+      <div class="evidence-disclosure-body">
+        <p class="muted narrow">Every number on this page is cited. We had no access to a practising rural
       pharmacist during the build, so instead of asserting that the clinical logic is right, we built to
       a published standard and made conformance checkable. See
       <a href="/conformance">the conformance report</a>.</p>
@@ -348,7 +362,7 @@
         <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC11574594/">Kassamali-Escobar et al.,
         2024</a></li>
     </ol>
-    <div class="section-heading">
+    <div class="section-heading evidence-trace-heading">
       <div><p class="eyebrow">Research-to-design trace</p><h3>Evidence changed the product, not just the pitch</h3></div>
     </div>
     <div class="table-scroll" tabindex="0" aria-label="Research finding to product decision table">
@@ -361,6 +375,8 @@
         </tbody>
       </table>
     </div>
+      </div>
+    </details>
   </div>
 </section>
 

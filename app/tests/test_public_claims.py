@@ -5,6 +5,7 @@ from pathlib import Path
 
 def test_public_copy_preserves_evidence_scope_and_build_honesty():
     web = Path(__file__).resolve().parents[1] / "web"
+    landing_html = (web / "index.html").read_text(encoding="utf-8")
     public_copy = "\n".join(
         (web / name).read_text(encoding="utf-8")
         for name in ("index.html", "judges.html", "glossary.json", "app.js")
@@ -48,3 +49,7 @@ def test_public_copy_preserves_evidence_scope_and_build_honesty():
     assert "disabled controls enforce that order" in public_copy
     assert "parallel rehearsal found simulation-clock interference" in public_copy
     assert "if you have sixty seconds" in public_copy
+    assert '<details class="evidence-disclosure">' in landing_html
+    assert '<details class="evidence-disclosure" open>' not in landing_html
+    assert "11 cited sources and the product decisions they shaped" in landing_html
+    assert "View evidence" in landing_html and "Hide evidence" in landing_html
