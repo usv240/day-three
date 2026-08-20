@@ -80,7 +80,7 @@ document.addEventListener("keydown", (event) => {
 
 const stream = $("#stream");
 const activityToggle = $("#activity-toggle");
-const ACTIVITY_PREVIEW_COUNT = 4;
+const ACTIVITY_PREVIEW_COUNT = 6;
 
 function updateActivityDisclosure() {
   const count = stream.children.length;
@@ -424,18 +424,23 @@ $("#btn-reconcile").addEventListener("click", async () => {
   });
   if (!ok) { log("reconciler", `Failed: ${data.detail}`, "", "reject"); return; }
 
-  log("reconciler", `<b>${data.headline}</b>`,
-      data.notes.join(" ") || "", data.kind === "deescalate" ? "accept" : "");
+  // The stream prepends, so the last thing logged is the first thing read. Log this batch
+  // backwards: the recommendation is the answer to the question that was just asked, and it
+  // belongs at the top, with its evidence under it and the handoff last. Logged in the obvious
+  // order it landed underneath its own supporting detail, and one more click pushed it out of
+  // the four-entry preview entirely.
+  log("router", "Pharmacist-review escalation prepared. Waiting for sign off.",
+      "Nothing was sent. The agent stops here and cannot change an order.");
 
-  data.claims.forEach((claim) => {
+  [...data.claims].reverse().forEach((claim) => {
     log("verifier",
         `<span class="chip ${claim.accepted ? "ok" : "bad"}">${claim.accepted ? "grounded" : "rejected"}</span> ${claim.text}`,
         claim.quoted ? `<span class="quote">${claim.quoted}</span>` : "",
         claim.accepted ? "accept" : "reject");
   });
 
-  log("router", "Pharmacist-review escalation prepared. Waiting for sign off.",
-      "Nothing was sent. The agent stops here and cannot change an order.");
+  log("reconciler", `<b>${data.headline}</b>`,
+      data.notes.join(" ") || "", data.kind === "deescalate" ? "accept" : "");
   reviewCompleted = true;
   $("#btn-reconcile").disabled = true;
   $("#btn-fabricate").disabled = false;

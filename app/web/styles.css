@@ -948,7 +948,7 @@ footer.site {
 .control-help .info { vertical-align: middle; }
 .controls-note, .antibiogram-note { margin: 10px 0 0; color: var(--text-muted); font-size: .78rem; line-height: 1.45; }
 #console .stream { max-height: none; height: auto; overflow: visible; }
-#console .stream:not(.is-expanded) .event:nth-child(n+5) { display: none; }
+#console .stream:not(.is-expanded) .event:nth-child(n+7) { display: none; }
 .activity-toggle {
   width: 100%; min-height: 38px; margin-top: 10px; padding: 7px 10px;
   background: var(--surface-2); color: var(--text); font-size: .78rem;

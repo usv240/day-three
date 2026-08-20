@@ -218,7 +218,6 @@ def main() -> int:
         "#console .stream { max-height: none; height: auto; overflow: visible; }",
         ".antibiogram-pane .table-scroll { overflow: visible; }",
         ".antibiogram-pane table.grid { min-width: 0; width: 100%; table-layout: fixed;",
-        '#console .stream:not(.is-expanded) .event:nth-child(n+5) { display: none; }',
         '.guided-controls .control-group:not([data-state="current"]) > :not(.step-summary) { display: none; }',
         '.antibiogram-summary { display: grid;',
     )
@@ -236,11 +235,22 @@ def main() -> int:
             "body.workflow-focus",
         )
     )
+    # The activity stream shows a bounded preview behind a disclosure. Assert that the CSS cut-off
+    # and the JS preview count agree rather than pinning either number: a mismatch is the real
+    # defect, because the toggle would then claim a different history length than it hides.
+    css_cut = re.search(
+        r"#console \.stream:not\(\.is-expanded\) \.event:nth-child\(n\+(\d+)\) \{ display: none; \}",
+        css,
+    )
+    js_count = re.search(r"const ACTIVITY_PREVIEW_COUNT = (\d+);", app_js)
+    preview_ok = bool(css_cut) and bool(js_count) and int(css_cut.group(1)) == int(js_count.group(1)) + 1
+
     workspace_ok = (
         all(token in landing for token in workspace_tokens)
         and all(token in css for token in layout_tokens)
         and all(token in app_js for token in renderer_tokens)
         and no_nested_scroll
+        and preview_ok
     )
     if workspace_ok:
         print("    PASS  four visible steps reflow into one reading direction with no nested vertical scroll")
