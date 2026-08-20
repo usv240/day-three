@@ -322,7 +322,6 @@ commands and the public verification route.
 - `docs/research-traceability.md`: source-to-product decisions and rejected claims
 - [Validation evidence](VALIDATION_EVIDENCE.md): research-to-test evidence, adversarial checks, and explicit limits
 - [Project differentiation](PROJECT_DIFFERENTIATION.md): concrete separation from the other submission and shared-spine disclosure
-- `SUBMISSION_KIT.md`: evidence-backed demo and Devpost copy
 - `LICENSE`: MIT, with an explicit not-a-medical-device clause
 
 ## Disclosure
