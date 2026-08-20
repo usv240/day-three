@@ -552,7 +552,77 @@ function renderProof(data) {
       <code>/day-three/realtime-proof/${data.proof_id}</code> later.</p>`;
 }
 
+// The card promises "you can close this page and come back", and the proof id lived only in
+// this script's memory, so any navigation silently lost it and the card reset to "nothing
+// booked". The job itself was never affected -- it is a server-side record claimed by a
+// scheduler -- but the page could no longer show you the one thing it told you to come back
+// for. The id is small, not a credential, and only useful for reading one public record.
+const PROOF_STORAGE_KEY = "day-three-realtime-proof";
+const PROOF_STORAGE_MAX_AGE_MS = 60 * 60 * 1000;
+
+function rememberProof(proofId) {
+  try {
+    localStorage.setItem(PROOF_STORAGE_KEY, JSON.stringify({id: proofId, at: Date.now()}));
+  } catch { /* private browsing; the timer still runs, it just will not survive a reload */ }
+}
+
+function forgetProof() {
+  try { localStorage.removeItem(PROOF_STORAGE_KEY); } catch { /* nothing to clean up */ }
+}
+
+function recallProof() {
+  try {
+    const raw = localStorage.getItem(PROOF_STORAGE_KEY);
+    if (!raw) return null;
+    const saved = JSON.parse(raw);
+    // A day-old id would render a stale result to someone who never booked it today.
+    if (!saved.id || Date.now() - saved.at > PROOF_STORAGE_MAX_AGE_MS) {
+      forgetProof();
+      return null;
+    }
+    return saved.id;
+  } catch {
+    forgetProof();
+    return null;
+  }
+}
+
+function watchProof(proofId) {
+  if (realtimePoll) clearInterval(realtimePoll);
+  const poll = async () => {
+    const { ok, data: view } = await api(`/day-three/realtime-proof/${proofId}`);
+    if (!ok) {
+      clearInterval(realtimePoll);
+      realtimePoll = null;
+      forgetProof();
+      return;
+    }
+    renderProof(view);
+    if (view.fired) {
+      clearInterval(realtimePoll);
+      realtimePoll = null;
+      activeProofId = null;
+      forgetProof();
+      realtimeButton.disabled = false;
+      realtimeStatus.textContent = "It woke up on its own.";
+      log("course-watch", `Woke up on its own after ${Math.round(view.real_seconds_waited)} real seconds.`,
+        `Run by ${view.fired_by_worker || "the background service"}.`);
+    }
+  };
+  poll();
+  realtimePoll = setInterval(poll, 10000);
+}
+
 if (realtimeButton) {
+  // Resume a job booked before this page load, including from another page on the site.
+  const remembered = recallProof();
+  if (remembered) {
+    activeProofId = remembered;
+    realtimeButton.disabled = true;
+    realtimeStatus.textContent = "Still watching the job you booked.";
+    watchProof(remembered);
+  }
+
   realtimeButton.addEventListener("click", async () => {
     realtimeButton.disabled = true;
     realtimeStatus.textContent = "Booking a job on the real clock…";
@@ -565,26 +635,11 @@ if (realtimeButton) {
       return;
     }
     activeProofId = data.proof_id;
+    rememberProof(data.proof_id);
     realtimeStatus.textContent = `Booked. Due at ${new Date(data.due_at).toLocaleTimeString()}.`;
     log("course-watch", "Booked a job on the real clock.",
       "The demo fast-forward button cannot move this one.");
 
-    if (realtimePoll) clearInterval(realtimePoll);
-    const poll = async () => {
-      const { ok: pollOk, data: view } = await api(`/day-three/realtime-proof/${data.proof_id}`);
-      if (!pollOk) return;
-      renderProof(view);
-      if (view.fired) {
-        clearInterval(realtimePoll);
-        realtimePoll = null;
-        activeProofId = null;
-        realtimeButton.disabled = false;
-        realtimeStatus.textContent = "It woke up on its own.";
-        log("course-watch", `Woke up on its own after ${Math.round(view.real_seconds_waited)} real seconds.`,
-          `Run by ${view.fired_by_worker || "the background service"}.`);
-      }
-    };
-    await poll();
-    realtimePoll = setInterval(poll, 10000);
+    watchProof(data.proof_id);
   });
 }

@@ -133,6 +133,17 @@ button[disabled] { opacity: .5; cursor: not-allowed; }
 .btn-primary:hover { background: var(--accent-strong); border-color: var(--accent-strong); box-shadow: 0 8px 22px color-mix(in srgb, var(--accent) 28%, transparent); }
 .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin: 20px 0; }
 
+/* Third action in the hero. Outlined in the accent rather than filled, so it reads as a real
+   invitation without competing with "Run the walkthrough" for the judge's first click. */
+.btn-key {
+  border-color: var(--accent); color: var(--accent); font-weight: 600;
+  background: var(--accent-soft);
+}
+.btn-key:hover {
+  background: var(--accent); color: var(--accent-text); border-color: var(--accent);
+  box-shadow: 0 8px 22px color-mix(in srgb, var(--accent) 24%, transparent);
+}
+
 .theme-toggle { min-height: 40px; padding: 6px 12px; font-size: .85rem; }
 
 /* Compact, inspectable deployment stack -------------------------------- */
@@ -214,7 +225,10 @@ button[disabled] { opacity: .5; cursor: not-allowed; }
 .prove-facts { display: grid; gap: 8px; margin: 0; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
 .prove-facts > div { display: flex; flex-direction: column; gap: 2px; }
 .prove-facts dt { color: var(--text-muted); font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; }
-.prove-facts dd { margin: 0; font-variant-numeric: tabular-nums; }
+.prove-facts dd { margin: 0; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+/* The closing line sat flush against the last value, so "Nobody pressed anything to make this
+   happen" read as part of the worker name rather than as a separate remark. */
+.prove-facts + p { margin-top: 12px; }
 /* The precise version, for the reader who wants it. Plain English carries the meaning above;
    this line carries the exact product names a technical reader is looking for. */
 .prove-tech {
@@ -468,6 +482,11 @@ code {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: .85em; background: var(--surface-2); padding: 2px 5px; border-radius: 4px;
 }
+/* Swagger ships its own theme and renders example payloads as pale text on a dark ground,
+   using bare <code> inside <pre class="microlight">. Our global code chip above therefore
+   painted a near-white box, with its own padding, behind every token in those samples. Only
+   the chip is dropped here; the dark ground belongs to Swagger's <pre> and is left alone. */
+.swagger-ui code { background: transparent; padding: 0; border-radius: 0; }
 
 footer.site {
   border-top: 1px solid var(--border); padding: 32px 0 48px;
@@ -710,7 +729,11 @@ footer.site {
 .path-number { color: var(--accent); font-size: .76rem; font-weight: 780; letter-spacing: .1em; }
 
 .dev-section-heading { align-items: end; margin-bottom: 28px; }
-.dev-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; align-items: stretch; }
+/* Start-aligned, not stretched. The form is two fields, a checkbox and a button; the safety
+   panel beside it is much taller. Stretching left ~700px of empty card under the button, which
+   read as a page that had failed to load the rest of itself. */
+.dev-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; align-items: start; }
+.dev-grid > .dev-panel { height: auto; }
 .dev-panel {
   min-width: 0; height: 100%; background: var(--surface); border: 1px solid var(--border);
   border-radius: var(--radius); padding: clamp(24px, 3vw, 38px); box-shadow: var(--shadow-soft);
@@ -738,6 +761,7 @@ footer.site {
   margin: 10px 0; padding: 14px; border-radius: var(--radius-sm); background: var(--surface-2);
 }
 .check-row input { width: 19px; height: 19px; margin-top: 3px; accent-color: var(--accent); }
+#issuance-cap { margin-top: 10px; }
 .developer-status {
   min-height: 48px; margin: 18px 0 0; padding: 11px 13px;
   border: 1px solid var(--border); border-radius: var(--radius-sm);
@@ -753,6 +777,28 @@ footer.site {
   border-color: color-mix(in srgb, var(--danger) 38%, var(--border));
 }
 .key-result { margin-top: 18px; padding: 20px; background: var(--accent-soft); border-radius: var(--radius); }
+/* .field-help carries a -4px top margin so it tucks under a label. Under the key input it
+   tucked under the input's focus ring instead, clipping the expiry date. */
+.key-result .field-help { margin: 12px 0 14px; }
+
+.run-live { margin-top: 26px; padding: clamp(20px, 2.4vw, 30px); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-soft); }
+.run-live h3 { margin: 0 0 8px; }
+.run-live > p { margin: 0 0 16px; color: var(--text-muted); max-width: var(--measure); }
+.run-live #run-workflow-note { margin: 12px 0 0; }
+.run-live label { display: block; font-weight: 700; margin: 0 0 6px; font-size: .9rem; }
+.run-live textarea {
+  width: 100%; padding: 14px 16px; margin: 0 0 14px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .86rem;
+  line-height: 1.6; color: var(--text); background: var(--surface-2);
+  border: 1px solid var(--border-strong); border-radius: var(--radius-sm); resize: vertical;
+}
+.run-live textarea:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.run-live .prove-boundary { margin: 16px 0 0; }
+.run-refused { color: var(--danger); }
+.run-rows { list-style: none; margin: 14px 0; padding: 0; display: grid; gap: 8px; }
+.run-rows li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 10px; padding: 10px 12px; background: var(--surface-2); border-radius: var(--radius-sm); }
+.run-rows li span { font-weight: 700; color: var(--accent); }
+.run-rows li q { color: var(--text-muted); font-size: .85rem; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
 .key-result[hidden] { display: none; }
 
 .definition-pair { margin: 22px 0 30px; }

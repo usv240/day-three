@@ -5,23 +5,52 @@ integration surface with server-derived tenant isolation.
 
 ## Get a temporary key from the website
 
-1. Ask the project owner for a private invitation code.
-2. Open [https://day-three-109051079423.us-central1.run.app/developer](https://day-three-109051079423.us-central1.run.app/developer).
-3. Choose a lowercase workspace ID and a human-readable label.
-4. Accept the project-specific safety contract.
-5. Generate the key, save it immediately, and run the built-in connection test.
-6. Open [the interactive API reference](https://day-three-109051079423.us-central1.run.app/docs) for schemas and operations.
+1. Open [https://day-three-109051079423.us-central1.run.app/developer](https://day-three-109051079423.us-central1.run.app/developer).
+2. Choose a lowercase workspace ID and a human-readable label.
+3. Accept the project-specific safety contract.
+4. Generate the key, save it immediately, and run the built-in connection test.
+5. Open [the interactive API reference](https://day-three-109051079423.us-central1.run.app/docs) for schemas and operations.
+
+No invitation, account, or approval step. The same request works from a terminal:
+
+```bash
+curl -s -X POST -H "Content-Type: application/json"   -d '{"tenant_id":"my_clinic","label":"Evaluation","acknowledge_terms":true}'   https://day-three-109051079423.us-central1.run.app/developer/keys
+```
 
 Temporary keys expire after 168 hours. The plaintext value is returned once and remains only in
 page memory. Firestore stores its SHA-256 digest, project, tenant, scope, issuance time, expiry, and
 optional revocation time. The holder can revoke the key immediately with `DELETE /v1/key`.
 
-This is invite-gated self-service, not anonymous public issuance. The invitation code protects the
-project's model and infrastructure budget. Rotate it immediately if it is exposed.
+## What bounds an open form
 
-## Configure website issuance
+Issuance is open, so nothing upstream limits how many keys exist. The limits therefore sit on the
+two things that actually cost something, both on durable Firestore counters that survive a restart
+and hold across instances:
 
-Generate a separate invitation code for this project:
+| Bound | Default | Environment variable |
+|---|---|---|
+| Key creation, per address per day | 50 | `KEY_ISSUANCE_PER_CALLER_CAP` |
+| Key creation, all addresses per day | 500 | `KEY_ISSUANCE_DAILY_CAP` |
+| `POST /v1/intake`, per key per day | 25 | `BETA_API_PER_KEY_CAP` |
+| `POST /v1/intake`, all keys per day | 400 | `BETA_API_DAILY_CAP` |
+
+Key creation is deliberately far looser than the model-call caps. Creating a key costs one
+Firestore write, not a model call, so the issuance limit exists to stop a script filling the
+key store, not to control spend. Evaluators often share an address behind a corporate NAT, and
+a limit tight enough to stop abuse would have been tight enough to lock out a room of them.
+
+`POST /v1/intake` is the only keyed route that invokes a model, so it is the only one that can
+spend money; `GET /v1` and `GET /v1/antibiogram` are Firestore reads. The per-key cap bounds one
+tester and the global cap bounds the day regardless of how many keys were minted. A denied request
+is never counted, so a caller who hits the wall cannot push the day further into denial.
+
+Issuance can be closed again at any time by unsetting `BETA_OPEN_ISSUANCE` and mounting an
+invitation hash, which restores the invite-gated path described below.
+
+## Closing issuance again
+
+Open issuance is a configuration choice, not a one-way door. To restore the invite-gated path,
+unset `BETA_OPEN_ISSUANCE` and generate an invitation code for this project:
 
 ```bash
 cd app
@@ -46,8 +75,9 @@ bash deploy.sh
 ```
 
 The deployment mounts the hash as `BETA_ENROLLMENT_CODE_HASH` and pins
-`BETA_DEVELOPER_KEY_TTL_HOURS=168`. Neither plaintext API keys nor plaintext invitation codes
-belong in Cloud Run configuration, source control, screenshots, or logs.
+`BETA_DEVELOPER_KEY_TTL_HOURS=168`. With `BETA_OPEN_ISSUANCE` unset, the developer form requires
+the code again. Neither plaintext API keys nor plaintext invitation codes belong in Cloud Run
+configuration, source control, screenshots, or logs.
 
 ## Provision an operator-managed key
 
@@ -91,5 +121,6 @@ deidentified. Do not use this hackathon beta for protected health information.
 - Permanent and temporary keys use the same authorization and tenant boundary.
 
 Before a broad external program, place API Gateway in front of `/v1` for per-consumer quotas,
-rate limits, abuse controls, and formal onboarding. The invitation boundary and Cloud Run cap make
+rate limits, abuse controls, and formal onboarding. The issuance and per-key caps above, together
+with the Cloud Run instance ceiling, make
 this suitable for an invited hackathon beta, not an unrestricted public service.

@@ -53,7 +53,7 @@ Narration is verbatim. Times are targets with about ten seconds of total slack.
 | 1:30 | Press **Advance 5 hours** | "Five more hours. Now it wakes itself. Nobody clicked it awake and nobody was watching. It found its own work was due." |
 | 1:45 | Press **Ask day-three question** | "It asks the question nobody was there to ask: is this still the right drug? It says narrow to nitrofurantoin, and every sentence is pinned to a quoted line of the lab report. Then it stops and waits for a pharmacist. It cannot prescribe, cannot change an order, cannot page anyone." |
 | 2:10 | Press **Challenge unsupported number** | "This is the part I care about most. I ask it to state a resistance rate for a cell with too few samples. There is no such number. It invents one, and the verifier rejects it and says why. Nothing reaches a human here unless its evidence is real." |
-| 2:30 | Press **Read a lab report now** | "Everything you've seen replayed a saved AI answer, and the page says so. That's fair to be sceptical about. So here is the same scan going to Gemini on Vertex AI right now, live, while you watch, with just the picture and no text to copy from. Scored against the same answer key as the number we published." |
+| 2:30 | Press **Read the sample report now** | "Everything you've seen replayed a saved AI answer, and the page says so. That's fair to be sceptical about. So here is the same scan going to Gemini on Vertex AI right now, live, while you watch, with just the picture and no text to copy from. Scored against the same answer key as the number we published." |
 | 3:00 | The result appears | "Eight of eight, nothing invented. Not a recording." |
 | 3:10 | Scroll up to the timer, now fired | "And the timer. Fired on the real clock while I was talking. Booked at one time, claimed at another, by a scheduled worker, with nobody watching. That's the whole product in one line: it carries the clock so a person doesn't have to." |
 | 3:30 | Switch tab to Cloud Run console, then `/day-three/platform` | "This runs on Cloud Run in us-central1 and scales to zero. Firestore holds the state, Cloud Scheduler wakes it, and this route reads the managed agent platform live: four runtime identities, a governed gateway, and two Model Armor templates. Not a slide." |
@@ -140,7 +140,7 @@ Order fixed; each bullet is a section with listed content. Reuse `/judges` text;
 - **Features/functionality:** 9-role table + managed Agent Registry proof + the three track mandates
 - **Tech:** Gemini 3.5 Flash (Vertex AI, measured 29/29), Gemma 4 MaaS, Gemini 3.1 Flash Image, Veo 3.1 Fast, GenAI SDK,
   Cloud Run, Firestore, Cloud Scheduler, Google Cloud Agent Registry, Agent Runtime, Agent Identity, Agent Gateway, Memory Bank, Model Armor, Cloud Trace/Logging, Artifact Registry, Cloud Build,
-  OpenTelemetry. Pub/Sub is not used. Secret Manager stores the invitation code and expiring beta-key records.
+  OpenTelemetry. Pub/Sub is not used. Secret Manager stores the beta-key hashes.
 - **Data sources:** synthetic composite patients; synthetic degraded scans with ground truth;
   official openFDA Drug Shortages; CLSI M39 rules; public stewardship literature (cited)
 - **Beyond the demo (paste as its own paragraph):** The console is the evaluation surface, not
@@ -148,7 +148,7 @@ Order fixed; each bullet is a section with listed content. Reuse `/judges` text;
   tenant-scoped `/v1` API. An approved integration sends de-identified microbiology text with an
   `X-API-Key` and gets back its own private cumulative antibiogram; a different key is a different
   hospital with entirely separate data, verified live. Keys are stored as hashes only, issued
-  behind an invitation code, expire after seven days, and are revocable from the Developer page.
+  self-serve with no invitation, expire after seven days, are revocable from the Developer page, and are bounded to 25 model calls per key per day.
   Raw report text is never persisted, low-count cells stay suppressed, and no endpoint can
   prescribe, dose, order, page, or change a chart. That is the path from a hackathon console to a
   small hospital pointing its own lab feed at it, without the demo pretending to be a deployment.
@@ -165,7 +165,7 @@ Order fixed; each bullet is a section with listed content. Reuse `/judges` text;
 - [x] Public standalone repository
 - [x] Submission-ready architecture SVG plus canonical Mermaid source
 - [x] Three additional Google model integrations with public prompts and hashes
-- [x] 18/18 acceptance, 283 tests, accessibility, and 10/10 shared-substrate exit test
+- [x] 18/18 acceptance, 303 tests, accessibility, and 10/10 shared-substrate exit test
 - [x] Credential-free live Gemini call on the public page, budget-capped and graded
 - [x] Wall-clock wake proof a visitor can register and verify afterwards
 - [x] LICENSE committed

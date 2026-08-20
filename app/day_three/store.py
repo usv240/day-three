@@ -62,7 +62,12 @@ class AntibiogramStore:
         grid._first_isolate = {
             tuple(k.split("|", 1)): v for k, v in (data.get("first_isolate") or {}).items()
         }
-        grid.excluded = [tuple(pair) for pair in (data.get("excluded") or [])]
+        # Tolerates both shapes: the "|" strings written now, and any list-of-lists that
+        # predates the fix.
+        grid.excluded = [
+            _split_key(item) if isinstance(item, str) else tuple(item)
+            for item in (data.get("excluded") or [])
+        ]
         return grid
 
     def save(self, grid: Antibiogram) -> None:
@@ -84,7 +89,12 @@ class AntibiogramStore:
                     f"{patient}|{organism}": isolate_id
                     for (patient, organism), isolate_id in grid._first_isolate.items()
                 },
-                "excluded": [list(pair) for pair in grid.excluded],
+                # Firestore rejects nested arrays, so a list of (isolate_id, reason) pairs
+                # cannot be stored as a list of lists. It is empty on a facility's first save
+                # and only fills once the first-isolate rule excludes a repeat, so this failed
+                # on the second ingest and never the first. Same "|" convention as the keys
+                # above; isolate ids and reasons never contain one.
+                "excluded": [f"{isolate_id}|{reason}" for isolate_id, reason in grid.excluded],
             }
         )
 

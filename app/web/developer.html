@@ -6,7 +6,7 @@
 <title>Day Three: developer quickstart</title>
 <meta name="description" content="Use the same bounded evidence workflow shown in the public demo, with a tenant-scoped key and deliberately deidentified microbiology text.">
 <meta name="theme-color" content="#f7f9fc">
-<link rel="stylesheet" href="/static/styles.css?v=20260819-nav2">
+<link rel="stylesheet" href="/static/styles.css?v=20260820-final">
 </head>
 <body class="developer-page">
 <a class="skip-link" href="#main">Skip to main content</a>
@@ -45,13 +45,13 @@
   <div class="section-heading"><div><p class="eyebrow">Choose your path</p><h2>Start with the access you already have.</h2></div><p>Judges never need credentials. API keys are only for invited integrations.</p></div>
   <div class="path-choice">
     <article class="path-card"><span class="path-number">01</span><h3>Evaluating the product</h3><p>Run the complete synthetic workflow with no account, invitation, or API key.</p><a href="/#console">Open public demo</a></article>
-    <article class="path-card"><span class="path-number">02</span><h3>Invited to the beta</h3><p>Use the private invitation code once here to create a separate seven-day API key.</p><a href="#create-key">Generate a key</a></article>
+    <article class="path-card"><span class="path-number">02</span><h3>Trying it with your own data</h3><p>Mint a seven-day key here, no invitation needed, and send your own deidentified reports.</p><a href="#create-key">Generate a key</a></article>
     <article class="path-card"><span class="path-number">03</span><h3>Already have a key</h3><p>Load it into this page session, verify the connection, then use the documented endpoint.</p><a href="#verify">Verify an existing key</a></article>
   </div>
 </div></section>
 
 <section id="create-key"><div class="wrap">
-  <div class="section-heading dev-section-heading"><div><p class="step-label">Step 1 of 3</p><h2>Create a temporary key</h2></div><p>The invitation code unlocks issuance. It is not the API key and cannot call an endpoint.</p></div>
+  <div class="section-heading dev-section-heading"><div><p class="step-label">Step 1 of 3</p><h2>Create a temporary key</h2></div><p>Name a workspace and press the button. The key is shown once, scoped to that workspace alone, and expires in seven days.</p></div>
   <div class="dev-grid">
     <div class="dev-panel">
       <form id="key-form">
@@ -60,11 +60,9 @@
         <p class="field-help" id="tenant-help">Lowercase letters, numbers, hyphens, and underscores.</p>
         <label for="label">Workspace label</label>
         <input id="label" name="label" value="Clinic demo" minlength="2" maxlength="80" required>
-        <label for="invitation-code">Private invitation code</label>
-        <input id="invitation-code" name="invitation_code" type="password" autocomplete="off" required aria-describedby="invite-help">
-        <p class="field-help" id="invite-help">Supplied privately by the project owner. Never publish it.</p>
         <label class="check-row"><input name="acknowledge_terms" type="checkbox" required><span>I will submit only synthetic or deliberately deidentified microbiology text. I will not use this beta to prescribe, order, dose, or make an unsupervised clinical decision.</span></label>
         <button class="btn-primary" type="submit">Generate seven-day API key</button>
+        <p class="field-help" id="issuance-cap">No invitation and no account needed.</p>
       </form>
       <p id="developer-status" class="developer-status" role="status" aria-live="polite">No API key is loaded in this browser session.</p>
       <div id="key-result" class="key-result" hidden>
@@ -78,9 +76,9 @@
     </div>
     <aside class="dev-panel boundary-panel">
       <p class="step-label">Access and safety</p>
-      <h2>Two secrets, two different jobs</h2>
+      <h2>Open to try, bounded by design</h2>
       <dl class="definition-pair">
-        <div><dt>Invitation code</dt><dd>Allows an invited tester to mint a temporary project key. It never accesses project data.</dd></div>
+        <div><dt>Anyone can mint one</dt><dd>No invitation, no account. The key is yours, scoped to the workspace you name here.</dd></div>
         <div><dt>API key</dt><dd>Authenticates requests, determines the tenant and scope, expires automatically, and can be revoked.</dd></div>
       </dl>
       <h3>Product boundary</h3>
@@ -89,7 +87,9 @@
         <li>Only a SHA-256 key digest is persisted.</li>
         <li>The key expires automatically after seven days.</li>
         <li>No credential is placed in browser storage.</li>
-        <li>The public judge workflow stays credential-free.</li>
+        <li>Reading a report is the one call that invokes a model, capped at 25 per key per day.</li>
+        <li>Key creation is capped per address per day, so an open form cannot be farmed.</li>
+        <li>The public judge workflow needs no key at all.</li>
       </ul>
     </aside>
   </div>
@@ -121,6 +121,24 @@
   -H "Content-Type: application/json" \
   -d '{"subject_ref":"SUBJECT-101","acknowledge_deidentified":true,"document":"CULTURE AND SUSCEPTIBILITY REPORT\\nOrganism: Escherichia coli\\nSpecimen: Urine\\nCEFTRIAXONE &lt;=1 S\\nCIPROFLOXACIN >2 R"}'</code></pre>
   </div>
+  <div class="run-live">
+    <h3>Run it here, with the key you made</h3>
+    <p>This is the text that gets sent. Edit it, or paste a report of your own, then press send.
+      Every value that comes back quotes the line it was read from, so you can check the answer
+      against what you typed.</p>
+    <label for="run-document">Report to send</label>
+    <textarea id="run-document" rows="7" spellcheck="false"></textarea>
+    <div class="btn-row">
+      <button id="run-workflow" class="btn-primary" type="button">Send this report</button>
+      <button id="run-add-identifiers" type="button">Put a patient name in it</button>
+      <button id="run-reset-document" type="button">Reset text</button>
+    </div>
+    <p class="small muted" id="run-workflow-note">Load a key above first.</p>
+    <div class="prove-result" id="run-workflow-result" aria-live="polite" hidden></div>
+    <p class="prove-boundary">Synthetic or deliberately deidentified text only. Real patient
+      records do not belong in a public beta, and the service is built to refuse them rather
+      than to trust you.</p>
+  </div>
   <div class="api-docs-guide">
     <div><p class="step-label">Interactive reference</p><h2>Use the API docs without guessing.</h2><p>Open the schema, select <b>Authorize</b>, paste the API key, then expand an endpoint to see its exact request and response model.</p><div class="btn-row"><a class="btn btn-primary" href="/docs">Open API docs</a><a class="btn" href="https://github.com/usv240/day-three/blob/main/docs/api-beta.md">Read provisioning guide</a><a class="btn" href="/#console">Return to public demo</a></div></div>
     <ol class="docs-steps"><li><b>Authorize</b><span>Paste the temporary API key into the X-API-Key field.</span></li><li><b>Inspect</b><span>Review required fields and safety acknowledgements before executing.</span></li><li><b>Execute</b><span>Start with GET /v1, then call the project-specific workflow.</span></li></ol>
@@ -135,5 +153,5 @@
 </main>
 <footer class="site"><div class="wrap"><div class="footer-links"><a href="/">Product</a><a href="/#console">Public demo</a><a href="/docs">API docs</a><a href="/judges">Judge evidence</a><a href="https://github.com/usv240/day-three/blob/main/docs/api-beta.md">Provisioning guide</a></div><p>Independent hackathon beta. Invitation access does not change the product's disclosed safety limits.</p></div></footer>
 <script src="/static/live-stack.js?v=20260819b"></script>
-<script src="/static/developer.js?v=20260819-shell"></script>
+<script src="/static/developer.js?v=20260820-fix"></script>
 </body></html>

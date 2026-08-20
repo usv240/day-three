@@ -90,23 +90,39 @@ class FirestoreCounterStore(CounterStore):
 
 
 class LiveCallBudget:
+    #: Defaults describe the public demo's model-call budget. Any other budget built on this
+    #: class must pass its own, or it will tell a caller their "live-call allowance" is spent
+    #: when what they actually hit was a limit on something else entirely.
+    GLOBAL_DENIED = (
+        "The shared daily live-model budget for this public demo is spent. "
+        "Every recorded control still works, and the budget resets at 00:00 UTC."
+    )
+    CALLER_DENIED = (
+        "You have used this demo's per-visitor live-call allowance for today. "
+        "This cap keeps a credential-free page affordable to run."
+    )
+
     def __init__(
         self,
         store: CounterStore,
         *,
         daily_cap: int = 40,
         per_caller_cap: int = 4,
+        global_denied: str = "",
+        caller_denied: str = "",
     ) -> None:
         self._store = store
         self.daily_cap = daily_cap
         self.per_caller_cap = per_caller_cap
+        self.global_denied = global_denied or self.GLOBAL_DENIED
+        self.caller_denied = caller_denied or self.CALLER_DENIED
 
     @classmethod
     def from_environment(cls, store: CounterStore) -> LiveCallBudget:
         return cls(
             store,
-            daily_cap=int(os.environ.get("LIVE_CALL_DAILY_CAP", "40")),
-            per_caller_cap=int(os.environ.get("LIVE_CALL_PER_CALLER_CAP", "4")),
+            daily_cap=int(os.environ.get("LIVE_CALL_DAILY_CAP", "250")),
+            per_caller_cap=int(os.environ.get("LIVE_CALL_PER_CALLER_CAP", "15")),
         )
 
     def check(self, now: datetime, caller: str) -> BudgetDecision:
@@ -116,16 +132,10 @@ class LiveCallBudget:
         caller_used = self._store.read(f"caller_{day}_{caller}")
 
         if global_used >= self.daily_cap:
-            reason = (
-                "The shared daily live-model budget for this public demo is spent. "
-                "Every recorded control still works, and the budget resets at 00:00 UTC."
-            )
+            reason = self.global_denied
             allowed = False
         elif caller_used >= self.per_caller_cap:
-            reason = (
-                "You have used this demo's per-visitor live-call allowance for today. "
-                "This cap keeps a credential-free page affordable to run."
-            )
+            reason = self.caller_denied
             allowed = False
         else:
             reason = "within budget"

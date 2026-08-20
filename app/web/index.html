@@ -6,7 +6,7 @@
 <title>Day Three: the antibiotic review limited teams can miss</title>
 <meta name="description" content="An agent fleet that builds local susceptibility evidence, then wakes on its own at hour 48 to support an antibiotic review.">
 <meta name="theme-color" content="#f7f9fc">
-<link rel="stylesheet" href="/static/styles.css?v=20260819-nav2">
+<link rel="stylesheet" href="/static/styles.css?v=20260820-final">
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to main content</a>
@@ -40,8 +40,9 @@
         <div class="btn-row">
           <a class="btn btn-primary" href="#console">Run the walkthrough</a>
           <a class="btn" href="/judges">Follow the judge path</a>
+          <a class="btn btn-key" href="/developer">Get a free API key</a>
         </div>
-        <p class="hero-tertiary">The public demo needs no key. Building an integration? <a href="/developer">Create an invited API key</a> or <a href="/docs">inspect the API docs</a>.</p>
+        <p class="hero-tertiary">The walkthrough needs no key. To send your own reports, take a seven-day sandbox key &mdash; no account, no invitation &mdash; or <a href="/docs">inspect the API docs</a>.</p>
         <div class="trust-band" aria-label="Product boundaries">
           <span class="trust-item"><b>Synthetic data</b> only</span>
           <span class="trust-item"><b>Human approval</b> required</span>
@@ -291,11 +292,15 @@
           exactly the way we scored the reading we published, which got 29 of 29 right.</p>
         <p class="prove-tech">Gemini 3.5 Flash on Vertex AI. Image only, no source text, graded by
           the same code as the published run.</p>
-        <button id="btn-live-call" type="button">Read a lab report now</button>
+        <button id="btn-live-call" type="button">Read the sample report now</button>
         <p class="small muted" id="live-call-budget">Checking how many checks are left today.</p>
         <p class="small muted">Takes 20 to 30 seconds, because it is reading a picture rather than
           answering from text.</p>
         <div class="prove-result" id="live-call-result" aria-live="polite" hidden></div>
+        <p class="prove-boundary">It reads a fixed sample on purpose. We know the right answer for
+          that page, so the score on screen is checkable. An open upload box would have nothing to
+          score against, and we are not inviting real patient records onto a page with no login.
+          To send your own report, take a key on the <a href="/developer">developer page</a>.</p>
         <p class="prove-boundary">Free to use, with a daily limit shared by everyone, because each
           reading costs us real money. It never changes the results table, so pressing it cannot
           disturb anything else on this page.</p>
@@ -323,7 +328,7 @@
     <div class="section-heading"><div><p class="eyebrow">Use it beyond the demo</p><h2>A bounded integration API, explained before credentials.</h2></div><p>The public workflow is the fastest way to evaluate Day Three. The API is an optional deidentified beta for approved integrations.</p></div>
     <div class="api-onboarding-grid">
       <article class="path-card"><span class="path-number">No credentials</span><h3>Evaluate publicly</h3><p>Run the synthetic hospital workflow, observe the hour-48 wake, and inspect grounded pharmacist-review output.</p><a href="#console">Run the public demo</a></article>
-      <article class="path-card"><span class="path-number">Invited access</span><h3>Create a seven-day key</h3><p>A private invitation code unlocks key creation. The separate API key determines the tenant and project scope.</p><a href="/developer">Open Developer quickstart</a></article>
+      <article class="path-card"><span class="path-number">Your own data</span><h3>Create a seven-day key</h3><p>Mint a key with no invitation and no account. It is scoped to the workspace you name, and expires on its own.</p><a href="/developer">Open Developer quickstart</a></article>
       <article class="path-card"><span class="path-number">Exact contract</span><h3>Read the API docs</h3><p>Use the interactive schema to authorize with X-API-Key and inspect the intake and antibiogram operations.</p><a href="/docs">Browse API docs</a></article>
     </div>
     <p class="integration-boundary"><b>API boundary:</b> deliberately deidentified microbiology text only. No prescribing, ordering, dosing, paging, or chart mutation.</p>
@@ -553,6 +558,6 @@
 
 <div class="popover" id="popover" role="dialog" aria-modal="false" hidden></div>
 <script src="/static/live-stack.js?v=20260819b"></script>
-<script src="/static/app.js?v=20260819-nav2"></script>
+<script src="/static/app.js?v=20260820-proof"></script>
 </body>
 </html>

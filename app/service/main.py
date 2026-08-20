@@ -128,6 +128,21 @@ from spine.api_key_store import FirestoreApiKeyStore  # noqa: E402
 from spine.developer_access import KeyIssuer, build_developer_router  # noqa: E402
 
 live_budget = LiveCallBudget.from_environment(FirestoreCounterStore(client))
+# A separate counter in its own collection, so keyed API spend and public demo spend can never
+# exhaust one another. Bounded per key per day: an invited tester gets room to explore without
+# a valid key becoming an uncapped bill.
+beta_budget = LiveCallBudget(
+    FirestoreCounterStore(client, "beta_api_budget"),
+    daily_cap=int(os.environ.get("BETA_API_DAILY_CAP", "400")),
+    per_caller_cap=int(os.environ.get("BETA_API_PER_KEY_CAP", "25")),
+    global_denied=(
+        "The shared daily model budget for the beta API is spent. It resets at 00:00 UTC."
+    ),
+    caller_denied=(
+        "This key has used its daily allowance of report readings. Each key gets its own, "
+        "and it resets at 00:00 UTC."
+    ),
+)
 
 
 def live_intake_agent() -> IntakeAgent:
@@ -160,9 +175,23 @@ beta_auth = ApiKeyAuthenticator.from_environment(dynamic_lookup=developer_key_st
 key_issuer = KeyIssuer.from_environment(
     developer_key_store, product="day-three", scope="day-three:use", prefix="dt_beta"
 )
-app.include_router(build_beta_router(client, RealClock(), beta_auth, project_id=settings.project_id, model_location=settings.model_location, model_name=settings.model_flash))
+app.include_router(build_beta_router(client, RealClock(), beta_auth, project_id=settings.project_id, model_location=settings.model_location, model_name=settings.model_flash, budget=beta_budget))
+# Issuance is open, so the ceiling moves onto issuance itself.
+issuance_budget = LiveCallBudget(
+    FirestoreCounterStore(client, "key_issuance_budget"),
+    daily_cap=int(os.environ.get("KEY_ISSUANCE_DAILY_CAP", "500")),
+    per_caller_cap=int(os.environ.get("KEY_ISSUANCE_PER_CALLER_CAP", "50")),
+    global_denied=(
+        "This deployment has issued its daily quota of sandbox keys. It resets at 00:00 UTC."
+    ),
+    caller_denied=(
+        "You have created the maximum number of sandbox keys from this network today. "
+        "Any key you already hold still works. The limit resets at 00:00 UTC."
+    ),
+)
 app.include_router(build_developer_router(
-    key_issuer, beta_auth, product="Day Three", scope="day-three:use"
+    key_issuer, beta_auth, product="Day Three", scope="day-three:use",
+    issuance_budget=issuance_budget,
 ))
 _WEB = Path(__file__).resolve().parent.parent / "web"
 public_surface = "day-three"
@@ -216,7 +245,7 @@ def health() -> dict[str, Any]:
         "replay_mode": settings.replay_mode,
         "tracing": tracing_active,
         "beta_api": "configured" if beta_auth.enabled else "not_provisioned",
-        "developer_key_issuance": "invite_only" if key_issuer.enabled else "disabled",
+        "developer_key_issuance": key_issuer.mode if key_issuer.enabled else "disabled",
         "worker": worker_id,
         # Two clocks, named for what they are. Reporting the simulated reading as plain "now"
         # made /health show a date months in the future once rehearsals had advanced the demo,

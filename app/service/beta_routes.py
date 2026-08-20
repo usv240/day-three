@@ -60,6 +60,7 @@ def build_beta_router(
     project_id: str = "",
     model_location: str = "global",
     model_name: str = "gemini-3.5-flash",
+    budget=None,
 ) -> APIRouter:
     router = APIRouter(prefix="/v1", tags=["beta-api"])
     antibiograms = AntibiogramStore(client)
@@ -101,6 +102,15 @@ def build_beta_router(
     ) -> dict[str, Any]:
         authorize(principal)
         _reject_obvious_identifiers(request.document)
+        # The only keyed route that invokes a model, so the only one that can cost money.
+        # A valid key is not a blank cheque: the same durable counter that bounds the
+        # credential-free demo bounds each key here, per key and per day.
+        # Wall clock, never the injectable one: a simulated jump must not reset a spend cap.
+        now = datetime.now(timezone.utc)
+        if budget is not None:
+            decision = budget.check(now, principal.key_id)
+            if not decision.allowed:
+                raise HTTPException(status_code=429, detail=decision.reason)
         artifact_id = f"beta_{principal.key_id}_{uuid.uuid4().hex[:12]}"
         subject = f"{principal.tenant_id}:{request.subject_ref}"
         try:
@@ -111,7 +121,11 @@ def build_beta_router(
                 detail="Privacy review unavailable; the report was not processed.",
             ) from exc
         except ExtractionError as exc:
+            if budget is not None:
+                budget.consume(now, principal.key_id)
             raise HTTPException(status_code=422, detail=str(exc)) from exc
+        if budget is not None:
+            budget.consume(now, principal.key_id)
         grid = load_grid(principal)
         changed = Curator(grid).ingest(result.isolates[0])
         antibiograms.save(grid)

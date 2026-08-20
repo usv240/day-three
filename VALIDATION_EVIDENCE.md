@@ -38,7 +38,7 @@ The full source hierarchy and rejected claims are in
 | Measurement | Current result | Reproduce |
 |---|---:|---|
 | Recorded Gemini extraction | 29 of 29 fields across 4 fixtures | python scripts/record_intake.py --rescore |
-| Standalone test suite | 283 passed | python -m pytest -q |
+| Standalone test suite | 303 passed | python -m pytest -q |
 | Public acceptance flow | 18 of 18 | python scripts/demo_flow.py with the public URL |
 | Shared-substrate exit test | 10 of 10 | POST /exit-test with an empty JSON body |
 | Accessibility gate | Pass in light and dark themes | python scripts/check_a11y.py |

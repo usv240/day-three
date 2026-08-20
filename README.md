@@ -33,7 +33,7 @@ terminal, credentials, or prior clinical knowledge.
 | Live Gemini call you can trigger yourself | **graded against committed truth, on demand** |
 | Wall-clock wake you can trigger yourself | **fires unattended, verified afterwards** |
 | Deployed public acceptance flow | **18/18** |
-| Standalone automated tests | **283 passed** |
+| Standalone automated tests | **303 passed** |
 | Recorded extraction fields | **29/29** |
 | Shared-substrate exit test | **10/10** |
 | Accessibility gate | **Pass: light and dark themes** |
@@ -75,7 +75,7 @@ now have a control that removes the caveat.
 
 | Claim | Control | What it does |
 |---|---|---|
-| "Gemini really reads the scan" | **Read a lab report now** | Calls Gemini 3.5 Flash on Vertex AI when you press it, with the image and no source text, then grades the fresh answer against the same ground-truth file behind the published 29/29. |
+| "Gemini really reads the scan" | **Read the sample report now** | Calls Gemini 3.5 Flash on Vertex AI when you press it, with the image and no source text, then grades the fresh answer against the same ground-truth file behind the published 29/29. |
 | "The agent wakes itself" | **Start a real timer** | Registers a wake on wall-clock time in the `day-three-realtime` namespace. Only `day-three-realtime-wake-scan`, running every minute, can claim it. |
 
 ```bash
@@ -243,7 +243,7 @@ can prescribe, dose, page, order, or change a chart.
 
 Full provisioning, expiry, and rotation instructions are in [the beta API guide](docs/api-beta.md).
 
-Invited developers can open [the live Developer page](https://day-three-109051079423.us-central1.run.app/developer), enter the invitation
+Anyone can open [the live Developer page](https://day-three-109051079423.us-central1.run.app/developer), name a workspace, press one button to run the workflow with the key it gives you,
 code supplied by the project owner, and generate a tenant-scoped key that expires after seven days.
 The plaintext key is shown once and remains only in page memory. The page includes a connection
 test, a copyable project request, immediate revocation, and a link to the interactive OpenAPI schema.
