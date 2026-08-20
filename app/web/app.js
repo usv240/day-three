@@ -123,6 +123,8 @@ let demoStarted = false;
 let hostileTested = false;
 let reviewCompleted = false;
 let fabricationTested = false;
+// Set while a real-clock job is pending, so Reset can say it survives.
+let activeProofId = null;
 
 const workflowSteps = [...document.querySelectorAll("[data-workflow-step]")];
 const guidedActionIds = ["btn-reset", "btn-report", "btn-hostile", "btn-admit", "btn-advance-47", "btn-advance-5", "btn-reconcile", "btn-fabricate"];
@@ -331,6 +333,10 @@ $("#btn-reset").addEventListener("click", async () => {
   $("#btn-fabricate").disabled = true;
   stream.innerHTML = "";
   log("system", "Clean slate. Clock reset to real time, antibiogram cleared.");
+  if (activeProofId) {
+    log("course-watch", "Your real-clock job is still booked.",
+      "Reset only clears the demo. It cannot touch a job on the real clock.");
+  }
   await refreshClock(); await refreshGrid();
   stream.classList.remove("is-expanded");
   activityToggle.setAttribute("aria-expanded", "false");
@@ -553,6 +559,7 @@ if (realtimeButton) {
       realtimeButton.disabled = false;
       return;
     }
+    activeProofId = data.proof_id;
     realtimeStatus.textContent = `Booked. Due at ${new Date(data.due_at).toLocaleTimeString()}.`;
     log("course-watch", "Booked a job on the real clock.",
       "The demo fast-forward button cannot move this one.");
@@ -565,6 +572,7 @@ if (realtimeButton) {
       if (view.fired) {
         clearInterval(realtimePoll);
         realtimePoll = null;
+        activeProofId = null;
         realtimeButton.disabled = false;
         realtimeStatus.textContent = "It woke up on its own.";
         log("course-watch", `Woke up on its own after ${Math.round(view.real_seconds_waited)} real seconds.`,
