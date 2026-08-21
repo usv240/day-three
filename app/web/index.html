@@ -6,7 +6,7 @@
 <title>Day Three: the antibiotic review limited teams can miss</title>
 <meta name="description" content="An agent fleet that builds local susceptibility evidence, then wakes on its own at hour 48 to support an antibiotic review.">
 <meta name="theme-color" content="#f7f9fc">
-<link rel="stylesheet" href="/static/styles.css?v=20260821-decide">
+<link rel="stylesheet" href="/static/styles.css?v=20260821-scope">
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to main content</a>
@@ -281,10 +281,10 @@
     <div class="section-heading">
       <div>
         <p class="eyebrow">Check it yourself</p>
-        <h2>Two things you shouldn't take on trust.</h2>
+        <h2>Three things you shouldn't take on trust.</h2>
       </div>
       <p>The walkthrough uses a saved AI answer and a fast-forwarded clock, and says so on screen.
-        That is fair to be sceptical about. So here are both, for real, right now.</p>
+        That is fair to be sceptical about. So here are all three, for real, right now.</p>
     </div>
     <div class="prove-grid">
       <article class="prove-card">
@@ -320,6 +320,21 @@
         <p class="prove-boundary">You can close this page and come back. It records when it was
           booked, when it ran, and which machine ran it.</p>
       </article>
+    <article class="prove-card prove-card-wide">
+      <h3>3. Try to call an agent you are not allowed to call</h3>
+      <p>Day Three's agents are catalogued centrally so other departments can find them. Finding
+        one is not permission to run it. Press the first button as Infection Prevention with no
+        granted scope, then press the second with the scope it should have had.</p>
+      <p class="prove-tech">Live calls to the managed Agent Registry. Both attempts are written to
+        an audit record, including the one that was refused.</p>
+      <div class="btn-row">
+        <button id="btn-scope-denied" type="button">Ask without permission</button>
+        <button id="btn-scope-granted" type="button">Ask with permission</button>
+      </div>
+      <div class="prove-result" id="scope-result" aria-live="polite" hidden></div>
+      <p class="prove-boundary">This is the boundary a hospital would ask about first: not whether
+        an agent works, but who is allowed to make it work, and whether the refusal was recorded.</p>
+    </article>
     </div>
   </div>
 </section>
@@ -560,6 +575,6 @@
 
 <div class="popover" id="popover" role="dialog" aria-modal="false" hidden></div>
 <script src="/static/live-stack.js?v=20260819b"></script>
-<script src="/static/app.js?v=20260821-decide"></script>
+<script src="/static/app.js?v=20260821-scope"></script>
 </body>
 </html>

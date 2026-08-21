@@ -795,6 +795,9 @@ footer.site {
 .run-live textarea:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 .run-live .prove-boundary { margin: 16px 0 0; }
 .run-refused { color: var(--danger); }
+/* The scope check reads as one statement, not a pair of cards, so it spans the checks grid. */
+.prove-card-wide { grid-column: 1 / -1; }
+.prove-card-wide .btn-row { margin: 16px 0 0; }
 .run-rows { list-style: none; margin: 14px 0; padding: 0; display: grid; gap: 8px; }
 .run-rows li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 10px; padding: 10px 12px; background: var(--surface-2); border-radius: var(--radius-sm); }
 .run-rows li span { font-weight: 700; color: var(--accent); }

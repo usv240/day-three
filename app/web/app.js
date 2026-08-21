@@ -461,6 +461,58 @@ $("#btn-fabricate").addEventListener("click", async () => {
   updateWorkflowGuide();
 });
 
+// Governance, in the browser. This used to be two curl commands, which meant the recording had
+// to leave the page, and a judge had to trust a terminal they could not inspect. The calls are
+// identical; only the surface changed.
+const scopeResult = $("#scope-result");
+
+// Registry responses are server-generated, but they carry a department name that arrived from
+// this page, so they are escaped like any other untrusted string before reaching innerHTML.
+const escapeAttr = (value) => String(value ?? "").replace(/[&<>"]/g, (c) => (
+  {"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]
+));
+
+async function askRegistry(scopes, button) {
+  const others = [$("#btn-scope-denied"), $("#btn-scope-granted")];
+  others.forEach((b) => { b.disabled = true; });
+  scopeResult.hidden = true;
+  try {
+    const { ok, data } = await api("/day-three/registry/consume", {
+      department: "infection_prevention",
+      agent: "curator",
+      granted_scopes: scopes,
+    });
+    if (!ok) throw new Error(data.detail || "The registry call failed.");
+    const audit = data.audit || {};
+    if (data.allowed) {
+      const cells = (data.result && data.result.cells) ? data.result.cells.length : 0;
+      scopeResult.innerHTML = `
+        <p class="prove-headline">Allowed, and invoked.</p>
+        <p>With <code>read:antibiogram</code>, ${escapeAttr(data.agent)} ran and returned the real
+        grid: ${cells} cells across ${(data.result.organisms || []).length} organisms.</p>
+        <p class="small muted">Audit ${escapeAttr(audit.audit_id || "")}</p>`;
+    } else {
+      scopeResult.innerHTML = `
+        <p class="prove-headline run-refused">Refused, and recorded.</p>
+        <p>${escapeAttr(data.reason || "")}</p>
+        <p class="small muted">The refusal is written down too. Audit
+        ${escapeAttr(audit.audit_id || "")}</p>`;
+    }
+    scopeResult.hidden = false;
+  } catch (error) {
+    scopeResult.innerHTML = `<p>${escapeAttr(error.message)}</p>`;
+    scopeResult.hidden = false;
+  } finally {
+    others.forEach((b) => { b.disabled = false; });
+  }
+}
+
+if ($("#btn-scope-denied")) {
+  $("#btn-scope-denied").addEventListener("click", (e) => askRegistry([], e.currentTarget));
+  $("#btn-scope-granted").addEventListener("click",
+    (e) => askRegistry(["read:antibiogram"], e.currentTarget));
+}
+
 // The other half of "autonomous": what it does when the evidence it needs is not there.
 // Every other control shows the agent acting on what it has. This one shows it deciding to
 // wait, and then declining to wait again, which is the behaviour that keeps a missing lab
