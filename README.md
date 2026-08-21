@@ -304,7 +304,31 @@ python scripts/demo_flow.py --url http://127.0.0.1:8000
 curl -X POST -H "Content-Type: application/json" -d '{}' http://127.0.0.1:8000/exit-test
 ```
 
-Deploying from `app/` with `bash deploy.sh` targets the independent Cloud Run service `day-three`.
+Deploy it to Cloud Run yourself:
+
+```bash
+cd app
+gcloud auth login
+gcloud config set project YOUR_PROJECT_ID
+gcloud services enable run.googleapis.com firestore.googleapis.com   cloudscheduler.googleapis.com aiplatform.googleapis.com secretmanager.googleapis.com
+gcloud firestore databases create --location=us-central1        # native mode, once
+bash deploy.sh                                                  # builds, deploys, schedules
+```
+
+`deploy.sh` builds the container from `app/Dockerfile`, deploys the Cloud Run service
+`day-three` to `us-central1`, and registers both Cloud Scheduler jobs: the every-minute
+wall-clock wake scan and the daily shortage refresh. It refuses to run against any region other
+than `us-central1`, because storage and compute are pinned there deliberately.
+
+Verify the deployment from an unauthenticated client:
+
+```bash
+BASE=$(gcloud run services describe day-three --region us-central1 --format 'value(status.url)')
+curl $BASE/health
+curl -X POST -H "Content-Type: application/json" -d '{}' $BASE/exit-test   # expect 10/10
+python scripts/demo_flow.py --url $BASE                                    # expect 18/18
+```
+
 The explicit empty JSON body in the exit-test request matters; a bodyless POST receives HTTP 411.
 Managed discovery is reproducible with `python infra/register_agents.py`; the script creates or
 updates the four standard REST entries. See `app/infra/README.md` for the editor and viewer IAM
