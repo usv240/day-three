@@ -127,7 +127,7 @@ let fabricationTested = false;
 let activeProofId = null;
 
 const workflowSteps = [...document.querySelectorAll("[data-workflow-step]")];
-const guidedActionIds = ["btn-reset", "btn-report", "btn-hostile", "btn-admit", "btn-advance-47", "btn-advance-5", "btn-reconcile", "btn-fabricate"];
+const guidedActionIds = ["btn-reset", "btn-report", "btn-hostile", "btn-admit", "btn-advance-47", "btn-advance-5", "btn-reconcile", "btn-fabricate", "btn-no-evidence"];
 
 function updateWorkflowGuide() {
   let currentStep = 1;
@@ -331,6 +331,7 @@ $("#btn-reset").addEventListener("click", async () => {
   $("#btn-advance-5").disabled = true;
   $("#btn-reconcile").disabled = true;
   $("#btn-fabricate").disabled = true;
+  $("#btn-no-evidence").disabled = true;
   stream.innerHTML = "";
   log("system", "Clean slate. Clock reset to real time, antibiogram cleared.");
   if (activeProofId) {
@@ -456,6 +457,28 @@ $("#btn-fabricate").addEventListener("click", async () => {
       data.teaching_note, "reject");
   fabricationTested = true;
   $("#btn-fabricate").disabled = true;
+  $("#btn-no-evidence").disabled = false;
+  updateWorkflowGuide();
+});
+
+// The other half of "autonomous": what it does when the evidence it needs is not there.
+// Every other control shows the agent acting on what it has. This one shows it deciding to
+// wait, and then declining to wait again, which is the behaviour that keeps a missing lab
+// result from becoming an endless loop.
+$("#btn-no-evidence").addEventListener("click", async () => {
+  const { ok, data } = await api("/day-three/wake-without-evidence", {});
+  if (!ok) { log("course-watch", data.detail || "Could not run that wake.", "", "reject"); return; }
+  if (data.recheck_registered) {
+    log("course-watch",
+        `Attempt ${data.attempt}: no culture back yet, so it booked one more check.`,
+        `${data.detail} It did not recommend anything, and nothing was sent to a model.`);
+  } else {
+    log("course-watch",
+        `<span class="chip bad">no second recheck</span> Attempt ${data.attempt}: still no culture.`,
+        "It already rechecked once. It will not book another, so a missing result cannot become an endless loop. This is where a person picks it up.",
+        "reject");
+    $("#btn-no-evidence").disabled = true;
+  }
   updateWorkflowGuide();
 });
 

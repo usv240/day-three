@@ -405,6 +405,82 @@ def build_router(
             "all_claims_grounded": all(c["accepted"] for c in verified),
         }
 
+    # --- The decision we could not previously show -------------------------------
+
+    @router.post("/day-three/wake-without-evidence")
+    def wake_without_evidence() -> dict[str, Any]:
+        """Run a real de-escalation wake for a patient whose culture has not come back.
+
+        Every other control on this page shows the agent acting on evidence it has. This one
+        shows it acting on evidence it does *not* have, which is the harder behaviour and the
+        one that was previously only reachable from the test suite: it looks, finds nothing,
+        registers exactly one more check, and on the second attempt refuses to register
+        another. Both branches live in CourseActionExecutor and are executed here, not
+        described.
+        """
+        from day_three.course import Course, WakeKind
+        from day_three.wake_actions import CourseActionExecutor
+        from spine.wake import Wake
+
+        now = clock.now()
+        # A patient of its own, deliberately with no isolate. Reusing the demo patient would
+        # find the culture that Load report already stored and take the other branch.
+        patient_id = "PENDING-CULTURE"
+        course_id = f"crs_{patient_id}"
+        existing = courses.get(course_id)
+        if existing is None:
+            run_id = runner().start(
+                "day-three", "antibiotic-course", {"patient": patient_id}
+            )
+            courses.save(
+                Course(
+                    course_id=course_id,
+                    run_id=run_id,
+                    patient_id=patient_id,
+                    started_at=now,
+                    regimen=("piperacillin-tazobactam",),
+                    indication="suspected sepsis, source unknown",
+                    allergies=(),
+                    renal_impairment=False,
+                )
+            )
+            existing = courses.get(course_id)
+
+        # How many times this course has already been rechecked decides which branch runs.
+        prior = existing.get("due_actions") or []
+        recheck_count = sum(
+            1 for a in prior if a.get("action") == "culture_result_missing"
+        )
+        wake = Wake(
+            wake_id=f"wk_pending_{recheck_count}",
+            run_id=existing["run_id"],
+            kind=WakeKind.DEESCALATION_REVIEW.value,
+            due_at=now,
+            payload={"course_id": course_id, "recheck_count": recheck_count},
+        )
+        result = CourseActionExecutor(
+            courses, isolates, scheduler(), shortages, memory_bank
+        ).execute(wake)
+
+        return {
+            "attempt": recheck_count + 1,
+            "action": result.get("action"),
+            "detail": result.get("detail"),
+            "recheck_registered": bool(result.get("recheck_registered")),
+            "recheck_due_at": (
+                (now + timedelta(hours=24)).isoformat()
+                if result.get("recheck_registered")
+                else None
+            ),
+            "external_side_effect": False,
+            "requires_pharmacist_approval": True,
+            "boundary": (
+                "The agent chose to wait rather than recommend without a culture. "
+                "It will register one recheck and no more, so a missing result cannot "
+                "become an endless loop."
+            ),
+        }
+
     # --- The Verifier rejection we film ------------------------------------------
 
     @router.post("/day-three/demo/fabricate")

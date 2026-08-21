@@ -39,7 +39,7 @@ from selected critical-access hospitals is not generalized to all rural hospital
   asserted.
 - A wall-clock wake can be registered by any visitor and fires only when a scheduled worker
   claims it, which removes the simulated clock from the durability claim.
-- The standalone repository passes 303 tests.
+- The standalone repository passes 308 tests.
 - The deployed public acceptance flow passes 18/18.
 - The shared resilience exit test passes 10/10.
 

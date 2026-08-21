@@ -6,7 +6,7 @@
 <title>Day Three: for judges</title>
 <meta name="description" content="Rubric map, requirements checklist, deployment proof, reproduction steps, and findings for Day Three.">
 <meta name="theme-color" content="#f7f9fc">
-<link rel="stylesheet" href="/static/styles.css?v=20260820-final">
+<link rel="stylesheet" href="/static/styles.css?v=20260821-decide">
 </head>
 <body class="judge-page">
 <a class="skip-link" href="#main">Skip to main content</a>
@@ -241,7 +241,7 @@
         <tbody>
           <tr><td>Enter the app</td><td><code>cd app</code></td></tr>
           <tr><td>Install</td><td><code>python -m venv .venv &amp;&amp; .venv/bin/pip install -e ".[dev]"</code></td></tr>
-          <tr><td>Run the tests</td><td><code>python -m pytest -q</code> - 303 tests, no cloud needed</td></tr>
+          <tr><td>Run the tests</td><td><code>python -m pytest -q</code> - 308 tests, no cloud needed</td></tr>
           <tr><td>Create the indexes</td><td><code>PROJECT_ID=... bash infra/apply_indexes.sh</code></td></tr>
           <tr><td>Deploy</td><td><code>SIM_MODE=true bash deploy.sh</code></td></tr>
           <tr><td>Register managed agents</td><td><code>python infra/register_agents.py</code> after granting the documented editor and runtime viewer roles</td></tr>

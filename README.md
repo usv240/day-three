@@ -33,7 +33,7 @@ terminal, credentials, or prior clinical knowledge.
 | Live Gemini call you can trigger yourself | **graded against committed truth, on demand** |
 | Wall-clock wake you can trigger yourself | **fires unattended, verified afterwards** |
 | Deployed public acceptance flow | **18/18** |
-| Standalone automated tests | **303 passed** |
+| Standalone automated tests | **308 passed** |
 | Recorded extraction fields | **29/29** |
 | Shared-substrate exit test | **10/10** |
 | Accessibility gate | **Pass: light and dark themes** |
@@ -75,6 +75,7 @@ now have a control that removes the caveat.
 
 | Claim | Control | What it does |
 |---|---|---|
+| "It handles missing evidence" | **Wake it with no result back** | Runs a real de-escalation wake for a patient whose culture has not returned. First press books one recheck instead of guessing; second press refuses to book another, so a missing result cannot loop forever. |
 | "Gemini really reads the scan" | **Read the sample report now** | Calls Gemini 3.5 Flash on Vertex AI when you press it, with the image and no source text, then grades the fresh answer against the same ground-truth file behind the published 29/29. |
 | "The agent wakes itself" | **Start a real timer** | Registers a wake on wall-clock time in the `day-three-realtime` namespace. Only `day-three-realtime-wake-scan`, running every minute, can claim it. |
 
