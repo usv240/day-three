@@ -127,7 +127,7 @@ let fabricationTested = false;
 let activeProofId = null;
 
 const workflowSteps = [...document.querySelectorAll("[data-workflow-step]")];
-const guidedActionIds = ["btn-reset", "btn-report", "btn-hostile", "btn-admit", "btn-advance-47", "btn-advance-5", "btn-reconcile", "btn-fabricate", "btn-no-evidence"];
+const guidedActionIds = ["btn-reset", "btn-report", "btn-hostile", "btn-admit", "btn-advance-47", "btn-advance-5", "btn-reconcile", "btn-fabricate", "btn-no-evidence", "btn-discharge"];
 
 function updateWorkflowGuide() {
   let currentStep = 1;
@@ -332,6 +332,7 @@ $("#btn-reset").addEventListener("click", async () => {
   $("#btn-reconcile").disabled = true;
   $("#btn-fabricate").disabled = true;
   $("#btn-no-evidence").disabled = true;
+  $("#btn-discharge").disabled = true;
   stream.innerHTML = "";
   log("system", "Clean slate. Clock reset to real time, antibiogram cleared.");
   if (activeProofId) {
@@ -530,7 +531,22 @@ $("#btn-no-evidence").addEventListener("click", async () => {
         "It already rechecked once. It will not book another, so a missing result cannot become an endless loop. This is where a person picks it up.",
         "reject");
     $("#btn-no-evidence").disabled = true;
+    $("#btn-discharge").disabled = false;
   }
+  updateWorkflowGuide();
+});
+
+// The end of a course. Fourteen days of reviews only make sense while the patient is still an
+// inpatient; when they go home, most of them become work about nothing. This is the transition
+// that lets a course finish rather than simply run out of wakes.
+$("#btn-discharge").addEventListener("click", async () => {
+  const { ok, data } = await api("/day-three/discharge", {});
+  if (!ok) { log("course-watch", data.detail || "No active course.", "", "reject"); return; }
+  const due = new Date(data.readmission_due_at).toLocaleDateString();
+  log("course-watch",
+      `Patient discharged. ${data.cancelled_wakes} scheduled review(s) cancelled.`,
+      `Reviewing an inpatient regimen for someone who left would prepare work about nothing. One readmission check stays, armed for ${due}. The course is now <b>${escapeAttr(data.status)}</b>.`);
+  $("#btn-discharge").disabled = true;
   updateWorkflowGuide();
 });
 

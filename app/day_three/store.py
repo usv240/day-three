@@ -167,6 +167,24 @@ class CourseStore:
         data["due_actions"] = actions
         document.set(data)
 
+    def set_status(self, course_id: str, status: str, at: Any = None) -> None:
+        """Move a course to a transitional or terminal state.
+
+        CourseStatus existed from the start and nothing ever wrote it, so every course read as
+        ACTIVE forever, including ones whose fourteen-day ladder had run out. A fleet that cannot
+        say which courses are finished is not monitoring a fleet; it is holding a list that only
+        grows.
+        """
+        document = self._collection.document(course_id)
+        snapshot = document.get()
+        if not snapshot.exists:
+            raise KeyError(course_id)
+        data = snapshot.to_dict() or {}
+        data["status"] = status
+        if at is not None:
+            data["status_changed_at"] = at
+        document.set(data)
+
     def reset(self) -> int:
         deleted = 0
         for doc in self._collection.stream():

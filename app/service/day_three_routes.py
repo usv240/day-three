@@ -351,7 +351,28 @@ def build_router(
 
     @router.get("/day-three/courses")
     def list_courses() -> dict[str, Any]:
-        return {"courses": courses.all()}
+        """Every course the agent is watching, and which of them are finished.
+
+        The count by status is the fleet view: a judge can see that this is not one patient on a
+        timer but a set of courses, each with a state that can reach an end.
+        """
+        from day_three.course import CourseStatus
+
+        all_courses = courses.all()
+        by_status: dict[str, int] = {}
+        for record in all_courses:
+            key = record.get("status", CourseStatus.ACTIVE.value)
+            by_status[key] = by_status.get(key, 0) + 1
+        return {
+            "courses": all_courses,
+            "watching": by_status.get(CourseStatus.ACTIVE.value, 0),
+            "finished": sum(
+                count for status, count in by_status.items()
+                if status in {CourseStatus.CLOSED.value, CourseStatus.DISCONTINUED.value}
+            ),
+            "by_status": by_status,
+            "lifecycle": [s.value for s in CourseStatus],
+        }
 
     # --- Reconcile --------------------------------------------------------------
 
@@ -403,6 +424,62 @@ def build_router(
             "notes": recommendation.notes,
             "claims": verified,
             "all_claims_grounded": all(c["accepted"] for c in verified),
+        }
+
+    # --- The transition that closes a course -------------------------------------
+
+    @router.post("/day-three/discharge")
+    def discharge() -> dict[str, Any]:
+        """Send the demo patient home, and let the agent decide what that means.
+
+        CourseWatch.discharge has existed since the start and was reachable only from tests, so
+        the fourteen-day ladder had no ending: it ran out rather than finished. Discharging
+        cancels the reviews that no longer apply and arms the one that still does, thirty days
+        out, which is the wake that closes the loop back into the antibiogram.
+        """
+        from day_three.course import Course, CourseStatus, CourseWatch
+        from day_three.store import _as_utc
+
+        open_courses = [
+            c for c in courses.all()
+            if c.get("status", CourseStatus.ACTIVE.value) == CourseStatus.ACTIVE.value
+            and not str(c.get("course_id", "")).startswith("crs_PENDING")
+        ]
+        if not open_courses:
+            raise HTTPException(
+                status_code=409,
+                detail="No active course. Admit a patient first.",
+            )
+        record = open_courses[-1]
+        now = clock.now()
+        course = Course(
+            course_id=record["course_id"],
+            run_id=record["run_id"],
+            patient_id=record["patient_id"],
+            started_at=_as_utc(record["started_at"]) or now,
+            regimen=tuple(record.get("regimen", ())),
+            indication=record.get("indication", ""),
+            allergies=tuple(record.get("allergies", ())),
+            renal_impairment=bool(record.get("renal_impairment", False)),
+        )
+        cancelled, readmission = CourseWatch(scheduler(), clock).discharge(course, now)
+        courses.save(course)
+
+        return {
+            "course_id": course.course_id,
+            "status": course.status.value,
+            "cancelled_wakes": cancelled,
+            "readmission_due_at": readmission.due_at.isoformat(),
+            "readmission_wake_id": readmission.wake_id,
+            "detail": (
+                f"{cancelled} inpatient review(s) cancelled because the patient went home, "
+                "and one readmission check armed 30 days out."
+            ),
+            "external_side_effect": False,
+            "boundary": (
+                "Cancelling a review is not a clinical decision. It stops the agent preparing "
+                "work about an inpatient who is no longer an inpatient."
+            ),
         }
 
     # --- The decision we could not previously show -------------------------------

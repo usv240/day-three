@@ -6,10 +6,14 @@ from datetime import timedelta
 from typing import Any
 
 from day_three.managed_memory import ManagedMemoryError
-from day_three.course import WakeKind
+from day_three.course import CourseStatus, LADDER, WakeKind
 from day_three.reconcile import PatientContext, Reconciler, claim_for_rendering
 from spine.verify import Verifier
 from spine.wake import Wake
+
+
+# The last rung of the ladder, derived rather than typed, so adding a review moves it.
+FINAL_RUNG_HOURS = int(max(offset for _kind, offset, _why in LADDER).total_seconds() // 3600)
 
 
 REVIEW_BY_KIND = {
@@ -84,7 +88,26 @@ class CourseActionExecutor:
                     "authoritative_store": "Firestore",
                 }
         self._courses.record_due_action(course_id, recorded)
+        self._close_if_ladder_exhausted(course_id, wake)
         return recorded
+
+    def _close_if_ladder_exhausted(self, course_id: str, wake: Wake) -> None:
+        """Mark a course finished once its last scheduled review has run.
+
+        The ladder's final rung is the day-14 stop-date check. Without this the course stays
+        ACTIVE forever: the wakes simply run out and nothing records that the agent is done
+        watching. A course that can never reach a terminal state cannot be counted, audited, or
+        handed over.
+        """
+        if wake.kind != WakeKind.STOP_DATE_CHECK.value:
+            return
+        if int(wake.payload.get("offset_hours", 0)) < FINAL_RUNG_HOURS:
+            return
+        try:
+            self._courses.set_status(course_id, CourseStatus.CLOSED.value, wake.due_at)
+        except (KeyError, AttributeError):
+            # An older store without set_status must not break a wake that already succeeded.
+            pass
 
     def _reconcile_or_replan(
         self, wake: Wake, course: dict[str, Any]

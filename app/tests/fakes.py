@@ -8,8 +8,11 @@ from datetime import datetime, timezone
 
 
 class Snapshot:
-    def __init__(self, document):
+    # Real snapshots carry the document id, and CourseStore.all() reads it to build the fleet
+    # view. The double did not, so a route that worked in production failed only under test.
+    def __init__(self, document, doc_id=""):
         self._document = document
+        self.id = doc_id
 
     @property
     def exists(self):
@@ -20,8 +23,9 @@ class Snapshot:
 
 
 class Document:
-    def __init__(self):
+    def __init__(self, doc_id=""):
         self.data = None
+        self.doc_id = doc_id
 
     def set(self, data, merge=False):
         if merge and self.data is not None:
@@ -30,7 +34,7 @@ class Document:
             self.data = dict(data)
 
     def get(self):
-        return Snapshot(self)
+        return Snapshot(self, self.doc_id)
 
 
 class Collection:
@@ -39,7 +43,7 @@ class Collection:
         self._filters = []
 
     def document(self, doc_id):
-        return self.documents.setdefault(doc_id, Document())
+        return self.documents.setdefault(doc_id, Document(doc_id))
 
     def where(self, field=None, _op=None, value=None, filter=None):
         # Mirrors the real client: production uses the keyword FieldFilter form, so the double
@@ -59,8 +63,10 @@ class Collection:
     def stream(self):
         for document in self.documents.values():
             data = document.data or {}
+            if document.data is None:
+                continue
             if all(data.get(field) == value for field, value in self._filters):
-                yield Snapshot(document)
+                yield Snapshot(document, document.doc_id)
 
 
 class FakeFirestore:
