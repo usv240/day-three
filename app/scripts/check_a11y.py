@@ -290,7 +290,13 @@ def main() -> int:
     # kept a stage list the SVG no longer had, so the diagram a judge saw described a different
     # system from the repository.
     stages = ("Read", "Curate", "Aggregate", "Wait", "Reconcile", "Verify")
+    # Arrow labels too. The SVG said "draft" where the Mermaid said "cited draft", so the two
+    # published pictures of the same system described the output differently.
+    arrow_labels = re.findall(r'\|"([^"]+)"\|', mmd_text)
+    labels_agree = bool(arrow_labels) and all(f">{label}<" in svg_text for label in arrow_labels)
     diagram_ok = (
+        labels_agree
+        and
         all(s in mmd_text for s in stages)
         and all(s in svg_text for s in stages)
         and mmd_text.strip() in readme_text
