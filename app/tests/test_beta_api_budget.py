@@ -129,3 +129,51 @@ def test_every_deployed_budget_counts_in_its_own_collection():
 
     assert len(collections) >= 2, f"expected several counter stores, found {collections}"
     assert len(set(collections)) == len(collections), f"budgets share a collection: {collections}"
+
+
+def test_the_intake_response_names_the_model_that_answered():
+    """A live model call that does not say which model answered proves nothing checkable.
+
+    The video makes its only live Gemini call on this route, and the developer page renders what
+    comes back. If the response stops naming the model, the one moment where the mandatory
+    technology is visible on screen goes silent.
+    """
+    import json
+    from pathlib import Path
+    from fastapi import FastAPI
+    from fastapi.testclient import TestClient
+
+    from day_three.intake import IntakeAgent, ReplayClient
+    from spine.clock import RealClock
+
+    root = Path(__file__).resolve().parent.parent
+    recording = json.loads(
+        (root / "fixtures" / "recordings" / "ecoli_urine.json").read_text(encoding="utf-8")
+    )
+    app = FastAPI()
+    app.include_router(build_beta_router(
+        FakeFirestore(), RealClock(), lambda: _Principal(),
+        intake_factory=lambda: IntakeAgent(ReplayClient({"default": recording})),
+        model_name="gemini-3.5-flash",
+    ))
+    # Built from the recording's own quoted lines, so the verifier can ground every value. The
+    # committed scan text carries patient identifiers, which this route refuses by design.
+    document = "CULTURE AND SUSCEPTIBILITY REPORT\n" + "\n".join(
+        item["quoted_text"] for item in recording["susceptibilities"]
+    )
+    response = TestClient(app, raise_server_exceptions=False).post(
+        "/v1/intake",
+        json={"document": document, "subject_ref": "SUBJECT-a1", "acknowledge_deidentified": True},
+    )
+    assert response.status_code == 201, response.json()
+    body = response.json()
+
+    assert body["read_by"]["model"] == "gemini-3.5-flash"
+    assert body["read_by"]["platform"] == "Vertex AI"
+
+
+def test_the_developer_page_renders_the_model_name():
+    from pathlib import Path
+
+    js = Path("web/developer.js").read_text(encoding="utf-8")
+    assert "read_by" in js, "the page no longer shows which model answered"

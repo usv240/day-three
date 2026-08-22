@@ -219,7 +219,9 @@
           <q>${escapeHtml(item.quoted_text)}</q></li>`).join("");
         runResult.innerHTML = `
           <p><b>${escapeHtml(body.isolate.organism)}</b> from
-          ${escapeHtml(body.isolate.specimen)}, read by the model just now.</p>
+          ${escapeHtml(body.isolate.specimen)}, read just now by
+          <b>${escapeHtml((body.read_by || {}).model || "the model")}</b> on
+          ${escapeHtml((body.read_by || {}).platform || "Vertex AI")}.</p>
           <ul class="run-rows">${rows}</ul>
           <p class="small muted">Compare each quote with the text you sent. Anything the model
           could not quote was dropped rather than guessed${

@@ -146,6 +146,15 @@ def build_beta_router(
             "dropped": result.dropped,
             "redacted": result.redacted_count,
             "raw_document_persisted": False,
+            # Named in the response, and rendered on the page, because a live model call that
+            # does not say which model answered proves nothing a reader can check. Taken from the
+            # deployment's configuration rather than written into the page, so it cannot drift
+            # from the model that actually ran.
+            "read_by": {
+                "model": model_name,
+                "platform": "Vertex AI",
+                "location": model_location,
+            },
             "revision": grid.revision,
             "safety": "No clinical action was taken. All cells below 30 isolates remain suppressed.",
         }
