@@ -5,6 +5,8 @@ real total was a fourth. Numbers on the public pages are this project's currency
 checks itself the same way the extraction accuracy figure does.
 """
 
+from pathlib import Path
+
 import pytest
 
 _SESSION = {"count": 0, "full_run": False}
@@ -12,9 +14,18 @@ _SESSION = {"count": 0, "full_run": False}
 
 def pytest_collection_modifyitems(session, config, items):
     _SESSION["count"] = len(items)
-    # Only a whole-suite run knows the real total. When someone runs a single file or a -k
-    # selection the count is a subset, and asserting against it would fail for the wrong reason.
-    _SESSION["full_run"] = not config.getoption("file_or_dir") and not config.getoption("keyword")
+    # Only a whole-suite run knows the real total. A single file or a -k selection collects a
+    # subset, and asserting the published number against it would fail for the wrong reason.
+    #
+    # This used to require no file_or_dir argument at all, which meant the documented command,
+    # `python -m pytest -q` run from app/ with a tests target, never counted as a full run. The
+    # guard skipped silently on every invocation anybody actually used, and the published count
+    # drifted four tests behind before a human noticed. Pointing at the tests directory itself is
+    # a full run.
+    targets = [Path(t).resolve() for t in (config.getoption("file_or_dir") or [])]
+    here = Path(__file__).resolve().parent
+    whole_suite = not targets or all(t in (here, here.parent) for t in targets)
+    _SESSION["full_run"] = whole_suite and not config.getoption("keyword")
 
 
 @pytest.fixture

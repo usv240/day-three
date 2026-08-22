@@ -34,7 +34,7 @@ terminal, credentials, or prior clinical knowledge.
 | Live Gemini call you can trigger yourself | **graded against committed truth, on demand** |
 | Wall-clock wake you can trigger yourself | **fires unattended, verified afterwards** |
 | Deployed public acceptance flow | **18/18** |
-| Standalone automated tests | **316 passed** |
+| Standalone automated tests | **320 passed** |
 | Recorded extraction fields | **29/29** |
 | Shared-substrate exit test | **10/10** |
 | Accessibility gate | **Pass: light and dark themes** |
@@ -65,20 +65,27 @@ cumulative context, wake status, and human-approval boundary together from intak
 | **6. Verify** | Rejects fabricated percentages, missing support, and claims outside the narrow task. | The service cannot prescribe, dose, order, page, or edit a chart. |
 
 The public 18-step flow exercises stages 1 through 6, the first hour-48 wake, managed discovery,
-and live capability invocation. Later inpatient wakes and the discharge/readmission transition are
-implemented and tested, but intentionally omitted from the four-minute browser walkthrough.
+and live capability invocation. The later wakes, the discharge transition and the terminal state
+are reachable from the console too: **Run the two weeks out** fires the remaining reviews in order
+until the course closes itself, and **Send the patient home** cancels the reviews that no longer
+apply. The four-minute video shows neither, for time rather than because they are missing.
 
 ## Prove it yourself
 
 Two claims in the guided demo rest on something you cannot check from outside: the console
 replays recorded model output, and the clock is simulated. Both are stated on screen, and both
-now have a control that removes the caveat.
+now have a control that removes the caveat. Everything below runs against the deployed service
+with no credential.
 
 | Claim | Control | What it does |
 |---|---|---|
 | "It handles missing evidence" | **Wake it with no result back** | Runs a real de-escalation wake for a patient whose culture has not returned. First press books one recheck instead of guessing; second press refuses to book another, so a missing result cannot loop forever. |
 | "Gemini really reads the scan" | **Read the sample report now** | Calls Gemini 3.5 Flash on Vertex AI when you press it, with the image and no source text, then grades the fresh answer against the same ground-truth file behind the published 29/29. |
-| "The agent wakes itself" | **Start a real timer** | Registers a wake on wall-clock time in the `day-three-realtime` namespace. Only `day-three-realtime-wake-scan`, running every minute, can claim it. |
+| "The agent wakes itself" | **Start a real timer** | Registers a wake on wall-clock time in the `day-three-realtime` namespace. Only `day-three-realtime-wake-scan`, running every minute, can claim it. Measured at 81 and 100 seconds on production. |
+| "Discovery is not permission" | **Ask without permission** / **Ask with permission** | Two live calls to the managed Agent Registry from the page. Without the scope the call is refused and written to an audit record; with it, the curator runs and returns the real grid. |
+| "A course can end" | **Send the patient home** | Discharge cancels the inpatient reviews that no longer apply and arms a 30-day readmission check. `GET /day-three/courses` then reports the fleet: how many are being watched, how many are finished, and the counts by state. |
+| "It finishes what it started" | **Run the two weeks out** | Advances the demo clock to day 15. The remaining reviews fire in order on the scheduler path and the course closes itself, with no press per review. |
+| "Your own data goes through the same path" | **Developer page** | Mint a seven-day sandbox key with no account, send a report, and the result names the model that answered: `read_by: {model, platform}`, taken from the deployment's configuration rather than written into the page. Put a patient name in it and the request is refused before any model is called. |
 
 ```bash
 BASE=https://day-three-109051079423.us-central1.run.app
@@ -235,13 +242,21 @@ For the source hierarchy, exact source-to-decision mapping, and rejected claims,
 ## Use it through the API
 
 The public web console remains a synthetic, credential-free judge experience. A separate `/v1`
-surface lets an approved integration use the useful low-risk slice with an `X-API-Key`.
+surface lets anyone use the same low-risk slice with an `X-API-Key`. Issuance is open: name a
+workspace on [the developer page](https://day-three-109051079423.us-central1.run.app/developer)
+and the key is yours, no invitation and no account.
+
+That is only safe because the cost is bounded elsewhere. Key creation and model calls each carry
+per-caller and global daily caps on durable Firestore counters, so an open form cannot be farmed
+and a valid key is not a blank cheque. The numbers and the environment variables behind them are
+in [the beta API guide](docs/api-beta.md).
 
 Day Three accepts only de-identified microbiology report text and a pseudonymous `SUBJECT-*`
 reference. Production requests call Gemini 3.5 Flash through the same transcription, quote,
 quarantine, and redaction path as the measured fixtures. Each key receives a separate calendar-year
-antibiogram. Raw report text is not persisted, low-count cells remain suppressed, and no endpoint
-can prescribe, dose, page, order, or change a chart.
+antibiogram. The response names the model that answered, taken from the deployment's own
+configuration. Raw report text is not persisted, low-count cells remain suppressed, and no
+endpoint can prescribe, dose, page, order, or change a chart.
 
 Full provisioning, expiry, and rotation instructions are in [the beta API guide](docs/api-beta.md).
 
