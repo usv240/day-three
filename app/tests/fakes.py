@@ -41,32 +41,72 @@ class Collection:
     def __init__(self):
         self.documents = {}
         self._filters = []
+        self._order = None
+        self._limit = None
 
     def document(self, doc_id):
         return self.documents.setdefault(doc_id, Document(doc_id))
 
-    def where(self, field=None, _op=None, value=None, filter=None):
-        # Mirrors the real client: production uses the keyword FieldFilter form, so the double
-        # must accept it, otherwise a test can pass against an API production never calls.
+    # A query double that ignored operators, replaced rather than accumulated filters, and
+    # treated limit as a no-op cannot catch a limit-versus-filter ordering bug, and did not:
+    # the scanner's `limit` was applied by Firestore before an in-memory unclaimed filter, so
+    # once enough claimed records existed it stopped returning pending ones. Production found
+    # that, the suite did not. This models enough of the real query semantics to fail first.
+    def where(self, field=None, op=None, value=None, filter=None):
+        clone = self._clone()
         if filter is not None:
-            self._filters = [(filter.field_path, filter.value)]
+            clone._filters = self._filters + [(filter.field_path, filter.op_string, filter.value)]
         else:
-            self._filters = [(field, value)]
-        return self
+            clone._filters = self._filters + [(field, op or "==", value)]
+        return clone
 
-    def order_by(self, _field):
-        return self
+    def order_by(self, field, direction="ASCENDING"):
+        clone = self._clone()
+        clone._order = (field, direction)
+        return clone
 
-    def limit(self, _n):
-        return self
+    def limit(self, n):
+        clone = self._clone()
+        clone._limit = n
+        return clone
+
+    def _clone(self):
+        clone = Collection()
+        clone.documents = self.documents
+        clone._filters = list(self._filters)
+        clone._order = self._order
+        clone._limit = self._limit
+        return clone
+
+    @staticmethod
+    def _matches(value, op, target):
+        if value is None:
+            return False
+        if op == "==":
+            return value == target
+        if op == "<=":
+            return value <= target
+        if op == ">=":
+            return value >= target
+        if op == "<":
+            return value < target
+        if op == ">":
+            return value > target
+        raise AssertionError(f"the double does not model the {op!r} operator")
 
     def stream(self):
-        for document in self.documents.values():
-            data = document.data or {}
-            if document.data is None:
-                continue
-            if all(data.get(field) == value for field, value in self._filters):
-                yield Snapshot(document, document.doc_id)
+        rows = [d for d in self.documents.values() if d.data is not None]
+        rows = [
+            d for d in rows
+            if all(self._matches((d.data or {}).get(f), op, v) for f, op, v in self._filters)
+        ]
+        if self._order:
+            field, direction = self._order
+            rows.sort(key=lambda d: (d.data or {}).get(field), reverse=direction != "ASCENDING")
+        if self._limit is not None:
+            rows = rows[: self._limit]
+        for document in rows:
+            yield Snapshot(document, document.doc_id)
 
 
 class FakeFirestore:

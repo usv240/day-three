@@ -34,6 +34,9 @@ KIND = "realtime_wake_proof"
 COLLECTION = "realtime_proofs"
 
 MIN_DELAY_SECONDS = 60
+#: How far back the scanner looks. Comfortably beyond MAX_DELAY_SECONDS so a legitimate proof
+#: cannot age out, short enough that fired records leave the query window quickly.
+LOOKBACK = timedelta(hours=2)
 MAX_DELAY_SECONDS = 900
 DEFAULT_DELAY_SECONDS = 180
 
@@ -123,16 +126,33 @@ class RealtimeProofStore:
         """
         from google.cloud import firestore
 
+        # Two things went wrong here in production, and the second is the subtle one.
+        #
+        # The query used to carry `.limit(limit)`. Firestore applied it before the unclaimed
+        # check, which runs in memory, so the page came back full of already-fired records and
+        # the filter then discarded every one. Once twenty claimed proofs existed the scanner
+        # stopped reaching pending ones and the timer silently never fired again. The limit now
+        # applies after the filter, so a claimed record can never displace a pending one.
+        #
+        # Filtering unclaimed in the query instead would need a composite index on
+        # (fired_at, due_at). The window below keeps this to range filters on a single field,
+        # which needs no index at all, and bounds how much is ever read: a proof nobody claimed
+        # within the lookback is stale, because the longest delay a caller can request is fifteen
+        # minutes and an hours-old record firing now would report a wait that never happened.
+        floor = now - LOOKBACK
+
         found: list[ProofRecord] = []
         for snapshot in (
-            self._collection.where(filter=firestore.FieldFilter("due_at", "<=", now))
+            self._collection.where(filter=firestore.FieldFilter("due_at", ">=", floor))
+            .where(filter=firestore.FieldFilter("due_at", "<=", now))
             .order_by("due_at")
-            .limit(limit)
             .stream()
         ):
             data = snapshot.to_dict() or {}
             if data.get("fired_at") is not None:
                 continue
+            if len(found) >= limit:
+                break
             found.append(
                 ProofRecord(
                     proof_id=data["proof_id"],
