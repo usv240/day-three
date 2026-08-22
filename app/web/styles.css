@@ -995,7 +995,20 @@ footer.site {
 .control-group[data-state="current"] .step-state { background: var(--accent); color: var(--accent-text); }
 .control-group[data-state="complete"] .step-state { background: var(--ok-soft); color: var(--ok); }
 .control-kicker { display: block; min-height: 0; margin: 2px 0 9px; line-height: 1.25; }
-.guided-controls button:not(.info) { width: 100%; min-height: 38px; margin: 0 0 7px; padding: 7px 9px; }
+.guided-controls button:not(.info) { width: 100%; min-height: 34px; margin: 0 0 6px; padding: 6px 8px; font-size: .8rem; line-height: 1.25; text-wrap: balance; }
+
+/* The optional actions used to sit inside step 4, which made one quarter-width column four
+   buttons tall and left the three finished steps beside it staring at empty space. They are
+   explorations, not part of the guided order, so they get their own full-width row where two
+   buttons fit side by side and neither label has to wrap. */
+.extra-controls {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+  margin: 12px 0 0; padding: 11px 12px;
+  border: 1px dashed var(--border-strong); border-radius: var(--radius-sm);
+}
+.extra-controls .control-kicker { margin: 0; }
+.extra-controls button:not(.info) { width: auto; min-height: 34px; padding: 6px 12px; font-size: .8rem; margin: 0; }
+.extra-controls .control-help { flex: 1 1 260px; margin: 0; }
 .guided-controls button:not(.info):last-child { margin-bottom: 0; }
 .control-help { margin: 1px 0 8px; font-size: .76rem; line-height: 1.35; }
 .control-help .info { vertical-align: middle; }

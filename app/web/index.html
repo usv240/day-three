@@ -6,7 +6,7 @@
 <title>Day Three: the antibiotic review limited teams can miss</title>
 <meta name="description" content="An agent fleet that builds local susceptibility evidence, then wakes on its own at hour 48 to support an antibiotic review.">
 <meta name="theme-color" content="#f7f9fc">
-<link rel="stylesheet" href="/static/styles.css?v=20260822-grid">
+<link rel="stylesheet" href="/static/styles.css?v=20260822-compact">
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to main content</a>
@@ -237,10 +237,15 @@
             <div class="step-summary"><span class="control-kicker">4. Review and challenge</span><span class="step-state">Upcoming</span></div>
             <button id="btn-reconcile" disabled>Ask day-three question</button>
             <button id="btn-fabricate" disabled>Challenge unsupported number</button>
-            <button id="btn-no-evidence" disabled>Wake it with no result back</button>
-            <button id="btn-discharge" disabled>Send the patient home</button>
-            <p class="control-help">A second patient whose culture has not returned. Press twice: it books one recheck, then refuses to book another.</p>
           </div>
+        </div>
+        <div class="extra-controls">
+          <span class="control-kicker">Also try</span>
+          <button id="btn-no-evidence" disabled>Wake it with no result back</button>
+          <button id="btn-discharge" disabled>Send the patient home</button>
+          <p class="control-help">A second patient whose culture never came back: press twice and it
+            books one recheck, then refuses another. Discharge cancels the reviews that no longer
+            apply and arms a readmission check.</p>
         </div>
         <p class="controls-note">Each action reports what happened in Agent activity.</p>
       </div>
