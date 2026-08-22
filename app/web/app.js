@@ -127,7 +127,7 @@ let fabricationTested = false;
 let activeProofId = null;
 
 const workflowSteps = [...document.querySelectorAll("[data-workflow-step]")];
-const guidedActionIds = ["btn-reset", "btn-report", "btn-hostile", "btn-admit", "btn-advance-47", "btn-advance-5", "btn-reconcile", "btn-fabricate", "btn-no-evidence", "btn-discharge"];
+const guidedActionIds = ["btn-reset", "btn-report", "btn-hostile", "btn-admit", "btn-advance-47", "btn-advance-5", "btn-run-out", "btn-reconcile", "btn-fabricate", "btn-no-evidence", "btn-discharge"];
 
 function updateWorkflowGuide() {
   let currentStep = 1;
@@ -329,6 +329,7 @@ $("#btn-reset").addEventListener("click", async () => {
   $("#btn-admit").disabled = true;
   $("#btn-advance-47").disabled = true;
   $("#btn-advance-5").disabled = true;
+  $("#btn-run-out").disabled = true;
   $("#btn-reconcile").disabled = true;
   $("#btn-fabricate").disabled = true;
   $("#btn-no-evidence").disabled = true;
@@ -397,6 +398,9 @@ async function advance(hours, label) {
   if (hours === 5) {
     $("#btn-advance-5").disabled = true;
     $("#btn-reconcile").disabled = false;
+    // Available from here, but not the guided next step: the recommendation is what a judge
+    // should see first. Running the fortnight out is the epilogue.
+    $("#btn-run-out").disabled = false;
   }
   updateWorkflowGuide();
 }
@@ -539,6 +543,27 @@ $("#btn-no-evidence").addEventListener("click", async () => {
 // The end of a course. Fourteen days of reviews only make sense while the patient is still an
 // inpatient; when they go home, most of them become work about nothing. This is the transition
 // that lets a course finish rather than simply run out of wakes.
+// The end of the story. Everything before this shows the agent starting work; this shows a
+// course finishing. The last scheduled review closes it, on the scheduler path, with nobody
+// pressing anything per review.
+$("#btn-run-out").addEventListener("click", async () => {
+  const { ok, data } = await api("/sim/advance", { days: 13 });
+  if (!ok) { log("course-watch", data.detail || "Could not advance.", "", "reject"); return; }
+  const kinds = (data.woke || []).map((w) => w.kind);
+  log("course-watch",
+      `Day 15. ${kinds.length} remaining review(s) fired in order, unattended.`,
+      kinds.join(", ").replace(/_/g, " "));
+  const fleet = await api("/day-three/courses");
+  if (fleet.ok) {
+    log("course-watch",
+        `The course closed itself. Watching ${fleet.data.watching}, finished ${fleet.data.finished}.`,
+        "The last rung of the ladder ran, so there is nothing left to watch. A course that can never finish is a list that only grows.");
+  }
+  $("#btn-run-out").disabled = true;
+  await refreshClock();
+  updateWorkflowGuide();
+});
+
 $("#btn-discharge").addEventListener("click", async () => {
   const { ok, data } = await api("/day-three/discharge", {});
   if (!ok) { log("course-watch", data.detail || "No active course.", "", "reject"); return; }

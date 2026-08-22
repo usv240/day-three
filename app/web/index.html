@@ -6,7 +6,7 @@
 <title>Day Three: the antibiotic review limited teams can miss</title>
 <meta name="description" content="An agent fleet that builds local susceptibility evidence, then wakes on its own at hour 48 to support an antibiotic review.">
 <meta name="theme-color" content="#f7f9fc">
-<link rel="stylesheet" href="/static/styles.css?v=20260821-life">
+<link rel="stylesheet" href="/static/styles.css?v=20260822-arc">
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to main content</a>
@@ -230,6 +230,8 @@
             <button id="btn-admit" disabled>Admit patient</button>
             <button id="btn-advance-47" disabled>Advance 47 hours</button>
             <button id="btn-advance-5" disabled>Advance 5 hours</button>
+            <button id="btn-run-out" disabled>Run the two weeks out</button>
+            <p class="control-help">Advances to day 15. The remaining reviews fire in order and the course closes itself.</p>
           </div>
           <div class="control-group" data-workflow-step="4" data-state="upcoming">
             <div class="step-summary"><span class="control-kicker">4. Review and challenge</span><span class="step-state">Upcoming</span></div>
@@ -576,6 +578,6 @@
 
 <div class="popover" id="popover" role="dialog" aria-modal="false" hidden></div>
 <script src="/static/live-stack.js?v=20260819b"></script>
-<script src="/static/app.js?v=20260821-life"></script>
+<script src="/static/app.js?v=20260822-arc"></script>
 </body>
 </html>
