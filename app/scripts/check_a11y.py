@@ -212,7 +212,6 @@ def main() -> int:
     )
     layout_tokens = (
         'grid-template-areas:\n    "controls controls"\n    "activity antibiogram";',
-        "grid-template-columns: repeat(4, minmax(0, 1fr));",
         "#console .pane {",
         "height: auto; max-height: none; overflow: visible;",
         "#console .stream { max-height: none; height: auto; overflow: visible; }",
@@ -245,8 +244,25 @@ def main() -> int:
     js_count = re.search(r"const ACTIVITY_PREVIEW_COUNT = (\d+);", app_js)
     preview_ok = bool(css_cut) and bool(js_count) and int(css_cut.group(1)) == int(js_count.group(1)) + 1
 
+    # The four steps must read in one direction rather than stacking, but pinning the exact
+    # declaration froze them into a four-column grid. A grid gave every step a quarter of the
+    # width whether it had controls or not, so the current step's buttons stacked in a narrow
+    # column and set the height of the whole row. What matters is the property: the steps lay out
+    # along a row, and the active step's buttons sit side by side rather than full width.
+    steps_start = css.find(".guided-controls {")
+    steps_block = css[steps_start : css.find("}", steps_start)] if steps_start >= 0 else ""
+    steps_read_across = (
+        "display: flex" in steps_block or "grid-template-columns: repeat(" in steps_block
+    )
+    current_buttons = re.search(
+        r'\.guided-controls \.control-group\[data-state="current"\] button:not\(\.info\) \{[^}]*width: auto',
+        css,
+    )
+    horizontal_steps = steps_read_across and bool(current_buttons)
+
     workspace_ok = (
-        all(token in landing for token in workspace_tokens)
+        horizontal_steps
+        and all(token in landing for token in workspace_tokens)
         and all(token in css for token in layout_tokens)
         and all(token in app_js for token in renderer_tokens)
         and no_nested_scroll

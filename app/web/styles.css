@@ -971,9 +971,26 @@ footer.site {
   border-radius: 999px; background: var(--surface-2); color: var(--text-muted);
   font-size: .74rem; font-weight: 740;
 }
+/* A stepper, not a four-column grid.
+   Every step used to own a quarter of the width whether it had controls or not. Only the current
+   step renders controls, so its buttons stacked vertically in a narrow column and set the height
+   of the whole row, leaving the three finished steps beside a tall empty area. The fix is the
+   ordinary wizard shape: compact chips for the steps, and the active step's actions laid out
+   horizontally across the full width, where a button is a wider target and the row reads
+   left to right instead of top to bottom. */
 .guided-controls {
-  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; align-items: start;
+  display: flex; flex-wrap: wrap; align-items: flex-start; gap: 8px;
 }
+.guided-controls .control-group { flex: 0 1 auto; min-width: 132px; }
+.guided-controls .control-group[data-state="current"] {
+  flex: 1 1 100%;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px;
+}
+.guided-controls .control-group[data-state="current"] .step-summary { flex: 0 0 auto; gap: 10px; }
+.guided-controls .control-group[data-state="current"] button:not(.info) {
+  width: auto; flex: 0 0 auto; margin: 0; min-height: 34px; padding: 6px 13px;
+}
+.guided-controls .control-group[data-state="current"] .control-help { flex: 1 1 240px; margin: 0; }
 .guide-tools { display: flex; align-items: center; gap: 8px; }
 .guide-tools #btn-reset { min-height: 34px; padding: 5px 10px; font-size: .76rem; }
 .guided-controls .control-group {
@@ -1080,7 +1097,7 @@ header.site nav { justify-content: center; }
     grid-template-columns: minmax(0, 1fr);
     grid-template-areas: "controls" "activity" "antibiogram";
   }
-  .guided-controls { grid-template-columns: 1fr 1fr; }
+  .guided-controls .control-group { min-width: 120px; }
   .antibiogram-summary { grid-template-columns: 1fr; }
 }
 @media (max-width: 900px) {
@@ -1091,7 +1108,8 @@ header.site nav { justify-content: center; }
   #console .console-intro { align-items: stretch; }
   #console .console-actions { justify-content: flex-start; }
   #console .console-actions > * { width: auto; text-align: left; }
-  .guided-controls { grid-template-columns: 1fr; }
+  .guided-controls .control-group,
+  .guided-controls .control-group[data-state="current"] button:not(.info) { flex-basis: 100%; }
   .guide-tools { width: 100%; justify-content: space-between; }
   .control-kicker { min-height: 0; }
   .pane-heading { align-items: center; }
