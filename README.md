@@ -13,6 +13,7 @@ formulary. The agent carries the context and the clock; the pharmacist keeps the
 - [Open the live application](https://day-three-109051079423.us-central1.run.app)
 - [Read the judge evidence](https://day-three-109051079423.us-central1.run.app/judges)
 - [Inspect machine-checkable conformance](https://day-three-109051079423.us-central1.run.app/conformance)
+- [See the deployment proof](docs/deployment-proof.md): Cloud Run revision, scheduler jobs and Firestore, with the commands to re-fetch them
 
 ## Judge it in 90 seconds
 
