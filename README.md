@@ -1,31 +1,55 @@
-# Day Three: the review that should not get lost
+# Day Three
 
-**An agentic antimicrobial-stewardship console for small and critical-access hospital teams.**
+**An agent that remembers the antibiotic review a small hospital would otherwise miss.**
 
-Day Three turns synthetic microbiology reports into a privacy-protected local antibiogram, keeps a
-multi-week antibiotic-course review ladder alive, and prepares a source-grounded reconciliation for
-a pharmacist. Its background worker also filters official openFDA shortage data to the demo
-formulary. The agent carries the context and the clock; the pharmacist keeps the decision.
+A patient starts antibiotics before anyone knows which bacteria it is. Two days later the lab
+result arrives and often shows a narrower, safer drug would work. But someone has to notice, and
+in a hospital with no infection specialist that review quietly gets missed.
 
-> **New here?** Open the live app, press **Reset demo**, and follow the numbered
-> controls. Nothing in the demo uses real patient data.
+Day Three schedules that review when the patient is admitted, sleeps while nothing is due, wakes
+itself when something is, checks the evidence, and hands a pharmacist a draft in which every
+sentence quotes a line of the report. Anything it cannot quote, it refuses. It cannot prescribe,
+dose, order, or change a chart. The pharmacist decides.
+
+**It runs unattended.** A Cloud Scheduler job claims due work every minute. A course schedules
+five reviews across two weeks, resumes on its own each time one falls due, and closes itself when
+the last one has run. If the culture has not come back, it books one more check rather than guess,
+and then refuses to book another so a missing result cannot become an endless loop.
 
 - [Open the live application](https://day-three-109051079423.us-central1.run.app)
 - [Read the judge evidence](https://day-three-109051079423.us-central1.run.app/judges)
 - [Inspect machine-checkable conformance](https://day-three-109051079423.us-central1.run.app/conformance)
 - [See the deployment proof](docs/deployment-proof.md): Cloud Run revision, scheduler jobs and Firestore, with the commands to re-fetch them
 
+**The three required technologies, in one line:** Gemini 3.5 Flash accessed through **Vertex AI**,
+the **Google GenAI SDK** (`google-genai`), and **Google Cloud Run** with Firestore and Cloud
+Scheduler. Gemma 4, Gemini 3.1 Flash Image and Veo 3.1 Fast are also integrated; see
+[Why each model is here](#why-each-model-is-here). The managed platform values are read live at
+[`/day-three/platform`](https://day-three-109051079423.us-central1.run.app/day-three/platform).
+
+Everything below runs against the deployed service. No login, no key, nothing to install.
+
 ## Judge it in 90 seconds
 
-1. Press **Reset demo**.
-2. Press **Load report** three times: watch a local cumulative antibiogram appear.
-3. Run **Test hidden instructions**: the prompt-injection text is quarantined.
-4. Admit the synthetic course, advance **47 hours**, then **5 more hours**: the durable wake fires.
-5. Press **Ask day-three question**: inspect the cited, pharmacist-reviewable draft.
-6. Press **Challenge unsupported number**: the verifier rejects the fabricated claim.
+1. Press **Start a real timer**, then forget about it. Nothing on the page can advance it.
+2. Press **Reset demo**, then **Load report** three times. A local resistance picture builds, and
+   cells with too few samples show no percentage rather than a false one.
+3. Press **Admit patient**, then **Advance 47 hours**. Nothing is due, so nothing runs.
+4. Press **Advance 5 hours**. The review falls due and the workflow resumes by itself.
+5. Press **Ask day-three question**, then **Challenge unsupported number**. Every sentence in the
+   draft quotes the report; the fabricated number is refused with a reason.
+6. Go back to the timer. It fired on the real clock while you were reading, claimed by a
+   background worker, and the card names the machine that ran it.
 
-The interface explains each action before and after it runs. A first-time judge never needs a
-terminal, credentials, or prior clinical knowledge.
+Step 6 is the one that matters: it is the only part no click of yours can cause.
+
+If you have another two minutes: **Test hidden instructions** quarantines prompt injection,
+**Wake it with no result back** shows the agent decide to wait rather than guess, **Ask without
+permission** shows a scope refusal written to an audit record, and the
+[developer page](https://day-three-109051079423.us-central1.run.app/developer) gives you a
+seven-day sandbox key so you can send a report of your own.
+
+A first-time judge never needs a terminal, credentials, or prior clinical knowledge.
 
 ## Verified evidence
 
