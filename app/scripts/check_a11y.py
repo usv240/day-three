@@ -275,6 +275,36 @@ def main() -> int:
         print("    FAIL  workflow navigation, reflow, or antibiogram layout is incomplete")
     print()
 
+    print("Architecture diagram")
+    print()
+    repo = Path(__file__).resolve().parent.parent.parent
+    svg_path, png_path = repo / "docs" / "architecture.svg", repo / "docs" / "architecture.png"
+    mmd_path = repo / "docs" / "architecture.mmd"
+    svg_text = svg_path.read_text(encoding="utf-8") if svg_path.exists() else ""
+    mmd_text = mmd_path.read_text(encoding="utf-8") if mmd_path.exists() else ""
+    readme_text = (repo / "README.md").read_text(encoding="utf-8")
+
+    # Three renderings of one system: the Mermaid source, the README's embedded copy of it, and
+    # the hand-drawn SVG the PNG is exported from. They drifted. The Mermaid said "Schedule"
+    # where the stage table said "Aggregate" and "Wait", and the PNG carried on the submission
+    # kept a stage list the SVG no longer had, so the diagram a judge saw described a different
+    # system from the repository.
+    stages = ("Read", "Curate", "Aggregate", "Wait", "Reconcile", "Verify")
+    diagram_ok = (
+        all(s in mmd_text for s in stages)
+        and all(s in svg_text for s in stages)
+        and mmd_text.strip() in readme_text
+        and png_path.exists()
+        and svg_path.exists()
+        and png_path.stat().st_mtime >= svg_path.stat().st_mtime
+    )
+    if diagram_ok:
+        print("    PASS  mermaid, README copy and svg agree, png is not older than the svg")
+    else:
+        failures.append("architecture diagram sources disagree")
+        print("    FAIL  diagram stage lists disagree, or the png predates the svg")
+    print()
+
     print("Compact laptop layout\n")
     compact_query = "@media (min-width: 700px) and (max-height: 900px)"
     compact_start = css.find(compact_query)

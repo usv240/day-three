@@ -3,7 +3,7 @@
 flowchart TB
     B["Browser or API client<br/>no login needed"]
     V["Vertex AI<br/>Gemini 3.5 Flash reads the report<br/>Gemma 4 checks it for identifiers"]
-    CR["Cloud Run: day-three<br/>us-central1, scales to zero<br/>Read, Curate, Schedule, Reconcile, Verify"]
+    CR["Cloud Run: day-three<br/>us-central1, scales to zero<br/>Read, Curate, Aggregate,<br/>Wait, Reconcile, Verify"]
     PH["Pharmacist<br/>reviews and decides.<br/>Nothing acts alone."]
     AR["Agent Registry<br/>8 entries. Other teams<br/>need the right scope."]
     FS[("Firestore<br/>the antibiogram, and<br/>work due days from now")]

@@ -132,8 +132,11 @@ facts: registration time, due time, claim time, and the worker that claimed it.
 
 ## Architecture
 
-The solid path below is the live stewardship workflow. The dotted path is optional onboarding
-media generated at build time. It never sees reports and never participates in a clinical output.
+Seven boxes, deliberately: this is the shape of the system, not an inventory of it. One Cloud Run
+service, one database, one scheduler. The managed platform pieces that are not drawn here, Agent
+Runtime, Agent Identity, Agent Gateway, Model Armor and Memory Bank, are read live at
+[`/day-three/platform`](https://day-three-109051079423.us-central1.run.app/day-three/platform),
+and the openFDA shortage watch runs on the second scheduler job.
 
 ```mermaid
 %% Day Three, as built. One service, one database, one scheduler.
@@ -141,7 +144,7 @@ media generated at build time. It never sees reports and never participates in a
 flowchart TB
     B["Browser or API client<br/>no login needed"]
     V["Vertex AI<br/>Gemini 3.5 Flash reads the report<br/>Gemma 4 checks it for identifiers"]
-    CR["Cloud Run: day-three<br/>us-central1, scales to zero<br/>Read, Curate, Schedule, Reconcile, Verify"]
+    CR["Cloud Run: day-three<br/>us-central1, scales to zero<br/>Read, Curate, Aggregate,<br/>Wait, Reconcile, Verify"]
     PH["Pharmacist<br/>reviews and decides.<br/>Nothing acts alone."]
     AR["Agent Registry<br/>8 entries. Other teams<br/>need the right scope."]
     FS[("Firestore<br/>the antibiogram, and<br/>work due days from now")]
@@ -342,6 +345,12 @@ export REPLAY_MODE=true
 uvicorn service.main:app --reload
 python scripts/demo_flow.py --url http://127.0.0.1:8000
 curl -X POST -H "Content-Type: application/json" -d '{}' http://127.0.0.1:8000/exit-test
+```
+
+Re-export the architecture PNG after editing the SVG:
+
+```bash
+python app/scripts/export_architecture.py
 ```
 
 Deploy it to Cloud Run yourself:
